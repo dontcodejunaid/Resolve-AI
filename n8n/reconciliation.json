@@ -1,0 +1,47 @@
+{
+  "name": "Resolve AI - Background Reconciliation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "node_schedule_recon",
+      "name": "Schedule: 1-Minute Reconciliation Scan",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.FASTAPI_URL || 'http://localhost:8000'}}/demo/reconcile-now",
+        "options": {}
+      },
+      "id": "node_trigger_recon",
+      "name": "FastAPI: Reconcile Orphan Payments",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [480, 300]
+    }
+  ],
+  "connections": {
+    "Schedule: 1-Minute Reconciliation Scan": {
+      "main": [
+        [
+          {
+            "node": "FastAPI: Reconcile Orphan Payments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

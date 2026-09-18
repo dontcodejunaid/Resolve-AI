@@ -1,0 +1,134 @@
+{
+  "name": "Resolve AI - Customer Case Investigation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "resolve-case-investigation",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "node_webhook_start",
+      "name": "Webhook: Case Investigation Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.FASTAPI_URL || 'http://localhost:8000'}}/internal/cases/{{$json.body.case_id}}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "headerParametersUi": {
+            "parameter": [
+              {
+                "name": "X-Internal-API-Key",
+                "value": "={{$env.INTERNAL_API_KEY || 'resolve_ai_internal_secure_token_change_in_production'}}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "node_fetch_case",
+      "name": "FastAPI: Get Case & Telemetry",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.COGNEE_API_URL || 'https://api.cognee.ai'}}/api/v1/search",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{$node['Webhook: Case Investigation Trigger'].json.body.customer_request}}"
+            },
+            {
+              "name": "limit",
+              "value": 3
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node_cognee_knowledge",
+      "name": "Cognee: Query Merchant Policies",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "You are Resolve AI, an accountable customer-service teammate.\n\nSynthesize live evidence and Cognee policy:\n- Case: {{$node['FastAPI: Get Case & Telemetry'].json}}\n- Knowledge: {{$node['Cognee: Query Merchant Policies'].json}}\n\nPropose next permitted action: (RECOVER_ORDER | REQUEST_REFUND | SCHEDULE_RECHECK | ESCALATE).\nRemember: AI PROPOSES. CODE DECIDES."
+      },
+      "id": "node_ai_agent",
+      "name": "AI Teammate: Propose Permitted Action",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [950, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  decision: $input.first().json.decision || 'OFFER_ORDER_RECOVERY',\n  ai_summary: $input.first().json.output || 'Investigation synthesized with Cognee knowledge layer.',\n  status: 'SUCCESS'\n};"
+      },
+      "id": "node_format_response",
+      "name": "Format Proposal Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1180, 300]
+    }
+  ],
+  "connections": {
+    "Webhook: Case Investigation Trigger": {
+      "main": [
+        [
+          {
+            "node": "FastAPI: Get Case & Telemetry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FastAPI: Get Case & Telemetry": {
+      "main": [
+        [
+          {
+            "node": "Cognee: Query Merchant Policies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cognee: Query Merchant Policies": {
+      "main": [
+        [
+          {
+            "node": "AI Teammate: Propose Permitted Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Teammate: Propose Permitted Action": {
+      "main": [
+        [
+          {
+            "node": "Format Proposal Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

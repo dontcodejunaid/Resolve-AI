@@ -1,0 +1,47 @@
+{
+  "name": "Resolve AI - Refund Monitor & Verification",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "node_schedule_refund",
+      "name": "Schedule: 1-Minute Refund Check",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.FASTAPI_URL || 'http://localhost:8000'}}/demo/monitor-refunds-now",
+        "options": {}
+      },
+      "id": "node_trigger_refund_mon",
+      "name": "FastAPI: Monitor & Resolve Pending Refunds",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [480, 300]
+    }
+  ],
+  "connections": {
+    "Schedule: 1-Minute Refund Check": {
+      "main": [
+        [
+          {
+            "node": "FastAPI: Monitor & Resolve Pending Refunds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

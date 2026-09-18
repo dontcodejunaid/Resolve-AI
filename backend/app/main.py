@@ -1,0 +1,86 @@
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+from backend.app.config import settings
+from backend.app.database import init_db
+from backend.app.database_seeder import seed_database
+from backend.app.routes import (
+    auth,
+    cases,
+    orders,
+    employee,
+    merchant,
+    internal,
+    demo,
+    simulator,
+)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Initialize Database and Seed Baseline Data
+    print("Starting RESOLVE AI Backend Engine...")
+    await init_db()
+    await seed_database()
+    yield
+    # Shutdown
+    print("Shutting down RESOLVE AI Backend Engine...")
+
+
+app = FastAPI(
+    title="RESOLVE AI — Autonomous AI Customer-Service Teammate API",
+    description="One Teammate. One Case. A Verified Outcome. Autonomous payment and order mismatch resolution engine.",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+# CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins for local dev & demo flexibility
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include API Routers
+app.include_router(auth.router)
+app.include_router(cases.router)
+app.include_router(orders.router)
+app.include_router(employee.router)
+app.include_router(merchant.router)
+app.include_router(internal.router)
+app.include_router(demo.router)
+app.include_router(simulator.router)
+
+
+@app.get("/", tags=["System"])
+async def root():
+    return {
+        "service": "RESOLVE AI API Engine",
+        "tagline": "One teammate. One case. A verified outcome.",
+        "environment": "SIMULATED PAYMENT ENVIRONMENT",
+        "status": "OPERATIONAL",
+        "version": "1.0.0"
+    }
+
+
+@app.get("/health", tags=["System"])
+async def health_check():
+    return {
+        "status": "HEALTHY",
+        "database": "CONNECTED",
+        "rules_engine": "ACTIVE",
+        "ai_orchestrator": "READY",
+    }
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    print(f"[UNHANDLED EXCEPTION] {request.method} {request.url.path}: {exc}")
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": f"Internal Server Error: {str(exc)}"},
+    )

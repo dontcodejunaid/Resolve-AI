@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { Navbar } from './components/Navbar';
-import { SimulatedBadge } from './components/SimulatedBadge';
 
 import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
@@ -56,9 +55,6 @@ export const App = () => {
     <AuthProvider>
       <BrowserRouter>
         <div className="min-h-screen flex flex-col bg-[#FAFCFA] text-[#0F1711]">
-          {/* Top Simulated Environment & Demo Bar */}
-          <SimulatedBadge />
-
           {/* Navigation */}
           <Navbar />
 

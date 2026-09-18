@@ -71,7 +71,7 @@ export const CaseDetail = () => {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center text-slate-500 font-mono text-sm">
+      <div className="max-w-7xl mx-auto px-4 py-16 text-center text-lime-700 font-mono text-sm">
         Retrieving case telemetry...
       </div>
     );
@@ -80,8 +80,8 @@ export const CaseDetail = () => {
   if (!caseData) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center space-y-4">
-        <h2 className="text-xl font-bold text-slate-300">Case Not Found</h2>
-        <Link to="/dashboard" className="text-blue-400 hover:text-blue-300 text-sm">
+        <h2 className="text-xl font-bold text-slate-800">Case Not Found</h2>
+        <Link to="/dashboard" className="text-lime-700 hover:text-lime-900 text-sm font-semibold">
           Return to Dashboard
         </Link>
       </div>
@@ -91,16 +91,16 @@ export const CaseDetail = () => {
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case 'RESOLVED':
-        return 'bg-emerald-950/60 text-emerald-400 border-emerald-800/60';
+        return 'bg-lime-100 text-lime-800 border-lime-300';
       case 'WAITING_FOR_CUSTOMER':
-        return 'bg-blue-950/60 text-blue-300 border-blue-700/60 animate-pulse';
+        return 'bg-lime-100 text-lime-900 border-lime-400 animate-pulse';
       case 'WAITING_FOR_APPROVAL':
       case 'WAITING_FOR_PROVIDER':
-        return 'bg-amber-950/60 text-amber-400 border-amber-800/60';
+        return 'bg-amber-100 text-amber-800 border-amber-300';
       case 'ESCALATED':
-        return 'bg-purple-950/60 text-purple-300 border-purple-800/60';
+        return 'bg-purple-100 text-purple-800 border-purple-300';
       default:
-        return 'bg-cyan-950/60 text-cyan-300 border-cyan-800/60';
+        return 'bg-lime-100 text-lime-800 border-lime-300';
     }
   };
 
@@ -110,7 +110,7 @@ export const CaseDetail = () => {
       <div className="flex items-center justify-between">
         <Link
           to="/dashboard"
-          className="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Cases</span>
@@ -118,19 +118,19 @@ export const CaseDetail = () => {
 
         <div className="flex items-center space-x-2">
           {/* View Mode Switcher */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-1 flex items-center text-xs">
+          <div className="bg-lime-50/80 border border-lime-200 rounded-xl p-1 flex items-center text-xs">
             <button
               onClick={() => setViewMode('workers')}
-              className={`px-3 py-1 rounded-lg font-medium transition-all ${
-                viewMode === 'workers' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+              className={`px-3 py-1 rounded-lg font-bold transition-all ${
+                viewMode === 'workers' ? 'bg-lime-500 text-black shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               AI Teammates Floor
             </button>
             <button
               onClick={() => setViewMode('linear')}
-              className={`px-3 py-1 rounded-lg font-medium transition-all ${
-                viewMode === 'linear' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+              className={`px-3 py-1 rounded-lg font-bold transition-all ${
+                viewMode === 'linear' ? 'bg-lime-500 text-black shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               Linear Steps
@@ -138,8 +138,8 @@ export const CaseDetail = () => {
           </div>
 
           <button
-            onClick={fetchCase}
-            className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 rounded-lg text-xs font-mono transition-all"
+            onClick={() => fetchCase(false)}
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-white border border-lime-200 hover:border-lime-400 text-lime-800 rounded-lg text-xs font-mono shadow-sm transition-all"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Sync</span>
@@ -148,36 +148,36 @@ export const CaseDetail = () => {
       </div>
 
       {/* Case Header Card */}
-      <div className="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
+      <div className="bg-white border border-lime-200 p-6 rounded-2xl shadow-sm space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center space-x-3">
-            <span className="text-xl font-mono font-extrabold text-blue-400">
+            <span className="text-xl font-mono font-extrabold text-lime-700">
               #{caseData.case_number}
             </span>
             <span
-              className={`px-2.5 py-1 text-xs font-mono font-bold uppercase rounded border ${getStatusBadgeClass(
+              className={`px-2.5 py-1 text-xs font-mono font-bold uppercase rounded-lg border ${getStatusBadgeClass(
                 caseData.status
               )}`}
             >
               {caseData.status.replace(/_/g, ' ')}
             </span>
             {caseData.resolution_type && (
-              <span className="px-2.5 py-1 text-xs font-mono font-bold rounded bg-slate-800 text-slate-200 border border-slate-700">
+              <span className="px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-lime-50 text-lime-900 border border-lime-300">
                 {caseData.resolution_type.replace(/_/g, ' ')}
               </span>
             )}
           </div>
 
-          <div className="text-xs font-mono text-slate-400">
+          <div className="text-xs font-mono text-slate-500">
             Reported: {new Date(caseData.created_at).toLocaleString()}
           </div>
         </div>
 
         <div>
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">
             Customer Statement
           </span>
-          <p className="text-base text-slate-100 font-medium bg-slate-950/60 p-3.5 rounded-xl border border-slate-800">
+          <p className="text-base text-slate-900 font-medium bg-slate-50 p-3.5 rounded-xl border border-lime-200">
             "{caseData.customer_request}"
           </p>
         </div>
@@ -192,12 +192,12 @@ export const CaseDetail = () => {
 
       {/* AI Proposal & Decision Banner */}
       {caseData.ai_summary && (
-        <div className="bg-gradient-to-r from-blue-950/30 via-slate-900 to-purple-950/30 border border-blue-500/30 p-5 rounded-2xl shadow-lg space-y-2">
-          <div className="flex items-center space-x-2 text-blue-400 text-xs font-mono font-bold uppercase tracking-wider">
-            <Bot className="w-4 h-4" />
+        <div className="bg-gradient-to-r from-lime-50 via-white to-lime-50 border border-lime-300 p-5 rounded-2xl shadow-sm space-y-2">
+          <div className="flex items-center space-x-2 text-lime-800 text-xs font-mono font-bold uppercase tracking-wider">
+            <Bot className="w-4 h-4 text-lime-700" />
             <span>AI Teammate Synthesis & Reasoning</span>
           </div>
-          <p className="text-sm text-slate-200 leading-relaxed font-medium">
+          <p className="text-sm text-slate-800 leading-relaxed font-medium">
             {caseData.ai_summary}
           </p>
         </div>
@@ -205,13 +205,13 @@ export const CaseDetail = () => {
 
       {/* Interactive Action Prompt for Customer */}
       {caseData.status === 'WAITING_FOR_CUSTOMER' && (
-        <div className="bg-blue-950/40 border-2 border-blue-500 rounded-2xl p-6 shadow-2xl space-y-4 animate-pulse">
-          <div className="flex items-center space-x-2 text-blue-300">
-            <Sparkles className="w-5 h-5 text-blue-400" />
-            <h3 className="text-base font-bold text-white">Your Confirmation Required to Recover Order</h3>
+        <div className="bg-lime-50 border-2 border-lime-500 rounded-2xl p-6 shadow-md space-y-4 animate-pulse">
+          <div className="flex items-center space-x-2 text-lime-900">
+            <Sparkles className="w-5 h-5 text-lime-700" />
+            <h3 className="text-base font-bold text-slate-900">Your Confirmation Required to Recover Order</h3>
           </div>
 
-          <p className="text-sm text-slate-200 leading-relaxed">
+          <p className="text-sm text-slate-700 leading-relaxed">
             Your payment was confirmed and stock is available in store inventory. Would you like Resolve AI to complete and recover your original purchase without any extra charges?
           </p>
 
@@ -219,16 +219,16 @@ export const CaseDetail = () => {
             <button
               onClick={() => handleCustomerConfirmation(true)}
               disabled={actionLoading}
-              className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-emerald-500/25 flex items-center space-x-2 text-sm transition-all"
+              className="bg-lime-500 hover:bg-lime-400 disabled:opacity-50 text-slate-950 font-extrabold px-6 py-2.5 rounded-xl shadow-md shadow-lime-500/25 flex items-center space-x-2 text-sm transition-all"
             >
-              <CheckCircle2 className="w-4 h-4" />
+              <CheckCircle2 className="w-4 h-4 font-bold" />
               <span>{actionLoading ? 'Executing & Verifying...' : 'Recover My Order (No Extra Charge)'}</span>
             </button>
 
             <button
               onClick={() => handleCustomerConfirmation(false)}
               disabled={actionLoading}
-              className="bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-300 px-4 py-2.5 rounded-xl text-xs font-semibold border border-slate-700 transition-all"
+              className="bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-700 px-4 py-2.5 rounded-xl text-xs font-semibold border border-slate-300 shadow-sm transition-all"
             >
               Decline & Escalate
             </button>
@@ -238,19 +238,19 @@ export const CaseDetail = () => {
 
       {/* Verified Resolution Outcome Card */}
       {caseData.status === 'RESOLVED' && (
-        <div className="bg-emerald-950/30 border border-emerald-500/40 rounded-2xl p-6 shadow-xl space-y-3">
-          <div className="flex items-center space-x-2 text-emerald-400">
-            <CheckCircle2 className="w-6 h-6" />
-            <h3 className="text-lg font-bold text-white">Case Successfully Verified & Resolved</h3>
+        <div className="bg-lime-50 border border-lime-300 rounded-2xl p-6 shadow-sm space-y-3">
+          <div className="flex items-center space-x-2 text-lime-800">
+            <CheckCircle2 className="w-6 h-6 text-lime-700" />
+            <h3 className="text-lg font-bold text-slate-900">Case Successfully Verified & Resolved</h3>
           </div>
-          <p className="text-sm text-slate-200">
+          <p className="text-sm text-slate-700">
             The expected outcome has been independently confirmed by our backend rules engine.
           </p>
           {caseData.order_id && (
             <div className="pt-2">
               <Link
                 to="/orders"
-                className="inline-flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-lg"
+                className="inline-flex items-center space-x-2 bg-lime-500 hover:bg-lime-400 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg shadow-md shadow-lime-500/20"
               >
                 <ShoppingBag className="w-4 h-4" />
                 <span>View Recovered Order in Orders</span>
@@ -264,7 +264,7 @@ export const CaseDetail = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Live Evidence Facts */}
         <div className="space-y-4">
-          <h3 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">
+          <h3 className="text-xs font-mono font-bold text-slate-700 uppercase tracking-wider">
             Verified Investigation Evidence
           </h3>
 
@@ -303,13 +303,13 @@ export const CaseDetail = () => {
         {/* Right Column: Dynamic Event Timeline */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">
+            <h3 className="text-xs font-mono font-bold text-slate-700 uppercase tracking-wider">
               Immutable Case Audit Timeline ({caseData.events?.length || 0} Events)
             </h3>
-            <span className="text-[11px] font-mono text-slate-500">Live Database Log</span>
+            <span className="text-[11px] font-mono text-slate-400">Live Database Log</span>
           </div>
 
-          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl">
+          <div className="bg-white border border-lime-200 rounded-2xl p-6 shadow-sm">
             <CaseTimeline events={caseData.events} />
           </div>
         </div>
@@ -317,3 +317,4 @@ export const CaseDetail = () => {
     </div>
   );
 };
+

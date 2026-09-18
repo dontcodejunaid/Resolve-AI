@@ -35,84 +35,84 @@ export const Signup = () => {
 
   return (
     <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12">
-      <div className="max-w-md w-full space-y-8 bg-slate-900/90 border border-slate-800 p-8 rounded-2xl shadow-2xl">
+      <div className="max-w-md w-full space-y-8 bg-white border border-lime-200 p-8 rounded-2xl shadow-xl shadow-lime-900/5">
         <div className="text-center">
-          <div className="w-12 h-12 bg-blue-600 rounded-xl mx-auto flex items-center justify-center shadow-lg shadow-blue-500/20 mb-3">
-            <Bot className="w-7 h-7 text-white" />
+          <div className="w-12 h-12 bg-lime-500 rounded-xl mx-auto flex items-center justify-center shadow-lg shadow-lime-500/25 mb-3">
+            <Bot className="w-7 h-7 text-slate-950" />
           </div>
-          <h2 className="text-2xl font-extrabold text-white tracking-tight">Create Account</h2>
-          <p className="text-xs text-slate-400 mt-1 font-mono">
+          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Create Account</h2>
+          <p className="text-xs text-slate-500 mt-1 font-mono">
             One Teammate. One Case. A Verified Outcome.
           </p>
         </div>
 
         {error && (
-          <div className="p-3 bg-red-950/50 border border-red-800/60 rounded-lg text-red-300 text-xs flex items-center space-x-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="p-3 bg-rose-50 border border-rose-300 rounded-xl text-rose-800 text-xs flex items-center space-x-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
             <span>{error}</span>
           </div>
         )}
 
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
               Full Name
             </label>
             <div className="relative">
-              <User className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+              <User className="w-4 h-4 text-lime-700 absolute left-3.5 top-3.5" />
               <input
                 type="text"
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 text-slate-100 text-sm rounded-lg pl-10 pr-4 py-2.5 outline-none focus:border-blue-500"
+                className="w-full bg-slate-50 border border-lime-200 text-slate-900 text-sm rounded-xl pl-10 pr-4 py-2.5 outline-none focus:border-lime-500 focus:bg-white transition-all"
                 placeholder="Rahul Sharma"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
               Email Address
             </label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+              <Mail className="w-4 h-4 text-lime-700 absolute left-3.5 top-3.5" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 text-slate-100 text-sm rounded-lg pl-10 pr-4 py-2.5 outline-none focus:border-blue-500"
+                className="w-full bg-slate-50 border border-lime-200 text-slate-900 text-sm rounded-xl pl-10 pr-4 py-2.5 outline-none focus:border-lime-500 focus:bg-white transition-all"
                 placeholder="name@example.com"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
               Password
             </label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+              <Lock className="w-4 h-4 text-lime-700 absolute left-3.5 top-3.5" />
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 text-slate-100 text-sm rounded-lg pl-10 pr-4 py-2.5 outline-none focus:border-blue-500"
+                className="w-full bg-slate-50 border border-lime-200 text-slate-900 text-sm rounded-xl pl-10 pr-4 py-2.5 outline-none focus:border-lime-500 focus:bg-white transition-all"
                 placeholder="••••••••"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
               Account Role
             </label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 text-slate-100 text-sm rounded-lg px-3 py-2.5 outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 border border-lime-200 text-slate-900 text-sm rounded-xl px-3 py-2.5 outline-none focus:border-lime-500 focus:bg-white transition-all"
             >
               <option value="customer">Customer</option>
               <option value="employee">Support Employee</option>
@@ -123,7 +123,7 @@ export const Signup = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold py-2.5 px-4 rounded-lg shadow-lg shadow-blue-500/25 flex items-center justify-center space-x-2 transition-all"
+            className="w-full bg-lime-500 hover:bg-lime-400 disabled:opacity-50 text-slate-950 font-bold py-2.5 px-4 rounded-xl shadow-md shadow-lime-500/20 flex items-center justify-center space-x-2 transition-all"
           >
             <span>{loading ? 'Creating Account...' : 'Sign Up'}</span>
             <ArrowRight className="w-4 h-4" />
@@ -131,9 +131,9 @@ export const Signup = () => {
         </form>
 
         <div className="text-center pt-2">
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-slate-500">
             Already have an account?{' '}
-            <Link to="/login" className="text-blue-400 hover:text-blue-300 font-semibold">
+            <Link to="/login" className="text-lime-700 hover:text-lime-800 font-bold">
               Sign in
             </Link>
           </p>
@@ -142,3 +142,4 @@ export const Signup = () => {
     </div>
   );
 };
+

@@ -26,21 +26,21 @@ export const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <header className="sticky top-0 z-40 bg-[#090D16]/95 backdrop-blur border-b border-slate-800/80">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-lime-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Brand */}
           <div className="flex items-center space-x-3">
             <Link to="/" className="flex items-center space-x-2.5">
-              <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                <Bot className="w-5 h-5 text-white" />
+              <div className="w-9 h-9 rounded-xl bg-lime-500 flex items-center justify-center shadow-md shadow-lime-500/25 text-black">
+                <Bot className="w-5 h-5 font-bold" />
               </div>
               <div>
                 <div className="flex items-center space-x-1.5">
-                  <span className="font-extrabold text-lg tracking-tight text-white">RESOLVE</span>
-                  <span className="text-xs font-semibold px-1.5 py-0.2 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded">AI</span>
+                  <span className="font-extrabold text-lg tracking-tight text-slate-900">RESOLVE</span>
+                  <span className="text-xs font-bold px-1.5 py-0.2 bg-lime-100 text-lime-800 border border-lime-300 rounded">AI</span>
                 </div>
-                <p className="text-[10px] text-slate-400 font-mono tracking-tight hidden sm:block">ONE TEAMMATE. VERIFIED OUTCOME.</p>
+                <p className="text-[10px] text-slate-500 font-mono tracking-tight hidden sm:block">ONE TEAMMATE. VERIFIED OUTCOME.</p>
               </div>
             </Link>
           </div>
@@ -51,25 +51,25 @@ export const Navbar = () => {
               <>
                 <Link
                   to="/dashboard"
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                    isActive('/dashboard') ? 'bg-slate-800 text-blue-400 border border-slate-700/60' : 'text-slate-300 hover:text-white hover:bg-slate-850'
+                  className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all ${
+                    isActive('/dashboard') ? 'bg-lime-100 text-lime-900 border border-lime-300 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-lime-50/60'
                   }`}
                 >
                   My Cases
                 </Link>
                 <Link
                   to="/new-case"
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center space-x-1.5 ${
-                    isActive('/new-case') ? 'bg-blue-600 text-white' : 'bg-blue-600/10 text-blue-400 hover:bg-blue-600/20 border border-blue-500/30'
+                  className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all flex items-center space-x-1.5 ${
+                    isActive('/new-case') ? 'bg-lime-500 text-black shadow-md shadow-lime-500/25' : 'bg-lime-100/80 text-lime-800 hover:bg-lime-200/80 border border-lime-300/80'
                   }`}
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
+                  <Sparkles className="w-3.5 h-3.5 text-lime-700" />
                   <span>Report Payment Issue</span>
                 </Link>
                 <Link
                   to="/orders"
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                    isActive('/orders') ? 'bg-slate-800 text-blue-400 border border-slate-700/60' : 'text-slate-300 hover:text-white'
+                  className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all ${
+                    isActive('/orders') ? 'bg-lime-100 text-lime-900 border border-lime-300 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-lime-50/60'
                   }`}
                 >
                   Orders
@@ -81,19 +81,19 @@ export const Navbar = () => {
               <>
                 <Link
                   to="/employee/dashboard"
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                    isActive('/employee/dashboard') ? 'bg-slate-800 text-blue-400 border border-slate-700/60' : 'text-slate-300 hover:text-white'
+                  className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all ${
+                    isActive('/employee/dashboard') ? 'bg-lime-100 text-lime-900 border border-lime-300 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-lime-50/60'
                   }`}
                 >
                   Case Queue
                 </Link>
                 <Link
                   to="/employee/approvals"
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center space-x-1.5 ${
-                    isActive('/employee/approvals') ? 'bg-slate-800 text-amber-400 border border-slate-700/60' : 'text-slate-300 hover:text-white'
+                  className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all flex items-center space-x-1.5 ${
+                    isActive('/employee/approvals') ? 'bg-amber-100 text-amber-900 border border-amber-300 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-amber-50/60'
                   }`}
                 >
-                  <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+                  <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
                   <span>Approvals</span>
                 </Link>
               </>
@@ -103,24 +103,24 @@ export const Navbar = () => {
               <>
                 <Link
                   to="/merchant/dashboard"
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                    isActive('/merchant/dashboard') ? 'bg-slate-800 text-blue-400 border border-slate-700/60' : 'text-slate-300 hover:text-white'
+                  className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all ${
+                    isActive('/merchant/dashboard') ? 'bg-lime-100 text-lime-900 border border-lime-300 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-lime-50/60'
                   }`}
                 >
                   Merchant Console
                 </Link>
                 <Link
                   to="/merchant/policies"
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                    isActive('/merchant/policies') ? 'bg-slate-800 text-blue-400 border border-slate-700/60' : 'text-slate-300 hover:text-white'
+                  className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all ${
+                    isActive('/merchant/policies') ? 'bg-lime-100 text-lime-900 border border-lime-300 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-lime-50/60'
                   }`}
                 >
                   Policies
                 </Link>
                 <Link
                   to="/merchant/products"
-                  className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                    isActive('/merchant/products') ? 'bg-slate-800 text-blue-400 border border-slate-700/60' : 'text-slate-300 hover:text-white'
+                  className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all ${
+                    isActive('/merchant/products') ? 'bg-lime-100 text-lime-900 border border-lime-300 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-lime-50/60'
                   }`}
                 >
                   Inventory
@@ -131,8 +131,8 @@ export const Navbar = () => {
             {/* Always accessible Demo Lab */}
             <Link
               to="/demo"
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center space-x-1.5 ${
-                isActive('/demo') ? 'bg-purple-900/40 text-purple-300 border border-purple-500/50' : 'text-purple-400 hover:bg-purple-950/30'
+              className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all flex items-center space-x-1.5 ${
+                isActive('/demo') ? 'bg-lime-500 text-black shadow-md shadow-lime-500/25' : 'text-lime-800 bg-lime-50 hover:bg-lime-100 border border-lime-200'
               }`}
             >
               <Sliders className="w-3.5 h-3.5" />
@@ -146,7 +146,7 @@ export const Navbar = () => {
               <div className="flex items-center space-x-2.5">
                 <button
                   onClick={handleLogout}
-                  className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-md transition-colors"
+                  className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl border border-transparent hover:border-rose-200 transition-all"
                   title="Sign Out"
                 >
                   <LogOut className="w-4 h-4" />
@@ -156,13 +156,13 @@ export const Navbar = () => {
               <div className="flex items-center space-x-2">
                 <Link
                   to="/login"
-                  className="text-sm font-medium text-slate-300 hover:text-white px-3 py-1.5 rounded-md hover:bg-slate-800"
+                  className="text-sm font-medium text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-xl hover:bg-lime-50"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/signup"
-                  className="text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white px-3 py-1.5 rounded-md shadow-sm shadow-blue-500/20"
+                  className="text-sm font-bold bg-lime-500 hover:bg-lime-400 text-black px-4 py-1.5 rounded-xl shadow-md shadow-lime-500/20"
                 >
                   Sign Up
                 </Link>
@@ -174,3 +174,4 @@ export const Navbar = () => {
     </header>
   );
 };
+

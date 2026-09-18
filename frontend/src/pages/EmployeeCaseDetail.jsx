@@ -54,7 +54,7 @@ export const EmployeeCaseDetail = () => {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center text-slate-500 font-mono text-sm">
+      <div className="max-w-7xl mx-auto px-4 py-16 text-center text-lime-700 font-mono text-sm">
         Loading case telemetry...
       </div>
     );
@@ -63,8 +63,8 @@ export const EmployeeCaseDetail = () => {
   if (!caseData) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center space-y-4">
-        <h2 className="text-xl font-bold text-slate-300">Case Not Found</h2>
-        <Link to="/employee/dashboard" className="text-blue-400 hover:text-blue-300 text-sm">
+        <h2 className="text-xl font-bold text-slate-900">Case Not Found</h2>
+        <Link to="/employee/dashboard" className="text-lime-700 hover:text-lime-800 text-sm font-semibold">
           Return to Queue
         </Link>
       </div>
@@ -76,7 +76,7 @@ export const EmployeeCaseDetail = () => {
       <div className="flex items-center justify-between">
         <Link
           to="/employee/dashboard"
-          className="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+          className="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Employee Queue</span>
@@ -84,7 +84,7 @@ export const EmployeeCaseDetail = () => {
 
         <button
           onClick={fetchCase}
-          className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-slate-900 border border-slate-800 text-slate-300 rounded-lg text-xs font-mono transition-all"
+          className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-white border border-lime-200 text-lime-800 hover:bg-lime-50 rounded-lg text-xs font-mono transition-all shadow-sm"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           <span>Sync</span>
@@ -92,43 +92,43 @@ export const EmployeeCaseDetail = () => {
       </div>
 
       {/* Case Telemetry Header */}
-      <div className="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
+      <div className="bg-white border border-lime-200 p-6 rounded-2xl shadow-sm space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center space-x-3">
-            <span className="text-xl font-mono font-extrabold text-blue-400">
+            <span className="text-xl font-mono font-extrabold text-lime-700">
               #{caseData.case_number}
             </span>
-            <span className="px-2.5 py-1 text-xs font-mono font-bold uppercase rounded border bg-slate-800 text-slate-200 border-slate-700">
+            <span className="px-2.5 py-1 text-xs font-mono font-bold uppercase rounded-lg border bg-lime-100 text-lime-800 border-lime-300">
               {caseData.status}
             </span>
             {caseData.resolution_type && (
-              <span className="px-2.5 py-1 text-xs font-mono font-bold rounded bg-blue-950 text-blue-300 border border-blue-800">
+              <span className="px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-lime-100 text-lime-900 border border-lime-300">
                 {caseData.resolution_type}
               </span>
             )}
           </div>
 
-          <div className="text-xs font-mono text-slate-400">
-            Customer: <span className="text-slate-200 font-bold">{caseData.customer?.full_name}</span> ({caseData.customer?.email})
+          <div className="text-xs font-mono text-slate-500">
+            Customer: <span className="text-slate-900 font-bold">{caseData.customer?.full_name}</span> ({caseData.customer?.email})
           </div>
         </div>
 
         <div>
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">
             Customer Complaint
           </span>
-          <p className="text-sm text-slate-100 font-medium bg-slate-950/60 p-3.5 rounded-xl border border-slate-800">
+          <p className="text-sm text-slate-800 font-medium bg-lime-50/60 p-3.5 rounded-xl border border-lime-200">
             "{caseData.customer_request}"
           </p>
         </div>
 
         {caseData.ai_summary && (
-          <div className="p-4 rounded-xl bg-purple-950/30 border border-purple-800/40 space-y-1">
-            <div className="flex items-center space-x-2 text-purple-400 text-xs font-mono font-bold uppercase">
-              <Bot className="w-4 h-4" />
+          <div className="p-4 rounded-xl bg-lime-50 border border-lime-200 space-y-1">
+            <div className="flex items-center space-x-2 text-lime-800 text-xs font-mono font-bold uppercase">
+              <Bot className="w-4 h-4 text-lime-700" />
               <span>AI Reasoning & Handoff Summary</span>
             </div>
-            <p className="text-xs text-slate-200 leading-relaxed font-mono">
+            <p className="text-xs text-slate-700 leading-relaxed font-mono">
               {caseData.ai_summary}
             </p>
           </div>
@@ -140,7 +140,7 @@ export const EmployeeCaseDetail = () => {
         {/* Left Column */}
         <div className="space-y-6">
           <div className="space-y-3">
-            <h3 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">
+            <h3 className="text-xs font-mono font-bold text-slate-600 uppercase tracking-wider">
               System Verification State
             </h3>
 
@@ -165,8 +165,8 @@ export const EmployeeCaseDetail = () => {
           </div>
 
           {/* Add Human Support Note */}
-          <div className="bg-slate-900/90 border border-slate-800 p-5 rounded-2xl space-y-3">
-            <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+          <div className="bg-white border border-lime-200 p-5 rounded-2xl space-y-3 shadow-sm">
+            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
               Add Support Specialist Note
             </h4>
             <form onSubmit={handleAddNote} className="space-y-3">
@@ -175,13 +175,13 @@ export const EmployeeCaseDetail = () => {
                 required
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 text-slate-100 text-xs rounded-lg p-2.5 outline-none focus:border-blue-500"
+                className="w-full bg-slate-50 border border-lime-200 text-slate-900 text-xs rounded-xl p-2.5 outline-none focus:border-lime-500 focus:bg-white transition-colors"
                 placeholder="Document actions taken or manual phone verification..."
               />
               <button
                 type="submit"
                 disabled={noteLoading}
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-3 rounded-lg text-xs flex items-center justify-center space-x-1.5 transition-all"
+                className="w-full bg-lime-500 hover:bg-lime-400 text-slate-950 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1.5 transition-all shadow-md shadow-lime-500/20"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>{noteLoading ? 'Saving...' : 'Post Event to Case Timeline'}</span>
@@ -193,12 +193,12 @@ export const EmployeeCaseDetail = () => {
         {/* Right Column: Timeline */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">
+            <h3 className="text-xs font-mono font-bold text-slate-600 uppercase tracking-wider">
               Complete Event & Action Stream ({caseData.events?.length || 0} events)
             </h3>
           </div>
 
-          <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl">
+          <div className="bg-white border border-lime-200 rounded-2xl p-6 shadow-sm">
             <CaseTimeline events={caseData.events} />
           </div>
         </div>
@@ -206,3 +206,4 @@ export const EmployeeCaseDetail = () => {
     </div>
   );
 };
+

@@ -34,7 +34,7 @@ export const CaseTimeline = ({ events = [] }) => {
   const getEvent = (types) => events.find(e => types.includes(e.event_type));
 
   const intakeEvt = getEvent(['COMPLAINT_RECEIVED', 'CASE_CREATED', 'WEBHOOK_CASE_TRIGGERED']);
-  const paymentEvt = getEvent(['PAYMENT_VERIFIED', 'PAYMENT_CHECK_COMPLETED', 'PAYMENT_SEARCHED', 'PAYMENT_NOT_FOUND_AT_GATEWAY']);
+  const paymentEvt = getEvent(['PAYMENT_VERIFIED', 'PAYMENT_CHECK_COMPLETED', 'PAYMENT_SEARCHED', 'PAYMENT_NOT_FOUND_AT_GATEWAY', 'PAYMENT_CLEARED_BY_BANK']);
   const cartEvt = getEvent(['CHECKOUT_FOUND', 'CART_LINKED', 'ORDER_SEARCHED', 'ORDER_FOUND', 'ORDER_NOT_FOUND']);
   const stockEvt = getEvent(['STOCK_CHECKED', 'INVENTORY_VERIFIED']);
   const decisionEvt = getEvent([
@@ -68,7 +68,7 @@ export const CaseTimeline = ({ events = [] }) => {
       step: '02',
       title: 'Banking Gateway Verified',
       description: paymentEvt ? paymentEvt.description : 'Validating banking transaction status',
-      completed: Boolean(paymentEvt && (paymentEvt.event_type === 'PAYMENT_VERIFIED' || paymentEvt.event_type === 'PAYMENT_CHECK_COMPLETED' || paymentEvt.event_type === 'PAYMENT_NOT_FOUND_AT_GATEWAY')),
+      completed: Boolean(paymentEvt && (paymentEvt.event_type === 'PAYMENT_VERIFIED' || paymentEvt.event_type === 'PAYMENT_CHECK_COMPLETED' || paymentEvt.event_type === 'PAYMENT_NOT_FOUND_AT_GATEWAY' || paymentEvt.event_type === 'PAYMENT_CLEARED_BY_BANK')),
       inProgress: !paymentEvt && eventTypes.includes('INVESTIGATION_STARTED'),
       time: paymentEvt?.created_at,
       icon: CreditCard,
@@ -90,29 +90,29 @@ export const CaseTimeline = ({ events = [] }) => {
       step: '04',
       title: 'Inventory Stock Audited',
       description: stockEvt ? stockEvt.description : 'Auditing warehouse inventory count',
-      completed: Boolean(stockEvt || eventTypes.includes('STOCK_CHECKED')),
-      inProgress: Boolean(cartEvt && !stockEvt),
+      completed: Boolean(stockEvt || eventTypes.includes('CASE_RESOLVED') || eventTypes.includes('ORDER_RECOVERED')),
+      inProgress: Boolean(cartEvt && !stockEvt && !eventTypes.includes('CASE_RESOLVED')),
       time: stockEvt?.created_at,
       icon: Layers,
-      proof: 'Stock Confirmed Available'
+      proof: 'Stock Reserved / Checked'
     },
     {
       id: 'decision',
       step: '05',
-      title: 'Policy & Verified Outcome',
-      description: decisionEvt ? decisionEvt.description : 'Autonomous resolution policy executed',
-      completed: Boolean(decisionEvt || eventTypes.includes('CASE_RESOLVED') || eventTypes.includes('WAITING_FOR_CUSTOMER')),
-      inProgress: Boolean(stockEvt && !decisionEvt),
+      title: 'Deterministic Resolution Executed',
+      description: decisionEvt ? decisionEvt.description : 'Synthesizing evidence and resolving case',
+      completed: Boolean(eventTypes.includes('CASE_RESOLVED') || eventTypes.includes('RECOVERY_VERIFIED')),
+      inProgress: Boolean(eventTypes.includes('ACTION_IN_PROGRESS') || eventTypes.includes('VERIFYING') || eventTypes.includes('WAITING_FOR_CUSTOMER') || eventTypes.includes('WAITING_FOR_APPROVAL') || eventTypes.includes('WAITING_FOR_PROVIDER')),
       time: decisionEvt?.created_at,
-      icon: ShieldCheck,
-      proof: 'Outcome Verified by Engine'
+      icon: Sparkles,
+      proof: eventTypes.includes('CASE_RESOLVED') ? 'Outcome Verified & Closed' : 'In Resolution Pipeline'
     }
   ];
 
   const completedCount = tasks.filter(t => t.completed).length;
 
   const getActorBadge = (actorType) => {
-    switch (actorType?.toUpperCase()) {
+    switch (actorType) {
       case 'AI':
         return { icon: Bot, bg: 'bg-lime-100 text-lime-800 border-lime-300', label: 'Resolve AI' };
       case 'PROVIDER':
@@ -148,8 +148,6 @@ export const CaseTimeline = ({ events = [] }) => {
       {/* Zero-Scroll Compact Task Completion Pipeline */}
       <div className="space-y-2.5">
         {tasks.map((task) => {
-          const IconComp = task.icon;
-
           return (
             <div
               key={task.id}
@@ -225,7 +223,7 @@ export const CaseTimeline = ({ events = [] }) => {
         })}
       </div>
 
-      {/* Collapsible Detailed Audit Stream (No default page stretching) */}
+      {/* Collapsible Detailed Audit Stream */}
       <div className="pt-2 border-t border-lime-100">
         <button
           onClick={() => setShowRawLogs(!showRawLogs)}
@@ -242,7 +240,6 @@ export const CaseTimeline = ({ events = [] }) => {
           <div className="mt-2 p-3 bg-slate-50 rounded-xl border border-lime-200 max-h-48 overflow-y-auto space-y-2 animate-in fade-in duration-200">
             {events.map((evt, idx) => {
               const actor = getActorBadge(evt.actor_type);
-              const IconComp = actor.icon;
 
               return (
                 <div
@@ -270,4 +267,3 @@ export const CaseTimeline = ({ events = [] }) => {
     </div>
   );
 };
-

@@ -23,6 +23,8 @@ export const parseActualDate = (timestamp) => {
   return isNaN(d.getTime()) ? null : d;
 };
 
+export const parseServerDate = parseActualDate;
+
 /**
  * Format time e.g. "12:05:30 AM" or "12:05 AM"
  */
@@ -36,6 +38,8 @@ export const formatActualTime = (timestamp, includeSeconds = true) => {
     hour12: true,
   });
 };
+
+export const formatTimeOnly = (timestamp) => formatActualTime(timestamp, true);
 
 /**
  * Format full date & time e.g. "Sep 19, 2026, 12:05:30 AM"
@@ -53,6 +57,8 @@ export const formatActualDateTime = (timestamp) => {
     hour12: true,
   });
 };
+
+export const formatDateTime = formatActualDateTime;
 
 /**
  * Format date only e.g. "Sep 19, 2026"

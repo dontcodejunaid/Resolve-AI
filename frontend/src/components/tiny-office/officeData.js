@@ -47,7 +47,7 @@ export const INITIAL_ENGINEERS = [
       { step: '01', name: 'Checkout Cart Inspection', desc: 'Finds saved customer cart attempt CHK-RS-77210', status: 'COMPLETED', tool: 'CHECK_CHECKOUT' },
       { step: '02', name: 'Order Confirmation Search', desc: 'Searches database for existing order to avoid duplicates (Rule 6)', status: 'COMPLETED', tool: 'CHECK_ORDER' },
       { step: '03', name: 'Stock Availability Check', desc: 'Validates warehouse stock (10 units available)', status: 'COMPLETED', tool: 'CHECK_STOCK' },
-      { step: '04', name: 'Idempotent Order Recovery', desc: 'Creates recovered order and links payment without re-charging', status: 'IN_PROGRESS', tool: 'RECOVER_ORDER' },
+      { step: '04', name: 'Idempotent Order Recovery', desc: 'Creates recovered order and links payment without re-charging', status: 'COMPLETED', tool: 'RECOVER_ORDER' },
     ],
   },
   {
@@ -102,6 +102,229 @@ export const INITIAL_ENGINEERS = [
     ],
   }
 ];
+
+export const SCENARIO_WORKER_CUSTOMIZATIONS = {
+  SCENARIO_1_RECOVERY: {
+    'worker-1': {
+      thought: 'Validating simulated banking gateway response for TXN987654 (₹799.00 SUCCESS) 💳',
+      currentTask: 'Verify Gateway Settlement & Amount Match',
+      activeTool: 'CHECK_PAYMENT'
+    },
+    'worker-2': {
+      thought: 'Found cart CHK-RS-77210. Checking warehouse stock: 10 units AVAILABLE 📦',
+      currentTask: 'Check Inventory & Prepare Safe Order Recovery',
+      activeTool: 'CHECK_STOCK & RECOVER_ORDER'
+    },
+    'worker-3': {
+      thought: 'Queried Cognee knowledge base -> Policy approves direct order recovery 🧠',
+      currentTask: 'Synthesize Cognee Recovery Policy',
+      activeTool: 'QUERY_COGNEE'
+    },
+    'worker-4': {
+      thought: 'Enforcing Rule 6 & 13 -> 1 order created, zero extra charges, 100% verified 🛡️',
+      currentTask: 'Enforce 13 Deterministic Rules & Post-Action Verification',
+      activeTool: 'INDEPENDENT_VERIFICATION'
+    }
+  },
+  SCENARIO_2_REFUND: {
+    'worker-1': {
+      thought: 'Validating banking gateway TXN445566 (₹1499.00 SUCCESS) 💳',
+      currentTask: 'Verify Gateway Settlement & Amount Match',
+      activeTool: 'CHECK_PAYMENT'
+    },
+    'worker-2': {
+      thought: 'Checking warehouse stock for Keyboard: 0 units OUT OF STOCK 🚫',
+      currentTask: 'Inventory Depleted -> Fallback to Refund Pipeline',
+      activeTool: 'CHECK_STOCK'
+    },
+    'worker-3': {
+      thought: 'Amount ₹1499 exceeds ₹500 manager threshold -> Approval required 👤',
+      currentTask: 'Evaluate Policy Threshold for High-Value Refund',
+      activeTool: 'EVALUATE_THRESHOLD'
+    },
+    'worker-4': {
+      thought: 'Enforcing Rule 8 -> Dispatched approval task to Manager Queue 🛡️',
+      currentTask: 'Enforce Manager Approval & Audit Handoff',
+      activeTool: 'DISPATCH_APPROVAL'
+    }
+  },
+  SCENARIO_3_PENDING: {
+    'worker-1': {
+      thought: 'Querying gateway for TXN778899 -> Status: PENDING with bank ⏳',
+      currentTask: 'Detect Pending Bank Transaction',
+      activeTool: 'CHECK_PAYMENT'
+    },
+    'worker-2': {
+      thought: 'Holding cart CHK-AV-33129; deferring order creation (Rule 4) 📦',
+      currentTask: 'Defer Order Allocation on Pending Payment',
+      activeTool: 'HOLD_CART'
+    },
+    'worker-3': {
+      thought: 'Policy synthesis: Prohibit blind order creation or refund on pending txns 🧠',
+      currentTask: 'Synthesize Pending Payment Hold Protocol',
+      activeTool: 'POLICY_SYNTHESIS'
+    },
+    'worker-4': {
+      thought: 'Enforcing Rule 10 -> Background worker scheduled, case kept active 🛡️',
+      currentTask: 'Schedule 15-Minute Background Poller',
+      activeTool: 'SCHEDULE_RECHECK'
+    }
+  },
+  SCENARIO_4_DUPLICATE: {
+    'worker-1': {
+      thought: 'Analyzing duplicate webhook event for TXN987654 💳',
+      currentTask: 'Detect Inbound Duplicate Webhook Payload',
+      activeTool: 'CHECK_PAYMENT'
+    },
+    'worker-2': {
+      thought: 'Acquiring database lock. Order #ORD-8812 already linked to payment 📦',
+      currentTask: 'Check Existing Linked Orders',
+      activeTool: 'IDEMPOTENCY_LOCK'
+    },
+    'worker-3': {
+      thought: 'Policy check: Acknowledge webhook without secondary order creation 🧠',
+      currentTask: 'Enforce Idempotent Webhook Ingestion',
+      activeTool: 'QUERY_COGNEE'
+    },
+    'worker-4': {
+      thought: 'Deterministic Rule 7 verified: Exactly 1 order recorded in PostgreSQL 🛡️',
+      currentTask: 'Verify Single-Order Database Invariant',
+      activeTool: 'INDEPENDENT_VERIFICATION'
+    }
+  },
+  SCENARIO_5_REFUND_EXISTS: {
+    'worker-1': {
+      thought: 'Checking transaction TXN551122 -> Existing refund record REF-4412 found 💳',
+      currentTask: 'Query Gateway & Payout History',
+      activeTool: 'CHECK_REFUND'
+    },
+    'worker-2': {
+      thought: 'Checking order state -> Marked as cancelled, zero pending fulfillment 📦',
+      currentTask: 'Confirm Cancelled Order State',
+      activeTool: 'CHECK_ORDER'
+    },
+    'worker-3': {
+      thought: 'Policy check: Strict ban on issuing duplicate refund payouts 🧠',
+      currentTask: 'Evaluate Duplicate Refund Prevention Policy',
+      activeTool: 'QUERY_COGNEE'
+    },
+    'worker-4': {
+      thought: 'Enforcing Rule 9 -> Tracked existing refund reference without debiting merchant 🛡️',
+      currentTask: 'Audit Existing Refund & Close Investigation',
+      activeTool: 'INDEPENDENT_VERIFICATION'
+    }
+  },
+  SCENARIO_6_CONFLICT: {
+    'worker-1': {
+      thought: 'Gateway records ₹1299 USD vs Cart records ₹999 INR -> Inconsistency detected 🔍',
+      currentTask: 'Detect Amount & Currency Mismatch',
+      activeTool: 'CHECK_PAYMENT'
+    },
+    'worker-2': {
+      thought: 'Halting automatic order creation to prevent financial loss 📦',
+      currentTask: 'Lock Checkout Session Against Auto-Recovery',
+      activeTool: 'LOCK_RESOURCES'
+    },
+    'worker-3': {
+      thought: 'Policy check: AI refuses to guess when financial discrepancies occur 🧠',
+      currentTask: 'Synthesize Safe Escalation Docket',
+      activeTool: 'QUERY_COGNEE'
+    },
+    'worker-4': {
+      thought: 'Enforcing Rule 11 & 12 -> Formatted structured human handoff docket 🛡️',
+      currentTask: 'Dispatch Case to Human Escalation Queue',
+      activeTool: 'ESCALATE_TO_HUMAN'
+    }
+  },
+  SCENARIO_7_TIMEOUT: {
+    'worker-1': {
+      thought: 'Gateway request timed out (504). Initiating idempotent retry with backoff 💳',
+      currentTask: 'Retry Gateway Request with Idempotency Key',
+      activeTool: 'RETRY_GATEWAY'
+    },
+    'worker-2': {
+      thought: 'Verifying checkout state remains reserved during gateway retry 📦',
+      currentTask: 'Maintain Cart Reservation Lock',
+      activeTool: 'LOCK_RESOURCES'
+    },
+    'worker-3': {
+      thought: 'Policy synthesis: Maximum 3 retries before failover to manual review 🧠',
+      currentTask: 'Evaluate Retry Resilience Policy',
+      activeTool: 'QUERY_COGNEE'
+    },
+    'worker-4': {
+      thought: 'Enforcing Rule 5 & 13 -> Retry succeeded, settlement verified safely 🛡️',
+      currentTask: 'Verify Outcome After Resilient Retry',
+      activeTool: 'INDEPENDENT_VERIFICATION'
+    }
+  },
+  SCENARIO_8_ORDER_EXISTS: {
+    'worker-1': {
+      thought: 'Banking gateway confirms payment TXN987654 settled successfully 💳',
+      currentTask: 'Verify Settlement State',
+      activeTool: 'CHECK_PAYMENT'
+    },
+    'worker-2': {
+      thought: 'Database lookup: Order ORD-9921 already exists and is in packaging 📦',
+      currentTask: 'Verify Existing Order Status',
+      activeTool: 'CHECK_ORDER'
+    },
+    'worker-3': {
+      thought: 'Policy check: Send order tracking link to customer, no modification needed 🧠',
+      currentTask: 'Synthesize Customer Order Update',
+      activeTool: 'QUERY_COGNEE'
+    },
+    'worker-4': {
+      thought: 'Enforcing Rule 6 -> No duplicate order created, status confirmed 🛡️',
+      currentTask: 'Audit Order Record & Notify Customer',
+      activeTool: 'INDEPENDENT_VERIFICATION'
+    }
+  },
+  SCENARIO_9_PAYMENT_NOT_FOUND: {
+    'worker-1': {
+      thought: 'Gateway returns NOT_FOUND for claimed transaction reference TXN000000 💳',
+      currentTask: 'Query Banking Gateway & Reconciliation Logs',
+      activeTool: 'CHECK_PAYMENT'
+    },
+    'worker-2': {
+      thought: 'No matching payment authorization found in system database 📦',
+      currentTask: 'Search Unmatched Payment Logs',
+      activeTool: 'CHECK_ORDER'
+    },
+    'worker-3': {
+      thought: 'Policy synthesis: Request customer proof of debit / bank statement 🧠',
+      currentTask: 'Synthesize Information Request Policy',
+      activeTool: 'QUERY_COGNEE'
+    },
+    'worker-4': {
+      thought: 'Enforcing Rule 2 & 12 -> Escalated for human verification with bank logs 🛡️',
+      currentTask: 'Generate Bank Dispute Escalation Docket',
+      activeTool: 'ESCALATE_TO_HUMAN'
+    }
+  },
+  SCENARIO_10_BACKGROUND_RECON: {
+    'worker-1': {
+      thought: 'Background daemon detected orphan payment TXN-ORPHAN-8891 💳',
+      currentTask: 'Identify Orphan Banking Gateway Settlement',
+      activeTool: 'SCAN_ORPHANS'
+    },
+    'worker-2': {
+      thought: 'Matched orphan payment to abandoned cart session CHK-RS-77210 📦',
+      currentTask: 'Match Payment to Customer Cart Attempt',
+      activeTool: 'MATCH_CART'
+    },
+    'worker-3': {
+      thought: 'Proactive policy: Open automated recovery case and notify customer 🧠',
+      currentTask: 'Synthesize Proactive Customer Recovery Action',
+      activeTool: 'QUERY_COGNEE'
+    },
+    'worker-4': {
+      thought: 'Enforcing Rule 10 & 13 -> Proactive case opened, 100% verified 🛡️',
+      currentTask: 'Open Case & Audit Proactive Event Stream',
+      activeTool: 'INDEPENDENT_VERIFICATION'
+    }
+  }
+};
 
 export const TECH_THOUGHTS = [
   'Verifying banking gateway webhook signature...',

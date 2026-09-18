@@ -143,6 +143,16 @@ async def reset_demo_database(db: AsyncSession = Depends(get_db)):
     await db.execute(delete(User))
     await db.commit()
 
+    # Clear MongoDB Atlas collections
+    try:
+        from backend.app.mongodb import get_mongo_db
+        mongo_db = get_mongo_db()
+        if mongo_db is not None:
+            for col in ["cases", "case_events", "actions", "approvals", "notifications", "refunds", "orders", "payments", "checkout_attempts", "merchant_policies", "products", "merchants", "users"]:
+                await mongo_db[col].delete_many({})
+    except Exception as e:
+        print(f"[MongoDB Wipe Warning] {e}")
+
     await seed_database()
     return {"status": "SUCCESS", "message": "Demo database wiped and cleanly reseeded."}
 

@@ -12,7 +12,9 @@ import {
   Sparkles,
   LifeBuoy,
   User,
-  ChevronDown
+  ChevronDown,
+  Building2,
+  CreditCard
 } from 'lucide-react';
 
 export const Navbar = () => {
@@ -52,6 +54,7 @@ export const Navbar = () => {
     { name: 'Arjun Verma', email: 'arjun@example.com', role: 'Customer 3 (Pending)' },
     { name: 'Dev Specialist', email: 'agent@resolveai.com', role: 'Support Specialist' },
     { name: 'Priya Patel', email: 'manager@resolvestore.com', role: 'Store Manager' },
+    { name: 'Bank Provider Sentinel', email: 'bank@gateway.com', role: 'Bank Gateway Provider' },
   ];
 
   return (
@@ -140,6 +143,15 @@ export const Navbar = () => {
                   Merchant Console
                 </Link>
                 <Link
+                  to="/employee/approvals"
+                  className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all flex items-center space-x-1.5 ${
+                    isActive('/employee/approvals') ? 'bg-amber-100 text-amber-900 border border-amber-300 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-amber-50/60'
+                  }`}
+                >
+                  <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Approvals</span>
+                </Link>
+                <Link
                   to="/merchant/policies"
                   className={`px-3.5 py-1.5 text-sm rounded-xl transition-all ${
                     isActive('/merchant/policies')
@@ -161,6 +173,17 @@ export const Navbar = () => {
                 </Link>
               </>
             )}
+
+            {/* Bank Gateway Portal Link */}
+            <Link
+              to="/bank"
+              className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all flex items-center space-x-1.5 ${
+                isActive('/bank') ? 'bg-emerald-600 text-white shadow-md' : 'text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'
+              }`}
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Bank Gateway</span>
+            </Link>
 
             {/* Always accessible Demo Lab */}
             <Link

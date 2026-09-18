@@ -41,6 +41,7 @@ async def seed_database():
             User(id="usr_arjun", email="arjun@example.com", password_hash=default_pwd_hash, full_name="Arjun Verma", role="customer"),
             User(id="usr_agent", email="agent@resolveai.com", password_hash=default_pwd_hash, full_name="Dev Support Specialist", role="employee"),
             User(id="usr_manager", email="manager@resolvestore.com", password_hash=default_pwd_hash, full_name="Priya Patel (Store Manager)", role="merchant"),
+            User(id="usr_bank", email="bank@gateway.com", password_hash=default_pwd_hash, full_name="Bank Provider Sentinel", role="employee"),
         ]
         session.add_all(users)
 
@@ -159,6 +160,13 @@ async def seed_database():
 
         await session.commit()
         print("Database seeded successfully with users, products, policies, checkouts, and payments!")
+        
+        # Sync directly to MongoDB Atlas
+        try:
+            from backend.app.mongodb import sync_entire_db_to_mongo
+            await sync_entire_db_to_mongo(session)
+        except Exception as e:
+            print(f"[MongoDB Atlas Seeder Sync Warning] {e}")
 
 
 if __name__ == "__main__":

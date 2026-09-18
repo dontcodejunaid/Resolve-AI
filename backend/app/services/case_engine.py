@@ -81,6 +81,14 @@ class CaseEngine:
         db.add(event)
         await db.commit()
         await db.refresh(event)
+
+        # Sync to MongoDB Atlas
+        try:
+            from backend.app.mongodb import sync_model
+            await sync_model("case_events", "id", event)
+        except Exception:
+            pass
+
         return event
 
     @staticmethod
@@ -113,6 +121,14 @@ class CaseEngine:
         db.add(action)
         await db.commit()
         await db.refresh(action)
+
+        # Sync to MongoDB Atlas
+        try:
+            from backend.app.mongodb import sync_model
+            await sync_model("actions", "id", action)
+        except Exception:
+            pass
+
         return action
 
     @staticmethod

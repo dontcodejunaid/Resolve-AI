@@ -1,5 +1,5 @@
 import React from 'react';
-import { Terminal, Activity, ArrowRight } from 'lucide-react';
+import { Terminal } from 'lucide-react';
 import { formatActualTime } from '../utils/dateUtils';
 
 export const TelemetryLog = ({ actions = [], maxItems = 15 }) => {
@@ -57,5 +57,3 @@ export const TelemetryLog = ({ actions = [], maxItems = 15 }) => {
     </div>
   );
 };
-
-

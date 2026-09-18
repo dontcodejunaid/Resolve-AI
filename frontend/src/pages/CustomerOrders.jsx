@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import client from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { formatActualDateTime } from '../utils/dateUtils';
-import { ShoppingBag, PackageCheck, CreditCard, Clock, CheckCircle2 } from 'lucide-react';
+import { ShoppingBag, PackageCheck, CreditCard, Clock, CheckCircle2, Package, Sparkles } from 'lucide-react';
 
 export const CustomerOrders = () => {
   const [orders, setOrders] = useState([]);

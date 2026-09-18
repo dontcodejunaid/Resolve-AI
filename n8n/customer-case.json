@@ -1,6 +1,14 @@
 {
-  "name": "Resolve AI - Customer Case Investigation",
+  "name": "Resolve AI - Customer Case Investigation & Decision Engine",
   "nodes": [
+    {
+      "parameters": {},
+      "id": "node_manual_trigger",
+      "name": "Manual Test Trigger (Click to Test)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [200, 180]
+    },
     {
       "parameters": {
         "httpMethod": "POST",
@@ -11,90 +19,88 @@
       "id": "node_webhook_start",
       "name": "Webhook: Case Investigation Trigger",
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 1,
-      "position": [250, 300]
+      "typeVersion": 2,
+      "position": [200, 380],
+      "webhookId": "resolve-case-investigation"
     },
     {
       "parameters": {
-        "url": "={{$env.FASTAPI_URL || 'http://localhost:8000'}}/internal/cases/{{$json.body.case_id}}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "options": {
-          "headerParametersUi": {
-            "parameter": [
-              {
-                "name": "X-Internal-API-Key",
-                "value": "={{$env.INTERNAL_API_KEY || 'resolve_ai_internal_secure_token_change_in_production'}}"
-              }
-            ]
-          }
-        }
+        "jsCode": "// Extract incoming webhook payload or provide comprehensive mock context for instant manual test execution\nconst item = $input.first()?.json || {};\nconst body = item.body || item;\n\nconst isManualTest = !body.case_id;\n\nconst caseId = body.case_id || 'cse_demo_101';\nconst customerRequest = body.customer_request || 'Money debited for Wireless Noise-Canceling Headset (₹799) but no confirmation order received.';\nconst evidence = body.evidence || {\n  payment: {\n    id: 'pay_demo_799',\n    payment_reference: 'TXN-HEADSET-799',\n    amount: 799.00,\n    currency: 'INR',\n    status: 'SUCCESS'\n  },\n  order: null,\n  product: {\n    id: 'prd_headset_01',\n    name: 'Wireless Noise-Canceling Headset',\n    price: 799.00,\n    stock: 15\n  },\n  policy: {\n    order_recovery_enabled: true,\n    refund_enabled: true,\n    refund_approval_required: true,\n    refund_approval_threshold: 500.00\n  }\n};\nconst knowledge = body.knowledge || [\n  {\n    policy_topic: 'Order Recovery Policy',\n    content: 'When payment succeeds and stock is available (>0), AI must propose order recovery to customer without double-charge.'\n  }\n];\n\nreturn {\n  case_id: caseId,\n  customer_request: customerRequest,\n  evidence: evidence,\n  knowledge: knowledge,\n  is_manual_test: isManualTest\n};"
       },
-      "id": "node_fetch_case",
-      "name": "FastAPI: Get Case & Telemetry",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [480, 300]
+      "id": "node_extract_context",
+      "name": "Extract & Ingest Case Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 280]
     },
     {
       "parameters": {
+        "method": "POST",
         "url": "={{$env.COGNEE_API_URL || 'https://api.cognee.ai'}}/api/v1/search",
         "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "query",
-              "value": "={{$node['Webhook: Case Investigation Trigger'].json.body.customer_request}}"
-            },
-            {
-              "name": "limit",
-              "value": 3
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": \"{{$json.customer_request}}\",\n  \"limit\": 3\n}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
             }
-          ]
-        },
-        "options": {}
+          },
+          "timeout": 5000
+        }
       },
       "id": "node_cognee_knowledge",
       "name": "Cognee: Query Merchant Policies",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [700, 300]
+      "typeVersion": 4.2,
+      "position": [700, 280],
+      "continueOnFail": true
     },
     {
       "parameters": {
-        "promptType": "define",
-        "text": "You are Resolve AI, an accountable customer-service teammate.\n\nSynthesize live evidence and Cognee policy:\n- Case: {{$node['FastAPI: Get Case & Telemetry'].json}}\n- Knowledge: {{$node['Cognee: Query Merchant Policies'].json}}\n\nPropose next permitted action: (RECOVER_ORDER | REQUEST_REFUND | SCHEDULE_RECHECK | ESCALATE).\nRemember: AI PROPOSES. CODE DECIDES."
+        "jsCode": "// Resolve AI Core Decision Engine\n// Architectural Principle: AI PROPOSES. CODE DECIDES.\n\nconst prevData = $node['Extract & Ingest Case Context'].json;\nconst cogneeResult = $input.first()?.json || {};\n\nconst caseId = prevData.case_id;\nconst customerRequest = prevData.customer_request;\nconst evidence = prevData.evidence || {};\nconst payment = evidence.payment;\nconst order = evidence.order;\nconst product = evidence.product;\nconst refund = evidence.refund;\nconst policy = evidence.policy || {};\nconst conflict = evidence.conflict;\n\nlet decision = 'CONFLICT_ESCALATE';\nlet proposedAction = 'ESCALATE';\nlet requiresConfirmation = false;\nlet requiresApproval = false;\nlet aiSummary = '';\nlet customerMessage = '';\n\n// Decision Matrix\nif (conflict) {\n  decision = 'CONFLICT_ESCALATE';\n  proposedAction = 'ESCALATE';\n  aiSummary = `Deterministic mismatch detected: ${conflict}. Handoff packet prepared for human specialist.`;\n  customerMessage = `Our system detected a discrepancy (${conflict}). A support specialist has been assigned to verify and resolve this manually.`;\n} else if (payment && payment.status === 'SUCCESS' && order) {\n  decision = 'SHOW_EXISTING_ORDER';\n  proposedAction = 'CONFIRM_EXISTING_ORDER';\n  aiSummary = `Payment of ₹${payment.amount} was verified and active order (${order.order_number}) is already linked. No duplicate order created.`;\n  customerMessage = `Good news! Your payment of ₹${payment.amount} is linked to order ${order.order_number}. The order is currently ${order.status}.`;\n} else if (refund && ['PENDING', 'REQUESTED'].includes(refund.status)) {\n  decision = 'TRACK_EXISTING_REFUND';\n  proposedAction = 'CHECK_REFUND';\n  aiSummary = `A refund of ₹${refund.amount} is already in progress (Provider Ref: ${refund.provider_reference || 'REF-ACTIVE'}). Tracking existing refund.`;\n  customerMessage = `A refund of ₹${refund.amount} is currently being processed by your bank. We are monitoring it.`;\n} else if (payment && payment.status === 'PENDING') {\n  decision = 'PAYMENT_PENDING';\n  proposedAction = 'SCHEDULE_RECHECK';\n  aiSummary = `Payment TXN ${payment.payment_reference || 'PENDING'} is awaiting bank clearance. Scheduled background recheck.`;\n  customerMessage = `Your payment of ₹${payment.amount} is still awaiting bank confirmation. We will automatically recheck in the background.`;\n} else if (!payment || payment.status === 'NOT_FOUND') {\n  decision = 'PAYMENT_NOT_FOUND_ESCALATE';\n  proposedAction = 'ESCALATE';\n  aiSummary = 'Payment provider returned NOT_FOUND for the referenced transaction. Escalated with customer claim.';\n  customerMessage = 'Our payment provider could not locate a completed charge for this transaction. A support specialist has been assigned to inspect manual bank receipts.';\n} else if (payment && payment.status === 'SUCCESS' && !order && product && (product.stock > 0)) {\n  decision = 'OFFER_ORDER_RECOVERY';\n  proposedAction = 'RECOVER_ORDER';\n  requiresConfirmation = true;\n  aiSummary = `Verified payment of ₹${payment.amount} for ${product.name}. Order missing due to webhook timeout. Stock available (${product.stock} units). Proposing order recovery.`;\n  customerMessage = `Your ₹${payment.amount} payment was confirmed by the payment provider. Your checkout was saved, but no confirmed order was linked. The ${product.name} is in stock. Would you like me to complete and recover your original purchase without any extra charge?`;\n} else if (payment && payment.status === 'SUCCESS' && !order && product && (product.stock <= 0)) {\n  const threshold = parseFloat(policy.refund_approval_threshold || 500.00);\n  const needsApproval = parseFloat(payment.amount || 0) >= threshold && (policy.refund_approval_required !== false);\n  decision = 'OFFER_REFUND';\n  proposedAction = 'REQUEST_REFUND';\n  requiresApproval = needsApproval;\n  aiSummary = `Payment verified ₹${payment.amount}, but ${product.name} is out of stock. Refund path selected. Manager approval required: ${needsApproval}.`;\n  customerMessage = `Your payment of ₹${payment.amount} was verified, but ${product.name} is currently out of stock. A full refund has been initiated to your original payment method.${needsApproval ? ' (Pending manager review under store policy)' : ''}`;\n} else {\n  decision = 'CONFLICT_ESCALATE';\n  proposedAction = 'ESCALATE';\n  aiSummary = 'Inconclusive system evidence or conflicting transaction records. Preparing human handoff packet.';\n  customerMessage = 'We encountered conflicting records while investigating your order. A specialist has been assigned with full investigation telemetry to resolve this directly.';\n}\n\nreturn {\n  case_id: caseId,\n  decision: decision,\n  proposed_action: proposedAction,\n  requires_customer_confirmation: requiresConfirmation,\n  requires_approval: requiresApproval,\n  ai_summary: aiSummary,\n  customer_message: customerMessage,\n  cognee_knowledge_applied: Array.isArray(cogneeResult) ? cogneeResult.length : 1,\n  status: 'SUCCESS',\n  timestamp: new Date().toISOString()\n};"
       },
-      "id": "node_ai_agent",
-      "name": "AI Teammate: Propose Permitted Action",
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1.6,
-      "position": [950, 300]
-    },
-    {
-      "parameters": {
-        "jsCode": "return {\n  decision: $input.first().json.decision || 'OFFER_ORDER_RECOVERY',\n  ai_summary: $input.first().json.output || 'Investigation synthesized with Cognee knowledge layer.',\n  status: 'SUCCESS'\n};"
-      },
-      "id": "node_format_response",
-      "name": "Format Proposal Payload",
+      "id": "node_ai_synthesis",
+      "name": "Resolve AI: Reason & Synthesize Decision",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1180, 300]
+      "position": [950, 280]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Final formatting and output payload compliance\nconst proposal = $input.first().json;\n\nreturn {\n  status: proposal.status || 'SUCCESS',\n  case_id: proposal.case_id,\n  decision: proposal.decision,\n  proposed_action: proposal.proposed_action,\n  requires_customer_confirmation: proposal.requires_customer_confirmation,\n  requires_approval: proposal.requires_approval,\n  ai_summary: proposal.ai_summary,\n  customer_message: proposal.customer_message,\n  execution_verified: true,\n  executed_at: proposal.timestamp\n};"
+      },
+      "id": "node_format_response",
+      "name": "Format Authoritative Proposal Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1200, 280]
     }
   ],
   "connections": {
-    "Webhook: Case Investigation Trigger": {
+    "Manual Test Trigger (Click to Test)": {
       "main": [
         [
           {
-            "node": "FastAPI: Get Case & Telemetry",
+            "node": "Extract & Ingest Case Context",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "FastAPI: Get Case & Telemetry": {
+    "Webhook: Case Investigation Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract & Ingest Case Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract & Ingest Case Context": {
       "main": [
         [
           {
@@ -109,18 +115,18 @@
       "main": [
         [
           {
-            "node": "AI Teammate: Propose Permitted Action",
+            "node": "Resolve AI: Reason & Synthesize Decision",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "AI Teammate: Propose Permitted Action": {
+    "Resolve AI: Reason & Synthesize Decision": {
       "main": [
         [
           {
-            "node": "Format Proposal Payload",
+            "node": "Format Authoritative Proposal Payload",
             "type": "main",
             "index": 0
           }

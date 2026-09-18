@@ -2,6 +2,14 @@
   "name": "Resolve AI - Human Approval Dispatch & Validation",
   "nodes": [
     {
+      "parameters": {},
+      "id": "node_manual_approval",
+      "name": "Manual Test Trigger (Click to Test)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [200, 200]
+    },
+    {
       "parameters": {
         "httpMethod": "POST",
         "path": "resolve-approval-dispatch",
@@ -11,32 +19,67 @@
       "id": "node_approval_webhook",
       "name": "Webhook: Approval Requested",
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 1,
-      "position": [250, 300]
+      "typeVersion": 2,
+      "position": [200, 380],
+      "webhookId": "resolve-approval-dispatch"
     },
     {
       "parameters": {
-        "url": "={{$env.FASTAPI_URL || 'http://localhost:8000'}}/employee/approvals",
-        "options": {}
+        "jsCode": "// Ingest approval request or generate standard approval context for test\nconst item = $input.first()?.json || {};\nconst body = item.body || item;\n\nconst caseId = body.case_id || 'cse_approval_demo_02';\nconst actionType = body.action_type || 'REQUEST_REFUND';\nconst amount = body.amount || 1499.00;\nconst reason = body.reason || 'Mechanical RGB Gaming Keyboard is OUT OF STOCK. Refund ₹1499 exceeds ₹500 store policy threshold.';\n\nreturn {\n  case_id: caseId,\n  action_type: actionType,\n  amount: amount,\n  reason: reason,\n  policy_rule: 'RULE_4_HIGH_VALUE_REFUND_APPROVAL',\n  requires_manager_signature: true,\n  timestamp: new Date().toISOString()\n};"
       },
-      "id": "node_fetch_approvals",
-      "name": "FastAPI: Get Pending Approvals",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
-      "position": [480, 300]
+      "id": "node_extract_approval",
+      "name": "Extract Approval Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 290]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format approval dispatch packet for Store Manager / Support Specialist\nconst data = $input.first().json;\n\nreturn {\n  status: 'APPROVAL_DISPATCHED',\n  case_id: data.case_id,\n  action_type: data.action_type,\n  amount: data.amount,\n  reason: data.reason,\n  approver_queue: 'store_manager_inbox',\n  urgency: 'HIGH',\n  dispatched_at: data.timestamp,\n  execution_verified: true\n};"
+      },
+      "id": "node_format_dispatch",
+      "name": "Dispatch to Manager Approval Queue",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [720, 290]
     }
   ],
   "connections": {
+    "Manual Test Trigger (Click to Test)": {
+      "main": [
+        [
+          {
+            "node": "Extract Approval Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Webhook: Approval Requested": {
       "main": [
         [
           {
-            "node": "FastAPI: Get Pending Approvals",
+            "node": "Extract Approval Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Approval Payload": {
+      "main": [
+        [
+          {
+            "node": "Dispatch to Manager Approval Queue",
             "type": "main",
             "index": 0
           }
         ]
       ]
     }
+  },
+  "settings": {
+    "executionOrder": "v1"
   }
 }

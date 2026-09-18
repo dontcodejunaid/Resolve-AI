@@ -1,0 +1,12 @@
+{
+  "scenario_id": "SCENARIO_6",
+  "title": "Customer Claims Debit but Gateway Cannot Find Transaction",
+  "case_id": "RS-4476",
+  "customer_id": "usr_rahul",
+  "message": "Bank deducted money but no transaction found in system.",
+  "payment_reference": "TXN-NOTFOUND-000",
+  "merchant_id": "mer_resolve_store",
+  "timestamp": "2026-09-18T12:55:00Z",
+  "expected_action": "ESCALATE_TO_HUMAN",
+  "expected_outcome": "HUMAN_REVIEW"
+}

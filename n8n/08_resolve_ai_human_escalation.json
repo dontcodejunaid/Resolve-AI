@@ -1,0 +1,61 @@
+{
+  "name": "08_resolve_ai_human_escalation",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "08-trigger",
+      "name": "Escalation Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://localhost:8000/api/cases/{{ $json.case_id || 'case_test_01' }}/escalate",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "case_id",
+              "value": "={{ $json.case_id || 'case_test_01' }}"
+            },
+            {
+              "name": "reason_for_escalation",
+              "value": "={{ $json.reason || 'Threshold exceeded / conflicting records' }}"
+            },
+            {
+              "name": "decision_required",
+              "value": "Manual review of customer refund request"
+            }
+          ]
+        }
+      },
+      "id": "08-escalate",
+      "name": "1. Dispatch Human Handoff Packet",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        360,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Escalation Trigger": {
+      "main": [
+        [
+          {
+            "node": "1. Dispatch Human Handoff Packet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true
+}

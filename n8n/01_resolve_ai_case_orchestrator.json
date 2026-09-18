@@ -1,0 +1,361 @@
+{
+  "name": "01_resolve_ai_case_orchestrator",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "01-trigger-manual",
+      "name": "Manual Test Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "resolve-case",
+        "options": {}
+      },
+      "id": "01-trigger-webhook",
+      "name": "FastAPI Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        100,
+        400
+      ],
+      "webhookId": "resolve-case-01"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first()?.json || {};\nconst body = input.body || input;\nreturn {\n  case_id: body.case_id || 'case_test_01',\n  customer_id: body.customer_id || 'cust_test_01',\n  customer_request: body.customer_request || 'Payment deducted but no order placed.',\n  payment_reference: body.payment_reference || 'pay_test_01',\n  product_id: body.product_id || 'prod_headset',\n  timestamp: new Date().toISOString()\n};"
+      },
+      "id": "01-ingest",
+      "name": "1. Ingest Case & Validate Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        360,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://localhost:8000/api/cases/{{ $('1. Ingest Case & Validate Payload').first().json.case_id }}/activity",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "case_id",
+              "value": "={{ $('1. Ingest Case & Validate Payload').first().json.case_id }}"
+            },
+            {
+              "name": "agent",
+              "value": "PAYMENT_AGENT"
+            },
+            {
+              "name": "activity",
+              "value": "VERIFYING_PAYMENT"
+            },
+            {
+              "name": "message",
+              "value": "=Verifying payment status for reference {{ $('1. Ingest Case & Validate Payload').first().json.payment_reference }}"
+            },
+            {
+              "name": "status",
+              "value": "RUNNING"
+            }
+          ]
+        }
+      },
+      "id": "01-emit-pay",
+      "name": "Emit: Checking Payment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        580,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://localhost:8000/api/payments/{{ $('1. Ingest Case & Validate Payload').first().json.payment_reference }}"
+      },
+      "id": "01-check-pay",
+      "name": "2. Verify Payment in Gateway",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://localhost:8000/api/orders/search?payment_reference={{ $('1. Ingest Case & Validate Payload').first().json.payment_reference }}"
+      },
+      "id": "01-check-order",
+      "name": "3. Search Order in ERP",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1020,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const caseData = $('1. Ingest Case & Validate Payload').first().json;\nconst paymentData = $('2. Verify Payment in Gateway').first().json;\nconst orderData = $('3. Search Order in ERP').first().json;\n\nreturn {\n  case_id: caseData.case_id,\n  customer_request: caseData.customer_request,\n  payment: paymentData,\n  order: orderData,\n  policy_rules: [\n    { rule: 'Order Recovery permitted if payment is SUCCESS and order missing.' }\n  ]\n};"
+      },
+      "id": "01-cognee",
+      "name": "4. Query Cognee Policy Knowledge",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst payment = data.payment || {};\nconst order = data.order || {};\n\nlet proposedAction = 'ORDER_RECOVERY';\nlet reason = 'Payment succeeded without order created';\n\nif (payment.status === 'SUCCESS' && !order.found) {\n  proposedAction = 'ORDER_RECOVERY';\n} else {\n  proposedAction = 'ESCALATE';\n  reason = 'Discrepancy requires manual support';\n}\n\nreturn {\n  ...data,\n  proposed_action: proposedAction,\n  reason: reason\n};"
+      },
+      "id": "01-ai-engine",
+      "name": "5. AI Structured Decision Engine",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.proposed_action }}",
+                    "rightValue": "ORDER_RECOVERY",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Order Recovery"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.proposed_action }}",
+                    "rightValue": "ESCALATE",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Escalation"
+            }
+          ]
+        }
+      },
+      "id": "01-router",
+      "name": "6. Action Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://localhost:8000/api/cases/{{ $json.case_id }}/actions",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "case_id",
+              "value": "={{ $json.case_id }}"
+            },
+            {
+              "name": "action_type",
+              "value": "RECOVER_ORDER"
+            },
+            {
+              "name": "idempotency_key",
+              "value": "={{ $json.case_id }}_RECOVER_ORDER"
+            }
+          ]
+        }
+      },
+      "id": "01-exec-order",
+      "name": "7. Execute Order Recovery",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1940,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://localhost:8000/api/cases/{{ $json.case_id }}/escalate",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "case_id",
+              "value": "={{ $json.case_id }}"
+            },
+            {
+              "name": "reason_for_escalation",
+              "value": "={{ $json.reason }}"
+            }
+          ]
+        }
+      },
+      "id": "01-exec-esc",
+      "name": "7. Execute Escalation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1940,
+        380
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Test Trigger": {
+      "main": [
+        [
+          {
+            "node": "1. Ingest Case & Validate Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FastAPI Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "1. Ingest Case & Validate Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1. Ingest Case & Validate Payload": {
+      "main": [
+        [
+          {
+            "node": "Emit: Checking Payment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Emit: Checking Payment": {
+      "main": [
+        [
+          {
+            "node": "2. Verify Payment in Gateway",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Verify Payment in Gateway": {
+      "main": [
+        [
+          {
+            "node": "3. Search Order in ERP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. Search Order in ERP": {
+      "main": [
+        [
+          {
+            "node": "4. Query Cognee Policy Knowledge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4. Query Cognee Policy Knowledge": {
+      "main": [
+        [
+          {
+            "node": "5. AI Structured Decision Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5. AI Structured Decision Engine": {
+      "main": [
+        [
+          {
+            "node": "6. Action Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6. Action Router": {
+      "main": [
+        [
+          {
+            "node": "7. Execute Order Recovery",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "7. Execute Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true
+}

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import client from '../api/client';
+import { useAuth } from '../auth/AuthContext';
+import { formatActualDateTime } from '../utils/dateUtils';
 import { ShoppingBag, PackageCheck, CreditCard, Clock, CheckCircle2 } from 'lucide-react';
 
 export const CustomerOrders = () => {
@@ -38,7 +40,7 @@ export const CustomerOrders = () => {
           <ShoppingBag className="w-10 h-10 text-slate-400 mx-auto" />
           <h3 className="text-base font-semibold text-slate-800">No Orders Found</h3>
           <p className="text-xs text-slate-500 max-w-sm mx-auto">
-            Once Resolve AI recovers or confirms your order, it will show up here.
+            Once RESOLVE<sub className="text-xs font-mono font-bold text-lime-600 lowercase ml-0.5">.ai</sub> recovers or confirms your order, it will show up here.
           </p>
         </div>
       ) : (
@@ -84,7 +86,7 @@ export const CustomerOrders = () => {
               </div>
 
               <div className="pt-3 border-t border-lime-100 text-[11px] font-mono text-slate-400">
-                Created: {new Date(ord.created_at).toLocaleDateString()}
+                Created: {formatActualDateTime(ord.created_at)}
               </div>
             </div>
           ))}

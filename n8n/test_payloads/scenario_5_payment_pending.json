@@ -1,0 +1,12 @@
+{
+  "scenario_id": "SCENARIO_5",
+  "title": "Payment Pending with Bank Gateway",
+  "case_id": "RS-4475",
+  "customer_id": "usr_rahul",
+  "message": "Money deducted on UPI app but status is pending.",
+  "payment_reference": "TXN987658",
+  "merchant_id": "mer_resolve_store",
+  "timestamp": "2026-09-18T12:50:00Z",
+  "expected_action": "SCHEDULE_PAYMENT_RECHECK",
+  "expected_outcome": "PAYMENT_PENDING"
+}

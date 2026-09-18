@@ -1,0 +1,12 @@
+{
+  "scenario_id": "SCENARIO_4",
+  "title": "Order Created + Customer Asks for Confirmation",
+  "case_id": "RS-4474",
+  "customer_id": "usr_rahul",
+  "message": "I paid \u20b9799 where is my order?",
+  "payment_reference": "TXN987657",
+  "merchant_id": "mer_resolve_store",
+  "timestamp": "2026-09-18T12:45:00Z",
+  "expected_action": "CONFIRM_EXISTING_ORDER",
+  "expected_outcome": "CASE_RESOLVED"
+}

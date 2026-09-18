@@ -127,7 +127,7 @@ export const DemoLab = () => {
         <div>
           <div className="flex items-center space-x-2">
             <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-              RESOLVE AI Demo & Scenario Lab
+              RESOLVE<sub className="text-base font-mono font-bold text-lime-600 lowercase ml-0.5">.ai</sub> Demo & Scenario Lab
             </h1>
             <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-lime-100 text-lime-800 border border-lime-300 rounded-lg">
               Live Testing
@@ -187,12 +187,12 @@ export const DemoLab = () => {
                       {sc.id}
                     </span>
                     <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
-                      {sc.expected_outcome}
+                      {sc.expected_outcome || sc.badge || 'Simulated'}
                     </span>
                   </div>
 
                   <h3 className="text-sm font-bold text-slate-900 group-hover:text-lime-700 transition-colors">
-                    {sc.name}
+                    {sc.name || sc.title}
                   </h3>
 
                   <p className="text-xs text-slate-600 leading-relaxed">

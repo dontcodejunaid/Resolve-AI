@@ -1,0 +1,12 @@
+{
+  "scenario_id": "SCENARIO_1",
+  "title": "Payment Success + Order Missing (Order Recovery)",
+  "case_id": "RS-4471",
+  "customer_id": "usr_rahul",
+  "message": "I paid \u20b9799 for Wireless Headset but my order is not showing.",
+  "payment_reference": "TXN987654",
+  "merchant_id": "mer_resolve_store",
+  "timestamp": "2026-09-18T12:30:00Z",
+  "expected_action": "ORDER_RECOVERY",
+  "expected_outcome": "CASE_RESOLVED"
+}

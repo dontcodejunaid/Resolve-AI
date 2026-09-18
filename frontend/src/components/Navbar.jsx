@@ -60,14 +60,14 @@ export const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Brand */}
           <div className="flex items-center space-x-3">
-            <Link to="/" className="flex items-center space-x-2.5">
-              <div className="w-9 h-9 rounded-xl bg-lime-500 flex items-center justify-center shadow-md shadow-lime-500/25 text-black">
-                <Bot className="w-5 h-5 font-bold" />
+            <Link to="/" className="flex items-center space-x-2.5 group">
+              <div className="w-10 h-10 rounded-xl bg-white border border-lime-200 p-1 flex items-center justify-center shadow-sm group-hover:border-lime-400 transition-all">
+                <img src="/logo.png" alt="RESOLVE.ai" className="w-full h-full object-contain" />
               </div>
               <div>
-                <div className="flex items-center space-x-1.5">
-                  <span className="font-extrabold text-lg tracking-tight text-slate-900">RESOLVE</span>
-                  <span className="text-xs font-bold px-1.5 py-0.2 bg-lime-100 text-lime-800 border border-lime-300 rounded">AI</span>
+                <div className="flex items-baseline space-x-0.5">
+                  <span className="font-extrabold text-xl tracking-tight text-slate-900 leading-none">RESOLVE</span>
+                  <sub className="text-xs font-mono font-bold text-lime-600 lowercase tracking-normal">.ai</sub>
                 </div>
                 <p className="text-[10px] text-slate-500 font-mono tracking-tight hidden sm:block">ONE TEAMMATE. VERIFIED OUTCOME.</p>
               </div>
@@ -80,25 +80,20 @@ export const Navbar = () => {
               <>
                 <Link
                   to="/dashboard"
-                  className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all ${
-                    isActive('/dashboard') ? 'bg-lime-100 text-lime-900 border border-lime-300 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-lime-50/60'
+                  className={`px-3.5 py-1.5 text-sm rounded-xl transition-all ${
+                    isActive('/dashboard')
+                      ? 'bg-lime-500 text-slate-950 font-bold shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 font-medium'
                   }`}
                 >
                   My Cases
                 </Link>
                 <Link
-                  to="/new-case"
-                  className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all flex items-center space-x-1.5 ${
-                    isActive('/new-case') ? 'bg-lime-500 text-black shadow-md shadow-lime-500/25' : 'bg-lime-100/80 text-lime-800 hover:bg-lime-200/80 border border-lime-300/80'
-                  }`}
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-lime-700" />
-                  <span>Report Payment Issue</span>
-                </Link>
-                <Link
                   to="/orders"
-                  className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all ${
-                    isActive('/orders') ? 'bg-lime-100 text-lime-900 border border-lime-300 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-lime-50/60'
+                  className={`px-3.5 py-1.5 text-sm rounded-xl transition-all ${
+                    isActive('/orders')
+                      ? 'bg-lime-500 text-slate-950 font-bold shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 font-medium'
                   }`}
                 >
                   Orders
@@ -110,16 +105,20 @@ export const Navbar = () => {
               <>
                 <Link
                   to="/employee/dashboard"
-                  className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all ${
-                    isActive('/employee/dashboard') ? 'bg-lime-100 text-lime-900 border border-lime-300 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-lime-50/60'
+                  className={`px-3.5 py-1.5 text-sm rounded-xl transition-all ${
+                    isActive('/employee/dashboard')
+                      ? 'bg-lime-500 text-slate-950 font-bold shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 font-medium'
                   }`}
                 >
                   Case Queue
                 </Link>
                 <Link
                   to="/employee/approvals"
-                  className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all flex items-center space-x-1.5 ${
-                    isActive('/employee/approvals') ? 'bg-amber-100 text-amber-900 border border-amber-300 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-amber-50/60'
+                  className={`px-3.5 py-1.5 text-sm rounded-xl transition-all flex items-center space-x-1.5 ${
+                    isActive('/employee/approvals')
+                      ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 font-medium'
                   }`}
                 >
                   <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
@@ -132,24 +131,30 @@ export const Navbar = () => {
               <>
                 <Link
                   to="/merchant/dashboard"
-                  className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all ${
-                    isActive('/merchant/dashboard') ? 'bg-lime-100 text-lime-900 border border-lime-300 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-lime-50/60'
+                  className={`px-3.5 py-1.5 text-sm rounded-xl transition-all ${
+                    isActive('/merchant/dashboard')
+                      ? 'bg-lime-500 text-slate-950 font-bold shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 font-medium'
                   }`}
                 >
                   Merchant Console
                 </Link>
                 <Link
                   to="/merchant/policies"
-                  className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all ${
-                    isActive('/merchant/policies') ? 'bg-lime-100 text-lime-900 border border-lime-300 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-lime-50/60'
+                  className={`px-3.5 py-1.5 text-sm rounded-xl transition-all ${
+                    isActive('/merchant/policies')
+                      ? 'bg-lime-500 text-slate-950 font-bold shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 font-medium'
                   }`}
                 >
                   Policies
                 </Link>
                 <Link
                   to="/merchant/products"
-                  className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all ${
-                    isActive('/merchant/products') ? 'bg-lime-100 text-lime-900 border border-lime-300 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-lime-50/60'
+                  className={`px-3.5 py-1.5 text-sm rounded-xl transition-all ${
+                    isActive('/merchant/products')
+                      ? 'bg-lime-500 text-slate-950 font-bold shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900 font-medium'
                   }`}
                 >
                   Inventory
@@ -160,8 +165,10 @@ export const Navbar = () => {
             {/* Always accessible Demo Lab */}
             <Link
               to="/demo"
-              className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all flex items-center space-x-1.5 ${
-                isActive('/demo') ? 'bg-lime-500 text-black shadow-md shadow-lime-500/25' : 'text-lime-800 bg-lime-50 hover:bg-lime-100 border border-lime-200'
+              className={`px-3.5 py-1.5 text-sm rounded-xl transition-all flex items-center space-x-1.5 ${
+                isActive('/demo')
+                  ? 'bg-lime-500 text-slate-950 font-bold shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 font-medium'
               }`}
             >
               <Sliders className="w-3.5 h-3.5" />

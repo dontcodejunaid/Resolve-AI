@@ -18,7 +18,49 @@ import {
 export const ResolveAIWorkerFloor = ({ caseData, className = '' }) => {
   const [selectedWorkerId, setSelectedWorkerId] = useState('worker-1');
 
-  const selectedWorker = INITIAL_ENGINEERS.find((w) => w.id === selectedWorkerId) || INITIAL_ENGINEERS[0];
+  const getCustomizedWorker = (w) => {
+    if (!caseData) return w;
+    const paymentRef = caseData.payment?.payment_reference || (caseData.payment_id ? 'Verified' : 'TXN987654');
+    const amount = caseData.payment ? `₹${caseData.payment.amount}` : '₹799.00';
+    const caseNum = caseData.case_number || 'Live Case';
+
+    if (w.id === 'worker-1') {
+      return {
+        ...w,
+        thought: `Validating gateway response for ${paymentRef} (${amount}) on #${caseNum} 💳`,
+        currentTask: `Verify Gateway Status for ${paymentRef}`,
+      };
+    }
+    if (w.id === 'worker-2') {
+      return {
+        ...w,
+        thought: caseData.order
+          ? `Order #${caseData.order.order_number} verified and stock allocated for #${caseNum} 📦`
+          : `Auditing stock availability and checkout cart session for #${caseNum} 📦`,
+        currentTask: caseData.order ? `Order Linked: ${caseData.order.order_number}` : `Stock & Cart Audit for #${caseNum}`,
+      };
+    }
+    if (w.id === 'worker-3') {
+      return {
+        ...w,
+        thought: caseData.resolution_type
+          ? `Synthesized policy: ${caseData.resolution_type.replace(/_/g, ' ')} under merchant threshold 🧠`
+          : `Evaluating merchant refund and recovery rules for #${caseNum} 🧠`,
+        currentTask: `Policy Synthesis for #${caseNum}`,
+      };
+    }
+    if (w.id === 'worker-4') {
+      return {
+        ...w,
+        thought: `Enforcing 13 Deterministic Rules & immutable audit logging for #${caseNum} 🛡️`,
+        currentTask: `Deterministic Verification: #${caseNum}`,
+      };
+    }
+    return w;
+  };
+
+  const workers = INITIAL_ENGINEERS.map(getCustomizedWorker);
+  const selectedWorker = workers.find((w) => w.id === selectedWorkerId) || workers[0];
 
   const getWorkerIcon = (workerId) => {
     switch (workerId) {
@@ -66,7 +108,7 @@ export const ResolveAIWorkerFloor = ({ caseData, className = '' }) => {
 
       {/* 4 2D Employees Sitting at Desks (Looping Video Feeds) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {INITIAL_ENGINEERS.map((emp) => {
+        {workers.map((emp) => {
           const IconComp = getWorkerIcon(emp.id);
           const isSelected = selectedWorkerId === emp.id;
 

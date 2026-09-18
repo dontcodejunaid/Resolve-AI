@@ -1,0 +1,165 @@
+{
+  "name": "03_resolve_ai_order_recovery",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "03-trigger",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://localhost:8000/api/products/{{ $json.product_id || 'prod_headset' }}/availability"
+      },
+      "id": "03-stock",
+      "name": "1. Check Product Stock",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        340,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://localhost:8000/api/orders/recover",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "case_id",
+              "value": "={{ $json.case_id || 'case_test_01' }}"
+            },
+            {
+              "name": "payment_reference",
+              "value": "={{ $json.payment_reference || 'pay_test_01' }}"
+            },
+            {
+              "name": "product_id",
+              "value": "={{ $json.product_id || 'prod_headset' }}"
+            },
+            {
+              "name": "idempotency_key",
+              "value": "={{ ($json.case_id || 'case_test_01') + '_ORDER_RECOVERY' }}"
+            }
+          ]
+        }
+      },
+      "id": "03-recover",
+      "name": "2. Authoritative Order Recovery",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        580,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://localhost:8000/api/orders/{{ $('2. Authoritative Order Recovery').first().json.order_id }}"
+      },
+      "id": "03-verify",
+      "name": "3. Verify Order Created & Payment Linked",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        820,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://localhost:8000/api/cases/{{ $('2. Authoritative Order Recovery').first().json.case_id }}/activity",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "case_id",
+              "value": "={{ $('2. Authoritative Order Recovery').first().json.case_id }}"
+            },
+            {
+              "name": "agent",
+              "value": "ACTION_AGENT"
+            },
+            {
+              "name": "activity",
+              "value": "ORDER_RECOVERED"
+            },
+            {
+              "name": "message",
+              "value": "=Successfully placed replacement order and verified linked payment."
+            },
+            {
+              "name": "status",
+              "value": "COMPLETED"
+            }
+          ]
+        }
+      },
+      "id": "03-emit",
+      "name": "4. Emit: Case Resolved",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1060,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "1. Check Product Stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1. Check Product Stock": {
+      "main": [
+        [
+          {
+            "node": "2. Authoritative Order Recovery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Authoritative Order Recovery": {
+      "main": [
+        [
+          {
+            "node": "3. Verify Order Created & Payment Linked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. Verify Order Created & Payment Linked": {
+      "main": [
+        [
+          {
+            "node": "4. Emit: Case Resolved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true
+}

@@ -1,0 +1,530 @@
+{
+  "name": "RESOLVE AI - Master Orchestration Suite",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "node-test-trigger",
+      "name": "\u26a1 1-Click Master Test Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "resolve-case-master",
+        "options": {}
+      },
+      "id": "node-webhook-master",
+      "name": "Live Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        200,
+        500
+      ],
+      "webhookId": "resolve-ai-master-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Step 1: Ingest Case Context & Configure Endpoint\nconst input = $input.first()?.json || {};\nconst body = input.body || input;\n\nreturn {\n  case_id: body.case_id || 'case_101_headset',\n  customer_id: body.customer_id || 'cust_901',\n  customer_request: body.customer_request || 'Payment deducted for Wireless Headset, but no order placed.',\n  payment_reference: body.payment_reference || 'pay_test_headset_01',\n  product_id: body.product_id || 'prod_headset',\n  amount: body.amount || 799.00,\n  currency: body.currency || 'INR',\n  backend_url: body.backend_url || 'https://favorite-panama-pester.ngrok-free.dev'\n};"
+      },
+      "id": "node-ingest",
+      "name": "1. Ingest Case & Telemetry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($('1. Ingest Case & Telemetry').first().json.backend_url || 'https://favorite-panama-pester.ngrok-free.dev') }}/api/cases/{{ $('1. Ingest Case & Telemetry').first().json.case_id }}/activity",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "ngrok-skip-browser-warning",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "case_id",
+              "value": "={{ $('1. Ingest Case & Telemetry').first().json.case_id }}"
+            },
+            {
+              "name": "agent",
+              "value": "PAYMENT_AGENT"
+            },
+            {
+              "name": "activity",
+              "value": "VERIFYING_PAYMENT"
+            },
+            {
+              "name": "message",
+              "value": "=Verifying transaction {{ $('1. Ingest Case & Telemetry').first().json.payment_reference }} with payment gateway simulator..."
+            },
+            {
+              "name": "status",
+              "value": "RUNNING"
+            }
+          ]
+        }
+      },
+      "id": "node-emit-pay",
+      "name": "Emit: Checking Payment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        700,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ ($('1. Ingest Case & Telemetry').first().json.backend_url || 'https://favorite-panama-pester.ngrok-free.dev') }}/api/payments/{{ $('1. Ingest Case & Telemetry').first().json.payment_reference }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "ngrok-skip-browser-warning",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "id": "node-chk-payment",
+      "name": "2. Payment Simulator Check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        940,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ ($('1. Ingest Case & Telemetry').first().json.backend_url || 'https://favorite-panama-pester.ngrok-free.dev') }}/api/orders/search?payment_reference={{ $('1. Ingest Case & Telemetry').first().json.payment_reference }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "ngrok-skip-browser-warning",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "id": "node-chk-order",
+      "name": "3. Merchant Order Check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1180,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ ($('1. Ingest Case & Telemetry').first().json.backend_url || 'https://favorite-panama-pester.ngrok-free.dev') }}/api/products/{{ $('1. Ingest Case & Telemetry').first().json.product_id }}/availability",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "ngrok-skip-browser-warning",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "id": "node-chk-stock",
+      "name": "4. Inventory Stock Check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1420,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Step 5: Cognee Policy Knowledge Retrieval\nconst caseData = $('1. Ingest Case & Telemetry').first().json;\nconst paymentData = $('2. Payment Simulator Check').first().json;\nconst orderData = $('3. Merchant Order Check').first().json;\nconst productData = $('4. Inventory Stock Check').first().json;\n\nconst policyTopics = [\n  { topic: 'Order Recovery Policy', rule: 'When payment succeeds and stock is available (>0), AI proposes order recovery without double-charge.', confidence: 0.98 },\n  { topic: 'High-Value Refund Threshold', rule: 'Refunds equal to or exceeding \u20b9500 require manager approval before disbursement.', threshold: 500.00, confidence: 0.95 }\n];\n\nreturn {\n  case_id: caseData.case_id,\n  customer_id: caseData.customer_id,\n  customer_request: caseData.customer_request,\n  backend_url: caseData.backend_url,\n  payment: paymentData,\n  order: orderData,\n  product: productData,\n  knowledge_results: policyTopics,\n  cognee_status: 'SYNCHRONIZED',\n  policy_verified: true\n};\n"
+      },
+      "id": "node-cognee",
+      "name": "5. Cognee Policy Knowledge Search",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1660,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Step 6: AI Decision Synthesis (AI PROPOSES. CODE DECIDES.)\nconst data = $input.first().json;\nconst payment = data.payment || {};\nconst order = data.order || {};\nconst product = data.product || {};\n\nlet decision = 'OFFER_ORDER_RECOVERY';\nlet proposedAction = 'ORDER_RECOVERY';\nlet requiresApproval = false;\nlet reason = '';\n\nif (payment.status === 'SUCCESS' && !order.found && product.available) {\n  decision = 'OFFER_ORDER_RECOVERY';\n  proposedAction = 'ORDER_RECOVERY';\n  reason = `Verified payment of \u20b9${payment.amount} for ${product.name}. Order missing in ERP. Stock available (${product.quantity} units). Proposing order recovery.`;\n} else if (payment.status === 'SUCCESS' && !order.found && !product.available) {\n  decision = 'OFFER_REFUND';\n  proposedAction = 'REFUND';\n  requiresApproval = payment.amount >= 500.00;\n  reason = `Payment verified \u20b9${payment.amount}, but ${product.name} is out of stock. Refund proposed (Approval required: ${requiresApproval}).`;\n} else if (payment.status === 'SUCCESS' && order.found) {\n  decision = 'SHOW_EXISTING_ORDER';\n  proposedAction = 'CONFIRM_EXISTING_ORDER';\n  reason = `Order ${order.order_number} already exists and payment is linked.`;\n} else {\n  decision = 'CONFLICT_ESCALATE';\n  proposedAction = 'ESCALATE';\n  reason = 'Evidence discrepancy. Assigned to human support specialist.';\n}\n\nreturn {\n  ...data,\n  step: '6_AI_DECISION_SYNTHESIS',\n  decision: decision,\n  proposed_action: proposedAction,\n  requires_approval: requiresApproval,\n  reason: reason,\n  ai_decision_status: 'SUCCESS'\n};"
+      },
+      "id": "node-ai-decision",
+      "name": "6. AI Teammate Decision Synthesis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1900,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.proposed_action }}",
+                    "rightValue": "ORDER_RECOVERY",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Order Recovery"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.proposed_action }}",
+                    "rightValue": "REFUND",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Refund"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.proposed_action }}",
+                    "rightValue": "ESCALATE",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Escalation"
+            }
+          ]
+        }
+      },
+      "id": "node-router",
+      "name": "7. Authority Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        2140,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($json.backend_url || $('1. Ingest Case & Telemetry').first().json.backend_url || 'https://favorite-panama-pester.ngrok-free.dev') }}/api/orders/recover",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "ngrok-skip-browser-warning",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "case_id",
+              "value": "={{ $json.case_id }}"
+            },
+            {
+              "name": "payment_reference",
+              "value": "={{ $json.payment.reference || $json.payment.payment_reference || $('1. Ingest Case & Telemetry').first().json.payment_reference }}"
+            },
+            {
+              "name": "product_id",
+              "value": "={{ $json.product.product_id || $('1. Ingest Case & Telemetry').first().json.product_id }}"
+            },
+            {
+              "name": "idempotency_key",
+              "value": "={{ $json.case_id }}_ORDER_RECOVERY"
+            }
+          ]
+        }
+      },
+      "id": "node-rec-order",
+      "name": "8. Execute Order Recovery (FastAPI Authority)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2400,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($json.backend_url || $('1. Ingest Case & Telemetry').first().json.backend_url || 'https://favorite-panama-pester.ngrok-free.dev') }}/api/refunds",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "ngrok-skip-browser-warning",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "case_id",
+              "value": "={{ $json.case_id }}"
+            },
+            {
+              "name": "payment_reference",
+              "value": "={{ $json.payment.reference || $json.payment.payment_reference || $('1. Ingest Case & Telemetry').first().json.payment_reference }}"
+            },
+            {
+              "name": "amount",
+              "value": "={{ $json.payment.amount || 799.00 }}"
+            },
+            {
+              "name": "reason",
+              "value": "={{ $json.reason }}"
+            },
+            {
+              "name": "idempotency_key",
+              "value": "={{ $json.case_id }}_REFUND"
+            }
+          ]
+        }
+      },
+      "id": "node-rec-refund",
+      "name": "8. Execute Refund / Approval Route",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2400,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($json.backend_url || $('1. Ingest Case & Telemetry').first().json.backend_url || 'https://favorite-panama-pester.ngrok-free.dev') }}/api/cases/{{ $json.case_id }}/escalate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "ngrok-skip-browser-warning",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "case_id",
+              "value": "={{ $json.case_id }}"
+            },
+            {
+              "name": "customer_request",
+              "value": "={{ $json.customer_request }}"
+            },
+            {
+              "name": "reason_for_escalation",
+              "value": "={{ $json.reason }}"
+            },
+            {
+              "name": "decision_required",
+              "value": "Manual review of contradictory records"
+            }
+          ]
+        }
+      },
+      "id": "node-rec-esc",
+      "name": "8. Dispatch Human Escalation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2400,
+        580
+      ]
+    }
+  ],
+  "connections": {
+    "\u26a1 1-Click Master Test Trigger": {
+      "main": [
+        [
+          {
+            "node": "1. Ingest Case & Telemetry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Live Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "1. Ingest Case & Telemetry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1. Ingest Case & Telemetry": {
+      "main": [
+        [
+          {
+            "node": "Emit: Checking Payment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Emit: Checking Payment": {
+      "main": [
+        [
+          {
+            "node": "2. Payment Simulator Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Payment Simulator Check": {
+      "main": [
+        [
+          {
+            "node": "3. Merchant Order Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. Merchant Order Check": {
+      "main": [
+        [
+          {
+            "node": "4. Inventory Stock Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4. Inventory Stock Check": {
+      "main": [
+        [
+          {
+            "node": "5. Cognee Policy Knowledge Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5. Cognee Policy Knowledge Search": {
+      "main": [
+        [
+          {
+            "node": "6. AI Teammate Decision Synthesis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6. AI Teammate Decision Synthesis": {
+      "main": [
+        [
+          {
+            "node": "7. Authority Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7. Authority Router": {
+      "main": [
+        [
+          {
+            "node": "8. Execute Order Recovery (FastAPI Authority)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "8. Execute Refund / Approval Route",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "8. Dispatch Human Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

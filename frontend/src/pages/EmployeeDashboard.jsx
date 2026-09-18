@@ -12,6 +12,7 @@ import {
   Search,
   Filter
 } from 'lucide-react';
+import { formatDateTime, formatTimeOnly } from '../utils/dateUtils';
 
 export const EmployeeDashboard = () => {
   const [cases, setCases] = useState([]);
@@ -213,7 +214,7 @@ export const EmployeeDashboard = () => {
                       {c.resolution_type || '—'}
                     </td>
                     <td className="p-3.5 font-mono text-slate-400">
-                      {new Date(c.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {formatDateTime(c.created_at)}
                     </td>
                     <td className="p-3.5 text-right">
                       <Link

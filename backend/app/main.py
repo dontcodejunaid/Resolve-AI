@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from backend.app.config import settings
 from backend.app.database import init_db
 from backend.app.database_seeder import seed_database
+from backend.app.mongodb import init_mongo, close_mongo
 from backend.app.routes import (
     auth,
     cases,
@@ -23,10 +24,20 @@ async def lifespan(app: FastAPI):
     # Startup: Initialize Database and Seed Baseline Data
     print("Starting RESOLVE AI Backend Engine...")
     await init_db()
+    await init_mongo()
     await seed_database()
+    
+    # Sync full state to MongoDB Atlas
+    try:
+        async with AsyncSessionLocal() as session:
+            await sync_entire_db_to_mongo(session)
+    except Exception as e:
+        print(f"[MongoDB Startup Sync Warning] {e}")
+
     yield
     # Shutdown
     print("Shutting down RESOLVE AI Backend Engine...")
+    await close_mongo()
 
 
 app = FastAPI(

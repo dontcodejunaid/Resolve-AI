@@ -37,6 +37,7 @@ export const Login = () => {
     { label: 'Customer 3 (Arjun)', email: 'arjun@example.com' },
     { label: 'Support Specialist', email: 'agent@resolveai.com' },
     { label: 'Store Manager', email: 'manager@resolvestore.com' },
+    { label: 'Bank Gateway', email: 'bank@gateway.com' },
   ];
 
   return (

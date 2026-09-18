@@ -125,3 +125,25 @@ async def add_handoff_note(
     )
     refreshed = await CaseEngine.get_case_with_relations(db, case_id)
     return refreshed or case
+
+
+@router.post("/cases/{case_id}/step-refund", response_model=CaseResponse)
+async def step_refund_verification(
+    case_id: str,
+    current_user: User = Depends(require_role(["employee", "merchant", "admin"])),
+    db: AsyncSession = Depends(get_db),
+):
+    """Steps pending refund verification to success and marks case resolved."""
+    try:
+        case = await CaseEngine.step_refund_verification(db, case_id)
+        
+        # Sync to MongoDB Atlas
+        try:
+            from backend.app.mongodb import sync_entire_db_to_mongo
+            await sync_entire_db_to_mongo(db)
+        except Exception:
+            pass
+
+        return case
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

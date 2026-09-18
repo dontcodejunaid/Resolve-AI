@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     # Database: Async SQLAlchemy URL (Supports PostgreSQL and SQLite)
     DATABASE_URL: str = "sqlite+aiosqlite:///./resolve_ai.db"
 
+    # MongoDB Atlas Connection
+    MONGODB_URI: Optional[str] = None
+    MONGODB_DB_NAME: str = "resolve_ai"
+
     # Security & JWT
     JWT_SECRET: str = "super_secret_jwt_key_change_me_in_production_min_32_chars"
     JWT_ALGORITHM: str = "HS256"

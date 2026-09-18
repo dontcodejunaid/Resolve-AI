@@ -17,6 +17,7 @@ import {
   ChevronUp
 } from 'lucide-react';
 import { ResolveAIWorkerFloor } from '../components/ResolveAIWorkerFloor';
+import { formatDateTime } from '../utils/dateUtils';
 
 export const CustomerDashboard = () => {
   const { user } = useAuth();
@@ -229,7 +230,7 @@ export const CustomerDashboard = () => {
                     "{c.customer_request}"
                   </p>
                   <span className="text-[10px] font-mono text-slate-400 block">
-                    {new Date(c.created_at).toLocaleString()}
+                    {formatDateTime(c.created_at)}
                   </span>
                 </div>
 

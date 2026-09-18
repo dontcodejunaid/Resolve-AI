@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import client from '../api/client';
-import { ShoppingBag, PackageCheck, CreditCard, Clock, CheckCircle2 } from 'lucide-react';
+import { Package, CheckCircle2, Clock, PackageCheck, Sparkles } from 'lucide-react';
+import { formatDateTime } from '../utils/dateUtils';
 
 export const CustomerOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -84,7 +85,7 @@ export const CustomerOrders = () => {
               </div>
 
               <div className="pt-3 border-t border-lime-100 text-[11px] font-mono text-slate-400">
-                Created: {new Date(ord.created_at).toLocaleDateString()}
+                Created: {formatDateTime(ord.created_at)}
               </div>
             </div>
           ))}

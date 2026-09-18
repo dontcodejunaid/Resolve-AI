@@ -1,5 +1,6 @@
 import React from 'react';
 import { Terminal, Activity, ArrowRight } from 'lucide-react';
+import { formatTimeOnly } from '../utils/dateUtils';
 
 export const TelemetryLog = ({ actions = [], maxItems = 15 }) => {
   return (
@@ -29,7 +30,7 @@ export const TelemetryLog = ({ actions = [], maxItems = 15 }) => {
               className="flex items-start space-x-2.5 text-slate-800 bg-lime-50/40 p-2.5 rounded-xl border border-lime-200/80 hover:border-lime-400 transition-colors"
             >
               <span className="text-slate-400 shrink-0">
-                {new Date(act.created_at).toLocaleTimeString([], { hour12: false })}
+                {formatTimeOnly(act.created_at)}
               </span>
               <span className="text-lime-800 font-bold shrink-0">{act.requested_by}</span>
               <span className="text-slate-400 shrink-0">→</span>

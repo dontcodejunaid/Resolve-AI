@@ -65,14 +65,12 @@ class DeterministicBusinessRules:
         if existing_refund and existing_refund.status in ["REQUESTED", "PENDING", "SUCCESS"]:
             return False, f"Conflict: Cannot recover order because an active refund exists (Status: {existing_refund.status})."
 
-        if existing_order:
-            return False, f"Idempotency Guard: Order already exists ({existing_order.order_number}). Cannot create duplicate order."
+        if not existing_order:
+            if payment.status != "SUCCESS":
+                return False, f"Payment is not in SUCCESS status (Current: {payment.status}). Cannot create order."
 
-        if payment.status != "SUCCESS":
-            return False, f"Payment is not in SUCCESS status (Current: {payment.status}). Cannot create order."
-
-        if stock <= 0:
-            return False, "Stock unavailable for this item. Order recovery cannot proceed."
+            if stock <= 0:
+                return False, "Stock unavailable for this item. Order recovery cannot proceed."
 
         return True, None
 

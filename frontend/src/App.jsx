@@ -16,6 +16,7 @@ import { MerchantDashboard } from './pages/MerchantDashboard';
 import { MerchantPolicies } from './pages/MerchantPolicies';
 import { MerchantProducts } from './pages/MerchantProducts';
 import { DemoLab } from './pages/DemoLab';
+import { BankPortal } from './pages/BankPortal';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
@@ -64,8 +65,9 @@ export const App = () => {
               {/* Public Routes */}
               <Route path="/" element={<RootRedirect />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
+              {/* Demo & Bank Gateway Routes */}
               <Route path="/demo" element={<DemoLab />} />
+              <Route path="/bank" element={<BankPortal />} />
 
               {/* Customer Routes */}
               <Route

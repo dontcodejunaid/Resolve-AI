@@ -22,6 +22,7 @@ VALID_TRANSITIONS: Dict[str, Set[str]] = {
     },
     "WAITING_FOR_PROVIDER": {
         "INVESTIGATING",
+        "ACTION_IN_PROGRESS",
         "VERIFYING",
         "RESOLVED",
         "ESCALATED",
@@ -53,7 +54,10 @@ VALID_TRANSITIONS: Dict[str, Set[str]] = {
     },
     "FAILED": {
         "INVESTIGATING",
+        "ACTION_IN_PROGRESS",
+        "WAITING_FOR_PROVIDER",
         "ESCALATED",
+        "RESOLVED",
     },
     "RESOLVED": {
         "INVESTIGATING",  # If reopened

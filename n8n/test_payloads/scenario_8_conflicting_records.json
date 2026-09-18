@@ -1,0 +1,12 @@
+{
+  "scenario_id": "SCENARIO_8",
+  "title": "Conflicting Records Across Systems",
+  "case_id": "RS-4478",
+  "customer_id": "usr_rahul",
+  "message": "Dispute on order cancellation vs delivery record.",
+  "payment_reference": "TXN987660",
+  "merchant_id": "mer_resolve_store",
+  "timestamp": "2026-09-18T13:05:00Z",
+  "expected_action": "ESCALATE_TO_HUMAN",
+  "expected_outcome": "CONFLICTING_RECORDS"
+}

@@ -194,11 +194,12 @@ export const EmployeeCaseDetail = () => {
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-mono font-bold text-slate-600 uppercase tracking-wider">
-              Complete Event & Action Stream ({caseData.events?.length || 0} events)
+              Verification & Task Execution Pipeline
             </h3>
+            <span className="text-[11px] font-mono text-slate-400">Autonomous Telemetry</span>
           </div>
 
-          <div className="bg-white border border-lime-200 rounded-2xl p-6 shadow-sm">
+          <div className="bg-white border border-lime-200 rounded-2xl p-5 shadow-sm">
             <CaseTimeline events={caseData.events} />
           </div>
         </div>

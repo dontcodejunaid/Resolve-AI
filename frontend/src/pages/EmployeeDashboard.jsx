@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
+import { formatActualTime } from '../utils/dateUtils';
 import client from '../api/client';
 import {
   ShieldAlert,
@@ -161,7 +163,7 @@ export const EmployeeDashboard = () => {
                 className={`px-3 py-1.5 rounded-lg font-mono font-medium transition-all ${
                   statusFilter === tab
                     ? 'bg-lime-500 text-slate-950 font-bold shadow-sm'
-                    : 'bg-lime-50 text-slate-600 hover:text-slate-900 border border-lime-200'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 {tab}
@@ -213,7 +215,7 @@ export const EmployeeDashboard = () => {
                       {c.resolution_type || '—'}
                     </td>
                     <td className="p-3.5 font-mono text-slate-400">
-                      {new Date(c.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {formatActualTime(c.created_at, false)}
                     </td>
                     <td className="p-3.5 text-right">
                       <Link

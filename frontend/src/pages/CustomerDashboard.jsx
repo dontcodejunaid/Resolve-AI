@@ -17,6 +17,7 @@ import {
   ChevronUp
 } from 'lucide-react';
 import { ResolveAIWorkerFloor } from '../components/ResolveAIWorkerFloor';
+import { formatActualDateTime } from '../utils/dateUtils';
 
 export const CustomerDashboard = () => {
   const { user } = useAuth();
@@ -78,7 +79,7 @@ export const CustomerDashboard = () => {
             </span>
           </div>
           <p className="text-sm text-slate-600 mt-1">
-            Resolve AI is actively monitoring your transactions and resolving payment mismatches.
+            RESOLVE<sub className="text-xs font-mono font-bold text-lime-600 lowercase ml-0.5">.ai</sub> is actively monitoring your transactions and resolving payment mismatches.
           </p>
         </div>
 
@@ -96,7 +97,7 @@ export const CustomerDashboard = () => {
             className="flex items-center space-x-2 bg-lime-500 hover:bg-lime-400 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl shadow-md shadow-lime-500/25 transition-all text-sm"
           >
             <Sparkles className="w-4 h-4" />
-            <span>Report Missing Order</span>
+            <span>Report Missing Order or Payment</span>
           </Link>
         </div>
       </div>
@@ -165,7 +166,7 @@ export const CustomerDashboard = () => {
             <button
               onClick={() => setFilter('ALL')}
               className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
-                filter === 'ALL' ? 'bg-lime-500 text-black shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-lime-50'
+                filter === 'ALL' ? 'bg-lime-500 text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               All ({cases.length})
@@ -173,7 +174,7 @@ export const CustomerDashboard = () => {
             <button
               onClick={() => setFilter('OPEN')}
               className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
-                filter === 'OPEN' ? 'bg-lime-500 text-black shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-lime-50'
+                filter === 'OPEN' ? 'bg-lime-500 text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               Active ({openCases.length})
@@ -181,7 +182,7 @@ export const CustomerDashboard = () => {
             <button
               onClick={() => setFilter('RESOLVED')}
               className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
-                filter === 'RESOLVED' ? 'bg-lime-500 text-black shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-lime-50'
+                filter === 'RESOLVED' ? 'bg-lime-500 text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               Resolved ({resolvedCases.length})
@@ -229,7 +230,7 @@ export const CustomerDashboard = () => {
                     "{c.customer_request}"
                   </p>
                   <span className="text-[10px] font-mono text-slate-400 block">
-                    {new Date(c.created_at).toLocaleString()}
+                    {formatActualDateTime(c.created_at)}
                   </span>
                 </div>
 

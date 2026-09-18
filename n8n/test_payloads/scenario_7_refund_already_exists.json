@@ -1,0 +1,12 @@
+{
+  "scenario_id": "SCENARIO_7",
+  "title": "Refund Already Exists and is Processing",
+  "case_id": "RS-4477",
+  "customer_id": "usr_rahul",
+  "message": "I have not received my refund yet.",
+  "payment_reference": "TXN987659",
+  "merchant_id": "mer_resolve_store",
+  "timestamp": "2026-09-18T13:00:00Z",
+  "expected_action": "TRACK_EXISTING_REFUND",
+  "expected_outcome": "REFUND_PENDING"
+}

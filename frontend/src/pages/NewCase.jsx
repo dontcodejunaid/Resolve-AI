@@ -48,12 +48,12 @@ export const NewCase = () => {
       {/* Header */}
       <div className="text-center space-y-2">
         <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-lime-100 border border-lime-300 text-lime-800 text-xs font-mono font-bold uppercase">
-          <Bot className="w-3.5 h-3.5 text-lime-700" />
-          <span>Resolve AI Autonomous Teammate</span>
+          <img src="/logo.png" alt="RESOLVE.ai" className="w-3.5 h-3.5 object-contain" />
+          <span>RESOLVE<sub className="text-[10px] font-mono font-bold text-lime-700 lowercase ml-0.5">.ai</sub> Autonomous Teammate</span>
         </div>
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Report a Payment or Order Mismatch</h1>
         <p className="text-sm text-slate-600 max-w-lg mx-auto">
-          Describe what happened. Resolve AI will autonomously investigate across banking gateways, checkouts, and inventory to verify an outcome.
+          Describe what happened. RESOLVE<sub className="text-xs font-mono font-bold text-lime-600 lowercase ml-0.5">.ai</sub> will autonomously investigate across banking gateways, checkouts, and inventory to verify an outcome.
         </p>
       </div>
 

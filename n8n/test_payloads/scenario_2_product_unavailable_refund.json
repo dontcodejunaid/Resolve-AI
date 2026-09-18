@@ -1,0 +1,12 @@
+{
+  "scenario_id": "SCENARIO_2",
+  "title": "Payment Success + Order Missing + Product Unavailable (Refund Approval)",
+  "case_id": "RS-4472",
+  "customer_id": "usr_rahul",
+  "message": "I paid \u20b9799 for Wireless Headset but item is out of stock.",
+  "payment_reference": "TXN987655",
+  "merchant_id": "mer_resolve_store",
+  "timestamp": "2026-09-18T12:35:00Z",
+  "expected_action": "REFUND",
+  "expected_outcome": "WAITING_FOR_APPROVAL"
+}

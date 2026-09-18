@@ -822,7 +822,6 @@ export const CaseDetail = () => {
           ? `₹${Number(caseData.payment.amount).toFixed(2)} ${caseData.payment.currency || 'INR'}`
           : (caseData.customer_request?.match(/₹([0-9]+)/)?.[0] || '₹799.00 INR');
 
-<<<<<<< HEAD
         const isKeyboard = caseData.customer_id === 'usr_aisha' || caseData.customer_request?.includes('Keyboard');
         const isMouse = caseData.customer_id === 'usr_arjun' || caseData.customer_request?.includes('Mouse');
 
@@ -938,54 +937,6 @@ export const CaseDetail = () => {
           </div>
         );
       })()}
-=======
-          <EvidenceCard
-            title="Banking Gateway Telemetry"
-            status={caseData.payment ? caseData.payment.status : (caseData.payment_id ? 'CONFIRMED' : 'SEARCHED')}
-            details={[
-              { label: 'Payment Ref', value: caseData.payment?.payment_reference || (caseData.payment_id ? 'Verified' : 'Investigating') },
-              { label: 'Gateway Status', value: caseData.payment?.status || 'CONFIRMED' },
-              { label: 'Amount', value: caseData.payment ? `₹${caseData.payment.amount} ${caseData.payment.currency}` : '₹799.00 INR' },
-              { label: 'Verified At', value: caseData.payment?.created_at ? formatActualTime(caseData.payment.created_at) : formatActualTime(caseData.created_at) },
-            ]}
-          />
-
-          <EvidenceCard
-            title="Order & Checkout Records"
-            status={caseData.order ? caseData.order.status : (caseData.order_id ? 'CONFIRMED' : 'RECOVERABLE')}
-            details={[
-              { label: 'Checkout Session', value: caseData.order?.checkout_id || `CHK-RS-${caseData.case_number?.slice(3) || '77210'}` },
-              { label: 'Linked Order', value: caseData.order?.order_number || (caseData.status === 'RESOLVED' ? 'ORD-CONFIRMED' : 'MISSING') },
-              { label: 'Status', value: caseData.order ? caseData.order.status : (caseData.status === 'RESOLVED' ? 'RECOVERED' : 'PENDING RECOVERY') },
-            ]}
-          />
-
-          <EvidenceCard
-            title="Inventory & Stock Availability"
-            status="AVAILABLE"
-            details={[
-              { label: 'Item Name', value: caseData.customer_request.includes('Keyboard') ? 'Mechanical Keyboard' : caseData.customer_request.includes('Mouse') ? 'Wireless Mouse' : 'Wireless Headset' },
-              { label: 'Stock Status', value: caseData.customer_request.includes('Keyboard') ? '0 Units (Out of Stock)' : 'Units Available' },
-              { label: 'Policy Path', value: caseData.customer_request.includes('Keyboard') ? 'REFUND_APPROVAL' : 'ORDER_RECOVERY' },
-            ]}
-          />
-        </div>
-
-        {/* Right Column: Dynamic Event Timeline */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-mono font-bold text-slate-700 uppercase tracking-wider">
-              Verification & Task Execution Pipeline
-            </h3>
-            <span className="text-[11px] font-mono text-slate-400">Deterministic Engine Audit</span>
-          </div>
-
-          <div className="bg-white border border-lime-200 rounded-2xl p-5 shadow-sm">
-            <CaseTimeline events={caseData.events} />
-          </div>
-        </div>
-      </div>
->>>>>>> origin/main
     </div>
   );
 };

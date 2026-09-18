@@ -44,13 +44,13 @@ export const InvestigationSteps = ({ currentStatus, events = [] }) => {
   ];
 
   return (
-    <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 sm:p-5 shadow-lg">
+    <div className="bg-white border border-lime-200 rounded-2xl p-4 sm:p-5 shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-slate-200 uppercase tracking-wider flex items-center space-x-2">
-          <Search className="w-4 h-4 text-blue-400" />
+        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center space-x-2">
+          <Search className="w-4 h-4 text-lime-700" />
           <span>Cross-System Investigation Pipeline</span>
         </h3>
-        <span className="text-xs font-mono px-2 py-0.5 rounded bg-blue-950/60 text-blue-400 border border-blue-800/40">
+        <span className="text-xs font-mono px-2.5 py-0.5 rounded-lg bg-lime-100 text-lime-800 border border-lime-300 font-bold">
           Autonomous Telemetry
         </span>
       </div>
@@ -59,28 +59,29 @@ export const InvestigationSteps = ({ currentStatus, events = [] }) => {
         {steps.map((step, idx) => (
           <div
             key={step.id}
-            className={`p-3 rounded-lg border transition-all duration-300 flex flex-col justify-between ${
+            className={`p-3 rounded-xl border transition-all duration-300 flex flex-col justify-between ${
               step.done
-                ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-300'
+                ? 'bg-lime-50/80 border-lime-300 text-lime-900 shadow-sm'
                 : step.active
-                ? 'bg-blue-950/40 border-blue-500/50 text-blue-300 ring-1 ring-blue-500/40 animate-pulse'
-                : 'bg-slate-950/40 border-slate-800/80 text-slate-500'
+                ? 'bg-lime-100/90 border-lime-500 text-lime-900 ring-2 ring-lime-400/50 animate-pulse'
+                : 'bg-slate-50 border-slate-200 text-slate-400'
             }`}
           >
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[10px] font-mono font-bold tracking-wider">0{idx + 1}</span>
               {step.done ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <CheckCircle2 className="w-4 h-4 text-lime-600" />
               ) : step.active ? (
-                <Clock className="w-4 h-4 text-blue-400 animate-spin" />
+                <Clock className="w-4 h-4 text-lime-700 animate-spin" />
               ) : (
-                <div className="w-2 h-2 rounded-full bg-slate-700" />
+                <div className="w-2 h-2 rounded-full bg-slate-200" />
               )}
             </div>
-            <span className="text-xs font-medium leading-tight">{step.label}</span>
+            <span className="text-xs font-semibold leading-tight">{step.label}</span>
           </div>
         ))}
       </div>
     </div>
   );
 };
+

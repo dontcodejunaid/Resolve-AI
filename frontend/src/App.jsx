@@ -23,7 +23,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#090D16] flex items-center justify-center text-slate-500 font-mono text-sm">
+      <div className="min-h-screen bg-[#FAFCFA] flex items-center justify-center text-slate-500 font-mono text-sm">
         Authenticating...
       </div>
     );
@@ -55,7 +55,7 @@ export const App = () => {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <div className="min-h-screen flex flex-col bg-[#090D16] text-[#F8FAFC]">
+        <div className="min-h-screen flex flex-col bg-[#FAFCFA] text-[#0F1711]">
           {/* Top Simulated Environment & Demo Bar */}
           <SimulatedBadge />
 

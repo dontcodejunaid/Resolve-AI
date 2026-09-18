@@ -7,6 +7,8 @@ export const INITIAL_ENGINEERS = [
     level: 'AI Teammate 1',
     color: '#3b82f6', // blue
     image: '/workers/maya.jpg',
+    video: '/workers/maya.mp4',
+    animatedWebp: '/workers/maya_anim.webp',
     state: 'coding',
     thought: 'Validating simulated banking gateway response for TXN987654 💳',
     loc: 28420,
@@ -30,6 +32,8 @@ export const INITIAL_ENGINEERS = [
     level: 'AI Teammate 2',
     color: '#10b981', // emerald
     image: '/workers/alex.jpg',
+    video: '/workers/alex.mp4',
+    animatedWebp: '/workers/alex_anim.webp',
     state: 'coding',
     thought: 'Checking warehouse inventory stock and cart session CHK-RS-77210 📦',
     loc: 51200,
@@ -54,6 +58,8 @@ export const INITIAL_ENGINEERS = [
     level: 'AI Teammate 3',
     color: '#8b5cf6', // purple
     image: '/workers/samira.jpg',
+    video: '/workers/samira.mp4',
+    animatedWebp: '/workers/samira_anim.webp',
     state: 'thinking',
     thought: 'Querying Cognee knowledge layer for store recovery policies 🧠',
     loc: 21300,
@@ -77,6 +83,8 @@ export const INITIAL_ENGINEERS = [
     level: 'AI Teammate 4',
     color: '#f59e0b', // amber
     image: '/workers/marcus.jpg',
+    video: '/workers/marcus.mp4',
+    animatedWebp: '/workers/marcus_anim.webp',
     state: 'coding',
     thought: 'Enforcing 13 Deterministic Business Rules (AI PROPOSES, CODE DECIDES) 🛡️',
     loc: 39400,

@@ -35,63 +35,83 @@ router = APIRouter(prefix="/demo", tags=["Demo & Scenarios"])
 SCENARIOS = [
     {
         "id": "SCENARIO_1_RECOVERY",
+        "name": "Scenario 1: Main Demo (Order Recovery)",
         "title": "Scenario 1: Main Demo (Order Recovery)",
         "description": "Customer buys Wireless Headset (₹799). Payment SUCCESS, Order MISSING, Stock AVAILABLE. AI offers recovery, customer confirms, order recovered & verified.",
-        "badge": "Happy Path"
+        "badge": "Happy Path",
+        "expected_outcome": "Happy Path"
     },
     {
         "id": "SCENARIO_2_REFUND",
+        "name": "Scenario 2: Out of Stock Refund (Human Approval)",
         "title": "Scenario 2: Out of Stock Refund (Human Approval)",
         "description": "Customer buys Keyboard (₹1499). Payment SUCCESS, Order MISSING, Stock UNAVAILABLE. AI selects refund, requires manager approval under ₹500 policy threshold, manager approves, refund verified.",
-        "badge": "Approval Required"
+        "badge": "Approval Required",
+        "expected_outcome": "Approval Required"
     },
     {
         "id": "SCENARIO_3_PENDING",
+        "name": "Scenario 3: Pending Payment",
         "title": "Scenario 3: Pending Payment",
         "description": "Payment is PENDING with bank. AI schedules background recheck without creating order or refund.",
-        "badge": "Pending State"
+        "badge": "Pending State",
+        "expected_outcome": "Pending State"
     },
     {
         "id": "SCENARIO_4_DUPLICATE",
+        "name": "Scenario 4: Duplicate Webhook Notification",
         "title": "Scenario 4: Duplicate Webhook Notification",
         "description": "Duplicate payment webhook arrives twice. Idempotency guarantees exactly one order created.",
-        "badge": "Idempotency Guard"
+        "badge": "Idempotency Guard",
+        "expected_outcome": "Idempotency Guard"
     },
     {
         "id": "SCENARIO_5_REFUND_EXISTS",
+        "name": "Scenario 5: Refund Already Exists",
         "title": "Scenario 5: Refund Already Exists",
         "description": "Payment was already refunded. AI detects existing refund reference and tracks without issuing duplicate payout.",
-        "badge": "Duplicate Refund Guard"
+        "badge": "Duplicate Refund Guard",
+        "expected_outcome": "Duplicate Refund Guard"
     },
     {
         "id": "SCENARIO_6_CONFLICT",
+        "name": "Scenario 6: Conflicting Records",
         "title": "Scenario 6: Conflicting Records",
         "description": "Inconsistent amount/currency records. AI refuses to guess and generates structured human handoff.",
-        "badge": "Human-in-the-Loop"
+        "badge": "Human-in-the-Loop",
+        "expected_outcome": "Human-in-the-Loop"
     },
     {
         "id": "SCENARIO_7_TIMEOUT",
+        "name": "Scenario 7: Provider Action Timeout & Retry",
         "title": "Scenario 7: Provider Action Timeout & Retry",
         "description": "Simulates transient external gateway failure with retry without duplicate charging.",
-        "badge": "Resilience"
+        "badge": "Resilience",
+        "expected_outcome": "Resilience"
     },
     {
         "id": "SCENARIO_8_ORDER_EXISTS",
+        "name": "Scenario 8: Payment Success + Order Exists",
         "title": "Scenario 8: Payment Success + Order Exists",
         "description": "Order already exists. AI confirms status without creating duplicate order.",
-        "badge": "Safe Lookup"
+        "badge": "Safe Lookup",
+        "expected_outcome": "Safe Lookup"
     },
     {
         "id": "SCENARIO_9_PAYMENT_NOT_FOUND",
+        "name": "Scenario 9: Gateway Cannot Find Payment",
         "title": "Scenario 9: Gateway Cannot Find Payment",
         "description": "Customer claims debit but gateway returns NOT_FOUND. AI escalates with transaction logs.",
-        "badge": "Escalation"
+        "badge": "Escalation",
+        "expected_outcome": "Escalation"
     },
     {
         "id": "SCENARIO_10_BACKGROUND_RECON",
+        "name": "Scenario 10: Autonomous Background Reconciliation",
         "title": "Scenario 10: Autonomous Background Reconciliation",
         "description": "Customer is offline. Background worker detects unlinked payment, opens case, investigates, and notifies customer.",
-        "badge": "Proactive AI"
+        "badge": "Proactive AI",
+        "expected_outcome": "Proactive AI"
     }
 ]
 
@@ -403,6 +423,12 @@ async def get_system_state(db: AsyncSession = Depends(get_db)):
     cases_res = await db.execute(select(Case).order_by(Case.created_at.desc()))
     cases = cases_res.scalars().all()
 
+    payments_res = await db.execute(select(Payment))
+    payments = payments_res.scalars().all()
+
+    orders_res = await db.execute(select(Order))
+    orders = orders_res.scalars().all()
+
     events_res = await db.execute(select(CaseEvent).order_by(CaseEvent.created_at.desc()).limit(25))
     events = events_res.scalars().all()
 
@@ -411,9 +437,13 @@ async def get_system_state(db: AsyncSession = Depends(get_db)):
 
     approvals_res = await db.execute(select(Approval).order_by(Approval.created_at.desc()))
     approvals = approvals_res.scalars().all()
+    pending_approvals = [a for a in approvals if a.status == "PENDING"]
 
     return {
         "cases_count": len(cases),
+        "payments_count": len(payments),
+        "orders_count": len(orders),
+        "pending_approvals_count": len(pending_approvals),
         "recent_events": events,
         "recent_actions": actions,
         "approvals": approvals,

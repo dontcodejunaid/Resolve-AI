@@ -1,7 +1,15 @@
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from pydantic import BaseModel, EmailStr, Field, ConfigDict, field_serializer
 from typing import Optional, Any, List
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
+
+
+def format_dt(dt: Optional[datetime]) -> Optional[str]:
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc).isoformat()
+    return dt.astimezone(timezone.utc).isoformat()
 
 
 # --- Auth Schemas ---
@@ -24,6 +32,10 @@ class UserResponse(BaseModel):
     role: str
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
+
+    @field_serializer("created_at", check_fields=False)
+    def serialize_created_at(self, dt: Optional[datetime], _info):
+        return format_dt(dt)
 
 
 class TokenResponse(BaseModel):
@@ -91,6 +103,10 @@ class PaymentResponse(BaseModel):
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
 
+    @field_serializer("created_at", check_fields=False)
+    def serialize_created_at(self, dt: Optional[datetime], _info):
+        return format_dt(dt)
+
 
 class OrderResponse(BaseModel):
     id: str
@@ -108,6 +124,10 @@ class OrderResponse(BaseModel):
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
 
+    @field_serializer("created_at", check_fields=False)
+    def serialize_created_at(self, dt: Optional[datetime], _info):
+        return format_dt(dt)
+
 
 class RefundResponse(BaseModel):
     id: str
@@ -124,6 +144,10 @@ class RefundResponse(BaseModel):
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
 
+    @field_serializer("created_at", check_fields=False)
+    def serialize_created_at(self, dt: Optional[datetime], _info):
+        return format_dt(dt)
+
 
 # --- Case, Event, Action, Approval Schemas ---
 class CaseEventResponse(BaseModel):
@@ -136,6 +160,10 @@ class CaseEventResponse(BaseModel):
     event_metadata: Optional[str] = None
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
+
+    @field_serializer("created_at", check_fields=False)
+    def serialize_created_at(self, dt: Optional[datetime], _info):
+        return format_dt(dt)
 
 
 class ActionResponse(BaseModel):
@@ -153,6 +181,10 @@ class ActionResponse(BaseModel):
     completed_at: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)
 
+    @field_serializer("created_at", "completed_at", check_fields=False)
+    def serialize_dates(self, dt: Optional[datetime], _info):
+        return format_dt(dt)
+
 
 class ApprovalResponse(BaseModel):
     id: str
@@ -167,6 +199,10 @@ class ApprovalResponse(BaseModel):
     created_at: datetime
     reviewed_at: Optional[datetime] = None
     model_config = ConfigDict(from_attributes=True)
+
+    @field_serializer("created_at", "reviewed_at", check_fields=False)
+    def serialize_dates(self, dt: Optional[datetime], _info):
+        return format_dt(dt)
 
 
 class CaseResponse(BaseModel):
@@ -190,6 +226,10 @@ class CaseResponse(BaseModel):
     actions: List[ActionResponse] = []
     approvals: List[ApprovalResponse] = []
     model_config = ConfigDict(from_attributes=True)
+
+    @field_serializer("created_at", "updated_at", "closed_at", check_fields=False)
+    def serialize_dates(self, dt: Optional[datetime], _info):
+        return format_dt(dt)
 
 
 class CreateCaseRequest(BaseModel):
@@ -226,3 +266,7 @@ class NotificationResponse(BaseModel):
     is_read: bool
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
+
+    @field_serializer("created_at", check_fields=False)
+    def serialize_created_at(self, dt: Optional[datetime], _info):
+        return format_dt(dt)

@@ -44,10 +44,12 @@ export const Login = () => {
     <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12">
       <div className="max-w-md w-full space-y-8 bg-white border border-lime-200 p-8 rounded-2xl shadow-xl shadow-lime-900/5">
         <div className="text-center">
-          <div className="w-12 h-12 bg-lime-500 rounded-xl mx-auto flex items-center justify-center shadow-lg shadow-lime-500/25 mb-3">
-            <Bot className="w-7 h-7 text-slate-950" />
+          <div className="w-16 h-16 bg-white border border-lime-200 rounded-2xl mx-auto flex items-center justify-center p-2 shadow-sm mb-3">
+            <img src="/logo.png" alt="RESOLVE.ai" className="w-full h-full object-contain" />
           </div>
-          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Sign in to Resolve AI</h2>
+          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            Sign in to RESOLVE<sub className="text-sm font-mono font-bold text-lime-600 lowercase ml-0.5">.ai</sub>
+          </h2>
           <p className="text-xs text-slate-500 mt-1 font-mono">
             Autonomous Customer-Service Resolution Engine
           </p>

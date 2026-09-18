@@ -1,0 +1,12 @@
+{
+  "scenario_id": "SCENARIO_9",
+  "title": "Connected Service Timeout and Safe Retry",
+  "case_id": "RS-4479",
+  "customer_id": "usr_rahul",
+  "message": "System timed out during checkout confirmation.",
+  "payment_reference": "TXN987661",
+  "merchant_id": "mer_resolve_store",
+  "timestamp": "2026-09-18T13:10:00Z",
+  "expected_action": "SAFE_RETRY",
+  "expected_outcome": "INVESTIGATING"
+}

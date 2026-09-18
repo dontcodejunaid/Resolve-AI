@@ -1,0 +1,75 @@
+{
+  "name": "07_resolve_ai_reconciliation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "07-schedule",
+      "name": "Every 15 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        100,
+        160
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "07-manual",
+      "name": "Manual Reconciliation Run",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://localhost:8000/api/reconciliation/run"
+      },
+      "id": "07-reconcile",
+      "name": "1. Query Orphaned Payments",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        360,
+        250
+      ]
+    }
+  ],
+  "connections": {
+    "Every 15 Minutes": {
+      "main": [
+        [
+          {
+            "node": "1. Query Orphaned Payments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Reconciliation Run": {
+      "main": [
+        [
+          {
+            "node": "1. Query Orphaned Payments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true
+}

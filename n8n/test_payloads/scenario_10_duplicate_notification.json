@@ -1,0 +1,12 @@
+{
+  "scenario_id": "SCENARIO_10",
+  "title": "Duplicate Customer Complaint (Idempotency Guard)",
+  "case_id": "RS-4480",
+  "customer_id": "usr_rahul",
+  "message": "I paid \u20b9799 but my order is not showing (Duplicate #3)",
+  "payment_reference": "TXN987654",
+  "merchant_id": "mer_resolve_store",
+  "timestamp": "2026-09-18T13:15:00Z",
+  "expected_action": "ATTACH_TO_EXISTING_CASE",
+  "expected_outcome": "CASE_RESOLVED"
+}

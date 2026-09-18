@@ -1,0 +1,93 @@
+{
+  "name": "02_resolve_ai_payment_check",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "02-trigger",
+      "name": "Execute Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://localhost:8000/api/payments/{{ $json.payment_reference || 'pay_test_01' }}"
+      },
+      "id": "02-get-pay",
+      "name": "1. Get Payment Record",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        350,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://localhost:8000/api/merchant/settlement-status/{{ $('1. Get Payment Record').first().json.reference || 'pay_test_01' }}"
+      },
+      "id": "02-get-settle",
+      "name": "2. Get Settlement Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        580,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const pay = $('1. Get Payment Record').first().json;\nconst settle = $('2. Get Settlement Status').first().json;\nreturn {\n  payment_reference: pay.reference,\n  amount: pay.amount,\n  status: pay.status,\n  settlement_status: settle.settlement_status || 'NOT_SETTLED',\n  verified: pay.status === 'SUCCESS'\n};"
+      },
+      "id": "02-synth",
+      "name": "3. Synthesize Payment Factsheet",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        820,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Execute Trigger": {
+      "main": [
+        [
+          {
+            "node": "1. Get Payment Record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1. Get Payment Record": {
+      "main": [
+        [
+          {
+            "node": "2. Get Settlement Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Get Settlement Status": {
+      "main": [
+        [
+          {
+            "node": "3. Synthesize Payment Factsheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true
+}

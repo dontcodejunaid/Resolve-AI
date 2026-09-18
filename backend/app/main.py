@@ -8,6 +8,7 @@ from backend.app.database import init_db
 from backend.app.database_seeder import seed_database
 from backend.app.mongodb import init_mongo, close_mongo
 from backend.app.routes import (
+    api_v1,
     auth,
     cases,
     orders,
@@ -65,6 +66,7 @@ app.include_router(merchant.router)
 app.include_router(internal.router)
 app.include_router(demo.router)
 app.include_router(simulator.router)
+app.include_router(api_v1.router)
 
 
 @app.get("/", tags=["System"])

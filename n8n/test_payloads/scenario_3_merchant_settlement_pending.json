@@ -1,0 +1,12 @@
+{
+  "scenario_id": "SCENARIO_3",
+  "title": "Payment Success + Order Exists + Merchant Settlement Pending",
+  "case_id": "RS-4473",
+  "customer_id": "usr_rahul",
+  "message": "My order shows created but merchant says payment is pending.",
+  "payment_reference": "TXN987656",
+  "merchant_id": "mer_resolve_store",
+  "timestamp": "2026-09-18T12:40:00Z",
+  "expected_action": "MONITOR_SETTLEMENT",
+  "expected_outcome": "MERCHANT_SETTLEMENT_PENDING"
+}

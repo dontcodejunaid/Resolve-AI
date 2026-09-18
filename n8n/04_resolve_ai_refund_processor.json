@@ -1,0 +1,94 @@
+{
+  "name": "04_resolve_ai_refund_processor",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "04-trigger",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=http://localhost:8000/api/refunds/search?payment_reference={{ $json.payment_reference || 'pay_test_01' }}"
+      },
+      "id": "04-search-ref",
+      "name": "1. Search Existing Refunds",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        360,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://localhost:8000/api/refunds",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "case_id",
+              "value": "={{ $json.case_id || 'case_test_01' }}"
+            },
+            {
+              "name": "payment_reference",
+              "value": "={{ $json.payment_reference || 'pay_test_01' }}"
+            },
+            {
+              "name": "amount",
+              "value": "={{ $json.amount || 799.00 }}"
+            },
+            {
+              "name": "reason",
+              "value": "Item out of stock"
+            },
+            {
+              "name": "idempotency_key",
+              "value": "={{ ($json.case_id || 'case_test_01') + '_REFUND' }}"
+            }
+          ]
+        }
+      },
+      "id": "04-exec-ref",
+      "name": "2. Authoritative Refund Execution",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        620,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "1. Search Existing Refunds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1. Search Existing Refunds": {
+      "main": [
+        [
+          {
+            "node": "2. Authoritative Refund Execution",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true
+}

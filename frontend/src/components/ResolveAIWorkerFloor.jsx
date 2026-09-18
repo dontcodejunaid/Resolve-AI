@@ -9,15 +9,10 @@ import {
   Package,
   Brain,
   ShieldCheck,
-  X,
   Layers,
-  Activity,
-  ArrowRight,
-  Play,
   RotateCcw,
   FastForward,
-  Clock,
-  Check
+  Clock
 } from 'lucide-react';
 
 export const ResolveAIWorkerFloor = ({
@@ -32,13 +27,40 @@ export const ResolveAIWorkerFloor = ({
   const activeScenarioId = scenarioId || (caseData?.metadata?.scenario_id) || 'SCENARIO_1_RECOVERY';
   const customScenarioMap = SCENARIO_WORKER_CUSTOMIZATIONS[activeScenarioId] || SCENARIO_WORKER_CUSTOMIZATIONS['SCENARIO_1_RECOVERY'];
 
-  // Prepare engineers with scenario-specific thoughts and tasks
+  // Prepare engineers with scenario-specific thoughts and live case telemetry
   const engineers = INITIAL_ENGINEERS.map((emp) => {
-    const custom = customScenarioMap[emp.id];
+    const custom = customScenarioMap ? customScenarioMap[emp.id] : null;
+    let dynamicThought = custom?.thought || emp.thought;
+    let dynamicTask = custom?.currentTask || emp.currentTask;
+
+    if (caseData) {
+      const paymentRef = caseData.payment?.payment_reference || (caseData.payment_id ? 'Verified' : 'TXN987654');
+      const amount = caseData.payment ? `₹${caseData.payment.amount}` : '₹799.00';
+      const caseNum = caseData.case_number || 'Live Case';
+
+      if (emp.id === 'worker-1') {
+        dynamicThought = `Validating gateway response for ${paymentRef} (${amount}) on #${caseNum} 💳`;
+        dynamicTask = `Verify Gateway Status for ${paymentRef}`;
+      } else if (emp.id === 'worker-2') {
+        dynamicThought = caseData.order
+          ? `Order #${caseData.order.order_number} verified and stock allocated for #${caseNum} 📦`
+          : `Auditing stock availability and checkout cart session for #${caseNum} 📦`;
+        dynamicTask = caseData.order ? `Order Linked: ${caseData.order.order_number}` : `Stock & Cart Audit for #${caseNum}`;
+      } else if (emp.id === 'worker-3') {
+        dynamicThought = caseData.resolution_type
+          ? `Synthesized policy: ${caseData.resolution_type.replace(/_/g, ' ')} under merchant threshold 🧠`
+          : `Evaluating merchant refund and recovery rules for #${caseNum} 🧠`;
+        dynamicTask = `Policy Synthesis for #${caseNum}`;
+      } else if (emp.id === 'worker-4') {
+        dynamicThought = `Enforcing 13 Deterministic Rules & immutable audit logging for #${caseNum} 🛡️`;
+        dynamicTask = `Deterministic Verification: #${caseNum}`;
+      }
+    }
+
     return {
       ...emp,
-      thought: custom?.thought || emp.thought,
-      currentTask: custom?.currentTask || emp.currentTask,
+      thought: dynamicThought,
+      currentTask: dynamicTask,
       activeTool: custom?.activeTool || emp.workflowSteps?.[0]?.tool || 'ANALYZE'
     };
   });

@@ -1,0 +1,43 @@
+{
+  "name": "09_resolve_ai_notification",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "09-trigger",
+      "name": "Notification Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        100,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first()?.json || {};\nreturn {\n  recipient: item.customer_email || 'customer@example.com',\n  channel: item.channel || 'IN_APP',\n  subject: 'Case Update: Resolution Confirmed',\n  message: item.message || 'Your payment has been reconciled and replacement order dispatched.',\n  status: 'SENT',\n  timestamp: new Date().toISOString()\n};"
+      },
+      "id": "09-format",
+      "name": "1. Format Notification Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        360,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Notification Trigger": {
+      "main": [
+        [
+          {
+            "node": "1. Format Notification Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true
+}

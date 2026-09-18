@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 import client from '../api/client';
 import {
   ShieldAlert,
@@ -12,7 +13,7 @@ import {
   Search,
   Filter
 } from 'lucide-react';
-import { formatDateTime, formatTimeOnly } from '../utils/dateUtils';
+import { formatActualDateTime, formatActualTime } from '../utils/dateUtils';
 
 export const EmployeeDashboard = () => {
   const [cases, setCases] = useState([]);
@@ -162,7 +163,7 @@ export const EmployeeDashboard = () => {
                 className={`px-3 py-1.5 rounded-lg font-mono font-medium transition-all ${
                   statusFilter === tab
                     ? 'bg-lime-500 text-slate-950 font-bold shadow-sm'
-                    : 'bg-lime-50 text-slate-600 hover:text-slate-900 border border-lime-200'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 {tab}
@@ -214,7 +215,7 @@ export const EmployeeDashboard = () => {
                       {c.resolution_type || '—'}
                     </td>
                     <td className="p-3.5 font-mono text-slate-400">
-                      {formatDateTime(c.created_at)}
+                      {formatActualDateTime(c.created_at)}
                     </td>
                     <td className="p-3.5 text-right">
                       <Link

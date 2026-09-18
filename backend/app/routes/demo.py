@@ -4,7 +4,7 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import delete
+from sqlalchemy import delete, or_
 
 from backend.app.database import get_db, init_db
 from backend.app.database_seeder import seed_database
@@ -129,11 +129,23 @@ async def reset_demo_database(db: AsyncSession = Depends(get_db)):
 
 @router.post("/scenario/run")
 async def run_scenario(req: ScenarioRunRequest, db: AsyncSession = Depends(get_db)):
-    """Executes the setup and initial trigger for a specific scenario."""
+    """Executes the setup and initial trigger for a specific scenario with clean state isolation."""
     sc_id = req.scenario_id.upper()
 
     if sc_id == "SCENARIO_1_RECOVERY":
-        # Rahul with Wireless Headset ₹799
+        # Rahul with Wireless Headset ₹799 (Order missing, stock available)
+        await db.execute(delete(Order).filter(or_(Order.checkout_id == "chk_rahul_01", Order.payment_id == "pay_rahul_01", Order.customer_id == "usr_rahul")))
+        await db.execute(delete(Refund).filter(Refund.payment_id == "pay_rahul_01"))
+        
+        prod = (await db.execute(select(Product).filter(Product.id == "prod_headset"))).scalars().first()
+        if prod:
+            prod.stock = 10
+        
+        pay = (await db.execute(select(Payment).filter(Payment.id == "pay_rahul_01"))).scalars().first()
+        if pay:
+            pay.status = "SUCCESS"
+        await db.commit()
+
         case = await CaseEngine.create_case(
             db=db,
             customer_id="usr_rahul",
@@ -144,7 +156,19 @@ async def run_scenario(req: ScenarioRunRequest, db: AsyncSession = Depends(get_d
         return {"scenario": sc_id, "case_id": case.id, "case_number": case.case_number, "status": case.status, "case": await CaseEngine.get_case_with_relations(db, case.id)}
 
     elif sc_id == "SCENARIO_2_REFUND":
-        # Aisha with Mechanical Keyboard ₹1499 (stock 0)
+        # Aisha with Mechanical Keyboard ₹1499 (Order missing, stock 0 -> Manager approval)
+        await db.execute(delete(Order).filter(or_(Order.checkout_id == "chk_aisha_01", Order.payment_id == "pay_aisha_01", Order.customer_id == "usr_aisha")))
+        await db.execute(delete(Refund).filter(Refund.payment_id == "pay_aisha_01"))
+        
+        prod = (await db.execute(select(Product).filter(Product.id == "prod_keyboard"))).scalars().first()
+        if prod:
+            prod.stock = 0
+        
+        pay = (await db.execute(select(Payment).filter(Payment.id == "pay_aisha_01"))).scalars().first()
+        if pay:
+            pay.status = "SUCCESS"
+        await db.commit()
+
         case = await CaseEngine.create_case(
             db=db,
             customer_id="usr_aisha",
@@ -155,7 +179,15 @@ async def run_scenario(req: ScenarioRunRequest, db: AsyncSession = Depends(get_d
         return {"scenario": sc_id, "case_id": case.id, "case_number": case.case_number, "status": case.status, "case": await CaseEngine.get_case_with_relations(db, case.id)}
 
     elif sc_id == "SCENARIO_3_PENDING":
-        # Arjun with Wireless Mouse ₹499 (Pending payment)
+        # Arjun with Wireless Mouse ₹499 (Pending payment -> Background recheck)
+        await db.execute(delete(Order).filter(or_(Order.checkout_id == "chk_arjun_01", Order.payment_id == "pay_arjun_01", Order.customer_id == "usr_arjun")))
+        await db.execute(delete(Refund).filter(Refund.payment_id == "pay_arjun_01"))
+        
+        pay = (await db.execute(select(Payment).filter(Payment.id == "pay_arjun_01"))).scalars().first()
+        if pay:
+            pay.status = "PENDING"
+        await db.commit()
+
         case = await CaseEngine.create_case(
             db=db,
             customer_id="usr_arjun",
@@ -166,7 +198,17 @@ async def run_scenario(req: ScenarioRunRequest, db: AsyncSession = Depends(get_d
         return {"scenario": sc_id, "case_id": case.id, "case_number": case.case_number, "status": case.status, "case": await CaseEngine.get_case_with_relations(db, case.id)}
 
     elif sc_id == "SCENARIO_4_DUPLICATE":
-        # First case
+        # Clean setup and simulate duplicate notification
+        await db.execute(delete(Order).filter(or_(Order.checkout_id == "chk_rahul_01", Order.payment_id == "pay_rahul_01", Order.customer_id == "usr_rahul")))
+        await db.execute(delete(Refund).filter(Refund.payment_id == "pay_rahul_01"))
+        prod = (await db.execute(select(Product).filter(Product.id == "prod_headset"))).scalars().first()
+        if prod:
+            prod.stock = 10
+        pay = (await db.execute(select(Payment).filter(Payment.id == "pay_rahul_01"))).scalars().first()
+        if pay:
+            pay.status = "SUCCESS"
+        await db.commit()
+
         case1 = await CaseEngine.create_case(
             db=db,
             customer_id="usr_rahul",
@@ -174,26 +216,30 @@ async def run_scenario(req: ScenarioRunRequest, db: AsyncSession = Depends(get_d
             customer_request="Webhook payment notification received for TXN987654",
             payment_reference="TXN987654"
         )
-        # Simulate customer confirmation
         user_rahul = (await db.execute(select(User).filter(User.id == "usr_rahul"))).scalars().first()
         if user_rahul:
             await CaseEngine.process_customer_recovery_confirmation(db, case1.id, user_rahul, True)
 
-        # Duplicate webhook arrives
         await CaseEngine.log_event(
             db,
             case_id=case1.id,
             event_type="DUPLICATE_NOTIFICATION_RECEIVED",
-            description="Duplicate gateway payment notification received for TXN987654. Intercepted by Idempotency Guard.",
+            description="Duplicate gateway payment notification received for TXN987654. Intercepted by Idempotency Guard (Rules 6 & 11).",
             actor_type="SYSTEM",
         )
         return {"scenario": sc_id, "case_id": case1.id, "case": await CaseEngine.get_case_with_relations(db, case1.id)}
 
     elif sc_id == "SCENARIO_5_REFUND_EXISTS":
         # Setup existing refund
+        await db.execute(delete(Order).filter(or_(Order.checkout_id == "chk_rahul_01", Order.payment_id == "pay_rahul_01", Order.customer_id == "usr_rahul")))
+        await db.execute(delete(Refund).filter(Refund.payment_id == "pay_rahul_01"))
+        await db.commit()
+
         pay = (await db.execute(select(Payment).filter(Payment.payment_reference == "TXN987654"))).scalars().first()
         if pay:
-            await RefundSimulator.request_refund(db, pay, reason="Previous refund request", initial_status="PENDING")
+            pay.status = "SUCCESS"
+            await RefundSimulator.request_refund(db, pay, reason="Previous customer refund request", initial_status="PENDING")
+        
         case = await CaseEngine.create_case(
             db=db,
             customer_id="usr_rahul",
@@ -204,7 +250,11 @@ async def run_scenario(req: ScenarioRunRequest, db: AsyncSession = Depends(get_d
         return {"scenario": sc_id, "case_id": case.id, "case": await CaseEngine.get_case_with_relations(db, case.id)}
 
     elif sc_id == "SCENARIO_6_CONFLICT":
-        # Create a conflicting payment (Currency USD, amount mismatch)
+        # Clean conflicting payment and recreate
+        await db.execute(delete(Order).filter(Order.checkout_id == "chk_conflict_99"))
+        await db.execute(delete(Payment).filter(Payment.payment_reference == "TXN-CONFLICT-99"))
+        await db.commit()
+
         conflict_pay = await PaymentSimulator.create_simulated_payment(
             db=db,
             customer_id="usr_rahul",
@@ -223,9 +273,96 @@ async def run_scenario(req: ScenarioRunRequest, db: AsyncSession = Depends(get_d
         )
         return {"scenario": sc_id, "case_id": case.id, "case": await CaseEngine.get_case_with_relations(db, case.id)}
 
+    elif sc_id == "SCENARIO_7_TIMEOUT":
+        # Provider timeout & retry resilience
+        await db.execute(delete(Order).filter(or_(Order.checkout_id == "chk_rahul_01", Order.payment_id == "pay_rahul_01", Order.customer_id == "usr_rahul")))
+        await db.execute(delete(Refund).filter(Refund.payment_id == "pay_rahul_01"))
+        pay = (await db.execute(select(Payment).filter(Payment.id == "pay_rahul_01"))).scalars().first()
+        if pay:
+            pay.status = "SUCCESS"
+        await db.commit()
+
+        case = await CaseEngine.create_case(
+            db=db,
+            customer_id="usr_rahul",
+            merchant_id="mer_resolve_store",
+            customer_request="Payment gateway timed out during verification for TXN987654. Please retry and check status.",
+            payment_reference="TXN987654"
+        )
+        await CaseEngine.log_event(
+            db,
+            case_id=case.id,
+            event_type="PROVIDER_TIMEOUT_SIMULATED",
+            description="Simulated transient payment gateway 504 Gateway Timeout on initial query. Exponential backoff retry triggered.",
+            actor_type="PROVIDER"
+        )
+        await CaseEngine.log_event(
+            db,
+            case_id=case.id,
+            event_type="PROVIDER_RETRY_SUCCESS",
+            description="Retry attempt 1 succeeded. Payment state verified as SUCCESS (₹799.00 INR).",
+            actor_type="SYSTEM"
+        )
+        return {"scenario": sc_id, "case_id": case.id, "case": await CaseEngine.get_case_with_relations(db, case.id)}
+
+    elif sc_id == "SCENARIO_8_ORDER_EXISTS":
+        # Payment Success + Order Already Linked
+        await db.execute(delete(Refund).filter(Refund.payment_id == "pay_rahul_01"))
+        await db.execute(delete(Order).filter(or_(Order.checkout_id == "chk_rahul_01", Order.payment_id == "pay_rahul_01", Order.customer_id == "usr_rahul")))
+        await db.commit()
+
+        new_ord = Order(
+            id=f"ord_{uuid.uuid4().hex[:8]}",
+            order_number=f"ORD-{uuid.uuid4().hex[:6].upper()}",
+            checkout_id="chk_rahul_01",
+            payment_id="pay_rahul_01",
+            customer_id="usr_rahul",
+            merchant_id="mer_resolve_store",
+            product_id="prod_headset",
+            quantity=1,
+            amount=Decimal("799.00"),
+            currency="INR",
+            status="CONFIRMED"
+        )
+        db.add(new_ord)
+        pay = (await db.execute(select(Payment).filter(Payment.id == "pay_rahul_01"))).scalars().first()
+        if pay:
+            pay.status = "SUCCESS"
+        await db.commit()
+
+        case = await CaseEngine.create_case(
+            db=db,
+            customer_id="usr_rahul",
+            merchant_id="mer_resolve_store",
+            customer_request="I want to check the status of my order for payment TXN987654.",
+            payment_reference="TXN987654"
+        )
+        return {"scenario": sc_id, "case_id": case.id, "case": await CaseEngine.get_case_with_relations(db, case.id)}
+
+    elif sc_id == "SCENARIO_9_PAYMENT_NOT_FOUND":
+        # Unrecognized payment reference
+        await db.execute(delete(Payment).filter(Payment.payment_reference == "TXN_UNRECOGNIZED_000"))
+        await db.commit()
+
+        case = await CaseEngine.create_case(
+            db=db,
+            customer_id="usr_rahul",
+            merchant_id="mer_resolve_store",
+            customer_request="I was charged ₹999 for reference TXN_UNRECOGNIZED_000, please verify my order.",
+            payment_reference="TXN_UNRECOGNIZED_000"
+        )
+        return {"scenario": sc_id, "case_id": case.id, "case": await CaseEngine.get_case_with_relations(db, case.id)}
+
     elif sc_id == "SCENARIO_10_BACKGROUND_RECON":
+        # Remove orders to simulate orphan payment and run recon
+        await db.execute(delete(Order).filter(or_(Order.checkout_id == "chk_rahul_01", Order.payment_id == "pay_rahul_01", Order.customer_id == "usr_rahul")))
+        await db.execute(delete(Refund).filter(Refund.payment_id == "pay_rahul_01"))
+        pay = (await db.execute(select(Payment).filter(Payment.id == "pay_rahul_01"))).scalars().first()
+        if pay:
+            pay.status = "SUCCESS"
+        await db.commit()
         reconciled = await BackgroundWorker.reconcile_orphan_payments()
-        return {"scenario": sc_id, "reconciled_cases": reconciled, "message": "Background worker ran proactive scan."}
+        return {"scenario": sc_id, "reconciled_cases": reconciled, "message": "Background worker ran proactive scan and resolved orphan payment."}
 
     else:
         # Generic run

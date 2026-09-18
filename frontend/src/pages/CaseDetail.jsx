@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import client from '../api/client';
+import { useAuth } from '../auth/AuthContext';
 import {
   Bot,
   ShieldCheck,
@@ -14,7 +15,10 @@ import {
   RefreshCw,
   ShoppingBag,
   Layers,
-  Box
+  Box,
+  UserCheck,
+  ShieldAlert,
+  User
 } from 'lucide-react';
 import { CaseTimeline } from '../components/CaseTimeline';
 import { InvestigationSteps } from '../components/InvestigationSteps';
@@ -23,10 +27,13 @@ import { ResolveAIWorkerFloor } from '../components/ResolveAIWorkerFloor';
 
 export const CaseDetail = () => {
   const { id } = useParams();
+  const { user, switchAccount } = useAuth();
   const [caseData, setCaseData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [forbiddenError, setForbiddenError] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [switchingUser, setSwitchingUser] = useState(false);
   const [viewMode, setViewMode] = useState('workers'); // 'workers' | 'linear'
 
   const fetchCase = async (isInitial = false) => {
@@ -35,9 +42,15 @@ export const CaseDetail = () => {
       const res = await client.get(`/cases/${id}`);
       setCaseData(res.data);
       setNotFound(false);
+      setForbiddenError(false);
     } catch (e) {
-      if (e.response && e.response.status === 404) {
+      if (e.response && e.response.status === 403) {
+        setForbiddenError(true);
+        setNotFound(false);
+        setCaseData(null);
+      } else if (e.response && e.response.status === 404) {
         setNotFound(true);
+        setForbiddenError(false);
         setCaseData(null);
       }
       console.error('Failed to load case details', e);
@@ -52,7 +65,21 @@ export const CaseDetail = () => {
       fetchCase(false);
     }, 4000);
     return () => clearInterval(interval);
-  }, [id]);
+  }, [id, user?.id]);
+
+  const handleQuickSwitch = async (email) => {
+    setSwitchingUser(true);
+    try {
+      await switchAccount(email);
+      setTimeout(() => {
+        fetchCase(true);
+      }, 300);
+    } catch (err) {
+      console.error('Failed to switch user', err);
+    } finally {
+      setSwitchingUser(false);
+    }
+  };
 
   const handleCustomerConfirmation = async (accepted) => {
     setActionLoading(true);
@@ -69,10 +96,86 @@ export const CaseDetail = () => {
     }
   };
 
-  if (loading) {
+  if (loading || switchingUser) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center text-lime-700 font-mono text-sm">
-        Retrieving case telemetry...
+        {switchingUser ? 'Switching demo user session...' : 'Retrieving case telemetry...'}
+      </div>
+    );
+  }
+
+  if (forbiddenError) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-6">
+        <div className="w-14 h-14 bg-amber-100 border border-amber-300 rounded-2xl mx-auto flex items-center justify-center text-amber-800 shadow-sm">
+          <ShieldAlert className="w-7 h-7 text-amber-700" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-xl font-extrabold text-slate-900">Deterministic Rule 1 Enforced: Customer Data Isolation</h2>
+          <p className="text-sm text-slate-600 leading-relaxed">
+            This case belongs to another customer account. Under deterministic rule 1, customers cannot inspect records owned by other users.
+          </p>
+          <p className="text-xs font-mono text-lime-800 bg-lime-50 py-1.5 px-3 rounded-lg border border-lime-200 inline-block">
+            Logged in as: <span className="font-bold">{user?.full_name || user?.email}</span> ({user?.role})
+          </p>
+        </div>
+
+        <div className="bg-white border border-lime-200 rounded-2xl p-5 shadow-sm space-y-3">
+          <h3 className="text-xs font-mono font-bold text-slate-700 uppercase tracking-wider">
+            1-Click Switch Demo Persona
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <button
+              onClick={() => handleQuickSwitch('aisha@example.com')}
+              className="flex items-center justify-between p-3 rounded-xl border border-lime-300 bg-lime-50 hover:bg-lime-100 text-left transition-all group"
+            >
+              <div>
+                <div className="text-xs font-bold text-slate-900 group-hover:text-lime-800">Aisha Khan (Customer 2)</div>
+                <div className="text-[11px] text-slate-500 font-mono">aisha@example.com · Scenario 2 Owner</div>
+              </div>
+              <User className="w-4 h-4 text-lime-700 shrink-0" />
+            </button>
+
+            <button
+              onClick={() => handleQuickSwitch('rahul@example.com')}
+              className="flex items-center justify-between p-3 rounded-xl border border-lime-200 bg-white hover:bg-lime-50 text-left transition-all group"
+            >
+              <div>
+                <div className="text-xs font-bold text-slate-900 group-hover:text-lime-800">Rahul Sharma (Customer 1)</div>
+                <div className="text-[11px] text-slate-500 font-mono">rahul@example.com · Scenario 1 Owner</div>
+              </div>
+              <User className="w-4 h-4 text-slate-400 group-hover:text-lime-700 shrink-0" />
+            </button>
+
+            <button
+              onClick={() => handleQuickSwitch('arjun@example.com')}
+              className="flex items-center justify-between p-3 rounded-xl border border-lime-200 bg-white hover:bg-lime-50 text-left transition-all group"
+            >
+              <div>
+                <div className="text-xs font-bold text-slate-900 group-hover:text-lime-800">Arjun Verma (Customer 3)</div>
+                <div className="text-[11px] text-slate-500 font-mono">arjun@example.com · Scenario 3 Owner</div>
+              </div>
+              <User className="w-4 h-4 text-slate-400 group-hover:text-lime-700 shrink-0" />
+            </button>
+
+            <button
+              onClick={() => handleQuickSwitch('agent@resolveai.com')}
+              className="flex items-center justify-between p-3 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-left transition-all group"
+            >
+              <div>
+                <div className="text-xs font-bold text-slate-900 group-hover:text-amber-900">Dev Specialist (Agent)</div>
+                <div className="text-[11px] text-amber-700 font-mono">agent@resolveai.com · Support Access</div>
+              </div>
+              <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0" />
+            </button>
+          </div>
+        </div>
+
+        <div className="pt-2">
+          <Link to="/demo" className="text-lime-700 hover:text-lime-900 text-sm font-semibold">
+            ← Return to Demo Lab
+          </Link>
+        </div>
       </div>
     );
   }
@@ -81,9 +184,15 @@ export const CaseDetail = () => {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center space-y-4">
         <h2 className="text-xl font-bold text-slate-800">Case Not Found</h2>
-        <Link to="/dashboard" className="text-lime-700 hover:text-lime-900 text-sm font-semibold">
-          Return to Dashboard
-        </Link>
+        <div className="flex items-center justify-center space-x-4 text-sm font-semibold">
+          <Link to="/dashboard" className="text-lime-700 hover:text-lime-900">
+            Return to Dashboard
+          </Link>
+          <span className="text-slate-300">|</span>
+          <Link to="/demo" className="text-lime-700 hover:text-lime-900">
+            Go to Demo Lab
+          </Link>
+        </div>
       </div>
     );
   }

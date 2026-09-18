@@ -43,16 +43,21 @@ class AIOrchestrator:
         # 1. Retrieve knowledge from Cognee
         knowledge_results = await CogneeClient.query_knowledge(customer_request)
 
-        # 2. Try n8n Cloud webhook workflow if configured
-        if settings.N8N_BASE_URL and settings.N8N_API_KEY:
+        # 2. Try n8n webhook workflow if configured
+        webhook_url = settings.N8N_WEBHOOK_URL
+        if not webhook_url and settings.N8N_BASE_URL and "your-instance" not in settings.N8N_BASE_URL:
+            webhook_url = f"{settings.N8N_BASE_URL.rstrip('/')}/webhook/resolve-case-investigation"
+
+        if webhook_url:
             try:
+                headers = {"Content-Type": "application/json"}
+                if settings.N8N_API_KEY and "placeholder" not in settings.N8N_API_KEY:
+                    headers["X-N8N-API-KEY"] = settings.N8N_API_KEY
+
                 async with httpx.AsyncClient(timeout=8.0) as client:
                     n8n_res = await client.post(
-                        f"{settings.N8N_BASE_URL}/webhook/resolve-case-investigation",
-                        headers={
-                            "X-N8N-API-KEY": settings.N8N_API_KEY,
-                            "Content-Type": "application/json"
-                        },
+                        webhook_url,
+                        headers=headers,
                         json={
                             "case_id": case_id,
                             "customer_request": customer_request,

@@ -194,8 +194,8 @@ class CaseEngine:
         payment: Optional[Payment] = None
         if payment_reference:
             payment = await PaymentSimulator.get_payment_by_reference(db, payment_reference)
-        if not payment:
-            # Look up customer's latest payment
+        else:
+            # Look up customer's latest payment only if no reference was given
             res = await db.execute(
                 select(Payment)
                 .filter(Payment.customer_id == case.customer_id)
@@ -204,6 +204,28 @@ class CaseEngine:
             payment = res.scalars().first()
 
         evidence: Dict[str, Any] = {}
+
+        if not payment and payment_reference:
+            evidence["payment"] = {
+                "payment_reference": payment_reference,
+                "status": "NOT_FOUND"
+            }
+            await CaseEngine.log_action(
+                db,
+                case_id=case.id,
+                action_type="CHECK_PAYMENT",
+                requested_by="resolve_ai_agent",
+                status="FAILED",
+                result_metadata=evidence["payment"],
+            )
+            await CaseEngine.log_event(
+                db,
+                case_id=case.id,
+                event_type="PAYMENT_NOT_FOUND_AT_GATEWAY",
+                description=f"Simulated payment gateway returned NOT_FOUND for reference '{payment_reference}'",
+                actor_type="PROVIDER",
+                actor_id="SIMULATED_GATEWAY",
+            )
 
         if payment:
             case.payment_id = payment.id

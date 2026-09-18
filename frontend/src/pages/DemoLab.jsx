@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import client from '../api/client';
+import { useAuth } from '../auth/AuthContext';
 import {
   Sliders,
   Play,
@@ -54,10 +55,30 @@ export const DemoLab = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const { user, switchAccount } = useAuth();
+
   const handleRunScenario = async (scenarioId) => {
     setRunningId(scenarioId);
     setNotificationMsg('');
     try {
+      const scenarioUserMap = {
+        'SCENARIO_1_RECOVERY': 'rahul@example.com',
+        'SCENARIO_2_REFUND': 'aisha@example.com',
+        'SCENARIO_3_PENDING': 'arjun@example.com',
+        'SCENARIO_4_DUPLICATE': 'rahul@example.com',
+        'SCENARIO_5_REFUND_EXISTS': 'rahul@example.com',
+        'SCENARIO_6_CONFLICT': 'rahul@example.com',
+        'SCENARIO_7_TIMEOUT': 'rahul@example.com',
+        'SCENARIO_8_ORDER_EXISTS': 'rahul@example.com',
+        'SCENARIO_9_PAYMENT_NOT_FOUND': 'rahul@example.com',
+        'SCENARIO_10_BACKGROUND_RECON': 'rahul@example.com'
+      };
+
+      const targetEmail = scenarioUserMap[scenarioId];
+      if (targetEmail && (!user || user.email !== targetEmail)) {
+        await switchAccount(targetEmail);
+      }
+
       const res = await client.post('/demo/scenario/run', { scenario_id: scenarioId });
       setNotificationMsg(`Scenario '${scenarioId}' initialized successfully!`);
       const updatedState = await client.get('/demo/state');
@@ -66,7 +87,7 @@ export const DemoLab = () => {
       if (res.data.case_id) {
         setTimeout(() => {
           navigate(`/case/${res.data.case_id}`);
-        }, 1000);
+        }, 500);
       }
     } catch (err) {
       console.error('Failed to run scenario', err);

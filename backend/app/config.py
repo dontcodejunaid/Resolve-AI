@@ -20,7 +20,8 @@ class Settings(BaseSettings):
     INTERNAL_API_KEY: str = "resolve_ai_internal_secure_token_change_in_production"
 
     # n8n Orchestration Layer
-    N8N_BASE_URL: Optional[str] = "https://your-instance.app.n8n.cloud"
+    N8N_BASE_URL: Optional[str] = None
+    N8N_WEBHOOK_URL: Optional[str] = None
     N8N_API_KEY: Optional[str] = None
     N8N_WEBHOOK_SECRET: Optional[str] = None
 

@@ -32,7 +32,9 @@ export const Login = () => {
   };
 
   const quickLogins = [
-    { label: 'Customer (Rahul)', email: 'rahul@example.com' },
+    { label: 'Customer 1 (Rahul)', email: 'rahul@example.com' },
+    { label: 'Customer 2 (Aisha)', email: 'aisha@example.com' },
+    { label: 'Customer 3 (Arjun)', email: 'arjun@example.com' },
     { label: 'Support Specialist', email: 'agent@resolveai.com' },
     { label: 'Store Manager', email: 'manager@resolvestore.com' },
   ];

@@ -3,7 +3,7 @@
 ## Role of Cognee
 **Cognee Cloud** functions as the semantic policy and procedural memory layer for RESOLVE AI. It supplies store policies, past case precedents, and refund rules to the AI agent during investigation.
 
-> **CRITICAL SEPARATION**: Cognee is NOT the transaction database. PostgreSQL remains the sole source of truth for payment status, order state, refund status, inventory, and case records.
+> **CRITICAL SEPARATION**: Cognee is NOT the transaction database. MongoDB Atlas remains the sole source of truth for payment status, order state, refund status, inventory, and case records.
 
 ---
 

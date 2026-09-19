@@ -40,7 +40,7 @@ export const INITIAL_ENGINEERS = [
     coffeeCups: 7,
     bugsFixed: 89,
     branch: 'inventory/stock-lock-engine',
-    techStack: ['PostgreSQL', 'SQLAlchemy', 'Inventory Engine', 'Idempotency'],
+    techStack: ['MongoDB Atlas', 'FastAPI Engine', 'Inventory Engine', 'Idempotency'],
     currentTask: 'Query Warehouse Inventory & Cart Records',
     progress: 100,
     workflowSteps: [
@@ -187,7 +187,7 @@ export const SCENARIO_WORKER_CUSTOMIZATIONS = {
       activeTool: 'QUERY_COGNEE'
     },
     'worker-4': {
-      thought: 'Deterministic Rule 7 verified: Exactly 1 order recorded in PostgreSQL 🛡️',
+      thought: 'Deterministic Rule 7 verified: Exactly 1 order recorded in MongoDB Atlas 🛡️',
       currentTask: 'Verify Single-Order Database Invariant',
       activeTool: 'INDEPENDENT_VERIFICATION'
     }
@@ -328,7 +328,7 @@ export const SCENARIO_WORKER_CUSTOMIZATIONS = {
 
 export const TECH_THOUGHTS = [
   'Verifying banking gateway webhook signature...',
-  'Checking stock reservation in PostgreSQL database...',
+  'Checking stock reservation in MongoDB Atlas database...',
   'Querying Cognee knowledge layer for return policy...',
   'Enforcing 13 deterministic business rules...',
   'Validating idempotency key to prevent double recovery...',
@@ -354,7 +354,7 @@ export const PRESET_TASKS = [
     priority: 'High',
     duration: 4,
     points: 80,
-    tags: ['Stock', 'Checkout', 'PostgreSQL']
+    tags: ['Stock', 'Checkout', 'MongoDB Atlas']
   },
   {
     id: 'task-preset-3',

@@ -16,6 +16,7 @@ import {
   Building2,
   CreditCard
 } from 'lucide-react';
+import { ExpandableTabs } from './ui/expandable-tabs';
 
 export const Navbar = () => {
   const { user, logout, switchAccount } = useAuth();
@@ -46,16 +47,106 @@ export const Navbar = () => {
     }
   };
 
-  const isActive = (path) => location.pathname === path;
-
   const demoPersonas = [
-    { name: 'Rahul Sharma', email: 'rahul@example.com', role: 'Customer 1 (Recovery)' },
-    { name: 'Aisha Khan', email: 'aisha@example.com', role: 'Customer 2 (Refund/Stock)' },
-    { name: 'Arjun Verma', email: 'arjun@example.com', role: 'Customer 3 (Pending)' },
-    { name: 'Dev Specialist', email: 'agent@resolveai.com', role: 'Support Specialist' },
-    { name: 'Priya Patel', email: 'manager@resolvestore.com', role: 'Store Manager' },
-    { name: 'Bank Provider Sentinel', email: 'bank@gateway.com', role: 'Bank Gateway Provider' },
+    {
+      name: 'Rahul Sharma',
+      email: 'rahul@example.com',
+      role: 'Customer 1 (Recovery)',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+    },
+    {
+      name: 'Aisha Khan',
+      email: 'aisha@example.com',
+      role: 'Customer 2 (Refund/Stock)',
+      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80',
+    },
+    {
+      name: 'Arjun Verma',
+      email: 'arjun@example.com',
+      role: 'Customer 3 (Pending)',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
+    },
+    {
+      name: 'Dev Specialist',
+      email: 'agent@resolveai.com',
+      role: 'Support Specialist',
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80',
+    },
+    {
+      name: 'Priya Patel',
+      email: 'manager@resolvestore.com',
+      role: 'Store Manager',
+      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80',
+    },
+    {
+      name: 'Bank Sentinel',
+      email: 'bank@gateway.com',
+      role: 'Bank Gateway Provider',
+      avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&auto=format&fit=crop&q=80',
+    },
   ];
+
+  // Dynamic Navigation Tabs for ExpandableTabs
+  const getNavTabs = () => {
+    if (!user) {
+      return [
+        { title: 'Demo Lab', icon: Sliders, path: '/demo' },
+        { type: 'separator' },
+        { title: 'Bank Gateway', icon: Building2, path: '/bank' },
+      ];
+    }
+
+    if (user.role === 'customer') {
+      return [
+        { title: 'My Cases', icon: Layers, path: '/dashboard' },
+        { title: 'Orders', icon: ShoppingBag, path: '/orders' },
+        { type: 'separator' },
+        { title: 'Bank Gateway', icon: Building2, path: '/bank' },
+        { title: 'Demo Lab', icon: Sliders, path: '/demo' },
+      ];
+    }
+
+    if (user.role === 'employee') {
+      return [
+        { title: 'Case Queue', icon: Layers, path: '/employee/dashboard' },
+        { title: 'Approvals', icon: ShieldAlert, path: '/employee/approvals' },
+        { type: 'separator' },
+        { title: 'Bank Gateway', icon: Building2, path: '/bank' },
+        { title: 'Demo Lab', icon: Sliders, path: '/demo' },
+      ];
+    }
+
+    if (user.role === 'merchant') {
+      return [
+        { title: 'Console', icon: Layers, path: '/merchant/dashboard' },
+        { title: 'Approvals', icon: ShieldAlert, path: '/employee/approvals' },
+        { title: 'Policies', icon: LifeBuoy, path: '/merchant/policies' },
+        { title: 'Inventory', icon: ShoppingBag, path: '/merchant/products' },
+        { type: 'separator' },
+        { title: 'Bank Gateway', icon: Building2, path: '/bank' },
+        { title: 'Demo Lab', icon: Sliders, path: '/demo' },
+      ];
+    }
+
+    return [
+      { title: 'Demo Lab', icon: Sliders, path: '/demo' },
+      { title: 'Bank Gateway', icon: Building2, path: '/bank' },
+    ];
+  };
+
+  const navTabs = getNavTabs();
+
+  const handleTabChange = (index) => {
+    if (index === null || index === undefined) return;
+    const tab = navTabs[index];
+    if (tab && tab.path) {
+      navigate(tab.path);
+    }
+  };
+
+  const currentPersona = demoPersonas.find((p) => p.email === user?.email);
+
+  const currentTabIndex = navTabs.findIndex((t) => t.path === location.pathname);
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-lime-200 shadow-sm">
@@ -77,126 +168,15 @@ export const Navbar = () => {
             </Link>
           </div>
 
-          {/* Navigation Links based on Role */}
-          <nav className="hidden md:flex items-center space-x-1">
-            {user?.role === 'customer' && (
-              <>
-                <Link
-                  to="/dashboard"
-                  className={`px-3.5 py-1.5 text-sm rounded-xl transition-all ${
-                    isActive('/dashboard')
-                      ? 'bg-lime-500 text-slate-950 font-bold shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 font-medium'
-                  }`}
-                >
-                  My Cases
-                </Link>
-                <Link
-                  to="/orders"
-                  className={`px-3.5 py-1.5 text-sm rounded-xl transition-all ${
-                    isActive('/orders')
-                      ? 'bg-lime-500 text-slate-950 font-bold shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 font-medium'
-                  }`}
-                >
-                  Orders
-                </Link>
-              </>
-            )}
-
-            {(user?.role === 'employee' || user?.role === 'admin') && (
-              <>
-                <Link
-                  to="/employee/dashboard"
-                  className={`px-3.5 py-1.5 text-sm rounded-xl transition-all ${
-                    isActive('/employee/dashboard')
-                      ? 'bg-lime-500 text-slate-950 font-bold shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 font-medium'
-                  }`}
-                >
-                  Case Queue
-                </Link>
-                <Link
-                  to="/employee/approvals"
-                  className={`px-3.5 py-1.5 text-sm rounded-xl transition-all flex items-center space-x-1.5 ${
-                    isActive('/employee/approvals')
-                      ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 font-medium'
-                  }`}
-                >
-                  <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Approvals</span>
-                </Link>
-              </>
-            )}
-
-            {(user?.role === 'merchant' || user?.role === 'admin') && (
-              <>
-                <Link
-                  to="/merchant/dashboard"
-                  className={`px-3.5 py-1.5 text-sm rounded-xl transition-all ${
-                    isActive('/merchant/dashboard')
-                      ? 'bg-lime-500 text-slate-950 font-bold shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 font-medium'
-                  }`}
-                >
-                  Merchant Console
-                </Link>
-                <Link
-                  to="/employee/approvals"
-                  className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all flex items-center space-x-1.5 ${
-                    isActive('/employee/approvals') ? 'bg-amber-100 text-amber-900 border border-amber-300 shadow-sm' : 'text-slate-600 hover:text-slate-900 hover:bg-amber-50/60'
-                  }`}
-                >
-                  <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Approvals</span>
-                </Link>
-                <Link
-                  to="/merchant/policies"
-                  className={`px-3.5 py-1.5 text-sm rounded-xl transition-all ${
-                    isActive('/merchant/policies')
-                      ? 'bg-lime-500 text-slate-950 font-bold shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 font-medium'
-                  }`}
-                >
-                  Policies
-                </Link>
-                <Link
-                  to="/merchant/products"
-                  className={`px-3.5 py-1.5 text-sm rounded-xl transition-all ${
-                    isActive('/merchant/products')
-                      ? 'bg-lime-500 text-slate-950 font-bold shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 font-medium'
-                  }`}
-                >
-                  Inventory
-                </Link>
-              </>
-            )}
-
-            {/* Bank Gateway Portal Link */}
-            <Link
-              to="/bank"
-              className={`px-3.5 py-1.5 text-sm font-semibold rounded-xl transition-all flex items-center space-x-1.5 ${
-                isActive('/bank') ? 'bg-emerald-600 text-white shadow-md' : 'text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'
-              }`}
-            >
-              <Building2 className="w-3.5 h-3.5" />
-              <span>Bank Gateway</span>
-            </Link>
-
-            {/* Always accessible Demo Lab */}
-            <Link
-              to="/demo"
-              className={`px-3.5 py-1.5 text-sm rounded-xl transition-all flex items-center space-x-1.5 ${
-                isActive('/demo')
-                  ? 'bg-lime-500 text-slate-950 font-bold shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900 font-medium'
-              }`}
-            >
-              <Sliders className="w-3.5 h-3.5" />
-              <span>Demo Lab</span>
-            </Link>
+          {/* Interactive Expandable Tabs Navigation */}
+          <nav className="hidden md:flex items-center">
+            <ExpandableTabs
+              tabs={navTabs}
+              selectedIndex={currentTabIndex !== -1 ? currentTabIndex : null}
+              activeColor="bg-lime-500 text-slate-950 font-bold shadow-sm shadow-lime-500/25"
+              className="border-lime-200 bg-white/95 shadow-sm"
+              onChange={handleTabChange}
+            />
           </nav>
 
           {/* User Profile & Demo Persona Switcher */}
@@ -209,7 +189,15 @@ export const Navbar = () => {
                     disabled={switching}
                     className="flex items-center space-x-2 bg-slate-50 hover:bg-lime-50 border border-slate-200 hover:border-lime-300 px-3 py-1.5 rounded-xl text-xs transition-all"
                   >
-                    <div className="w-2 h-2 rounded-full bg-lime-500 animate-pulse" />
+                    {currentPersona?.avatar ? (
+                      <img
+                        src={currentPersona.avatar}
+                        alt={user.full_name}
+                        className="w-5 h-5 rounded-full object-cover border border-lime-300"
+                      />
+                    ) : (
+                      <div className="w-2 h-2 rounded-full bg-lime-500 animate-pulse" />
+                    )}
                     <span className="font-bold text-slate-800">{user.full_name || user.email}</span>
                     <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-lime-100 text-lime-800 font-bold">
                       {user.role}
@@ -217,7 +205,7 @@ export const Navbar = () => {
                     <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                   </button>
 
-                  <div className="absolute right-0 mt-1 w-64 bg-white border border-lime-200 rounded-2xl shadow-xl p-2 hidden group-hover:block z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="absolute right-0 mt-1 w-72 bg-white border border-lime-200 rounded-2xl shadow-xl p-2 hidden group-hover:block z-50 animate-in fade-in slide-in-from-top-1 duration-150">
                     <div className="px-2 py-1.5 text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider">
                       Switch Demo Persona
                     </div>
@@ -231,9 +219,16 @@ export const Navbar = () => {
                             : 'hover:bg-slate-50 text-slate-700'
                         }`}
                       >
-                        <div>
-                          <div className="font-semibold">{p.name}</div>
-                          <div className="text-[10px] text-slate-500 font-mono">{p.role}</div>
+                        <div className="flex items-center space-x-2.5">
+                          <img
+                            src={p.avatar}
+                            alt={p.name}
+                            className="w-7 h-7 rounded-full object-cover border border-slate-200"
+                          />
+                          <div>
+                            <div className="font-semibold">{p.name}</div>
+                            <div className="text-[10px] text-slate-500 font-mono">{p.role}</div>
+                          </div>
                         </div>
                         {user.email === p.email && (
                           <CheckCircle2 className="w-3.5 h-3.5 text-lime-700 shrink-0" />
@@ -273,4 +268,3 @@ export const Navbar = () => {
     </header>
   );
 };
-

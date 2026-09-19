@@ -14,9 +14,12 @@ ENVIRONMENT=development
 LOG_LEVEL=INFO
 DEBUG=True
 
-# Database (PostgreSQL URL or SQLite fallback)
+# Authoritative Document Database (MongoDB Atlas)
+MONGODB_URI=mongodb+srv://<username>:<password>@resolveai.mongodb.net/?retryWrites=true&w=majority&appName=ResolveAI
+MONGODB_DB_NAME=resolve_ai
+
+# Local Engine / Cache
 DATABASE_URL=sqlite+aiosqlite:///./resolve_ai.db
-# For live PostgreSQL: postgresql+asyncpg://postgres:postgres@localhost:5432/resolve_ai
 
 # Security & Authentication
 JWT_SECRET=super_secret_jwt_key_change_me_in_production_min_32_chars

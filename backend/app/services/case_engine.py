@@ -27,6 +27,7 @@ from backend.app.services.payment_simulator import PaymentSimulator
 from backend.app.services.merchant_simulator import MerchantSimulator
 from backend.app.services.refund_simulator import RefundSimulator
 from backend.app.services.ai_orchestrator import AIOrchestrator
+from backend.app.mongodb import sync_model
 
 
 def utcnow():
@@ -313,6 +314,12 @@ class CaseEngine:
         db.add(case)
         await db.commit()
         await db.refresh(case)
+
+        # Sync Case to MongoDB Atlas
+        try:
+            await sync_model("cases", "id", case)
+        except Exception:
+            pass
 
         # Log initial complaint event
         await CaseEngine.log_event(
@@ -728,6 +735,12 @@ class CaseEngine:
 
         case.updated_at = utcnow()
         await db.commit()
+        
+        # Sync Case update to MongoDB Atlas
+        try:
+            await sync_model("cases", "id", case)
+        except Exception:
+            pass
 
     @staticmethod
     async def process_customer_recovery_confirmation(
@@ -900,6 +913,17 @@ class CaseEngine:
 
         case.updated_at = utcnow()
         await db.commit()
+
+        # Sync Case, Order, and Notification to MongoDB Atlas
+        try:
+            await sync_model("cases", "id", case)
+            if verified_order:
+                await sync_model("orders", "id", verified_order)
+            if 'notification' in locals() and notification:
+                await sync_model("notifications", "id", notification)
+        except Exception:
+            pass
+
         refreshed = await CaseEngine.get_case_with_relations(db, case.id)
         return refreshed or case
 
@@ -997,6 +1021,14 @@ class CaseEngine:
             case.resolution_type = "REFUND_ISSUED"
             await db.commit()
 
+            # Sync Case, Approval, and Refund to MongoDB Atlas
+            try:
+                await sync_model("cases", "id", case)
+                await sync_model("approvals", "id", approval)
+                await sync_model("refunds", "id", refund)
+            except Exception:
+                pass
+
         return approval
 
     @staticmethod
@@ -1052,6 +1084,14 @@ class CaseEngine:
             )
             db.add(notification)
             await db.commit()
+
+            # Sync Case, Refund, and Notification to MongoDB Atlas
+            try:
+                await sync_model("cases", "id", case)
+                await sync_model("refunds", "id", refund)
+                await sync_model("notifications", "id", notification)
+            except Exception:
+                pass
 
         refreshed = await CaseEngine.get_case_with_relations(db, case.id)
         return refreshed or case

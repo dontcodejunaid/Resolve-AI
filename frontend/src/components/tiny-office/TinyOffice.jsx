@@ -48,7 +48,7 @@ export const TinyOffice = () => {
     {
       id: 'c-2',
       author: 'Samira Khan',
-      message: 'perf: shard postgres database cluster partition table',
+      message: 'perf: sync MongoDB Atlas collections and optimize indexes',
       hash: '9d2e10c',
       branch: 'perf/distributed-cache-v3',
       time: '3m ago',

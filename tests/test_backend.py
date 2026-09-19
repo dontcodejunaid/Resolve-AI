@@ -52,8 +52,9 @@ async def test_scenario_1_order_recovery_flow():
             "/cases",
             headers=headers,
             json={
-                "customer_request": "I paid ₹799 for Wireless Headset via UPI (TXN987654) but order is not showing.",
-                "payment_reference": "TXN987654"
+                "customer_request": "I paid ₹2499 for Heavyweight Boxy Hoodie via UPI (TXN987654) but order is not showing.",
+                "payment_reference": "TXN987654",
+                "product_id": "prod_hoodie_01"
             }
         )
         assert case_res.status_code == 201
@@ -145,3 +146,79 @@ async def test_customer_isolation_security():
 
         forbidden_res = await ac.get(f"/cases/{case_id}", headers={"Authorization": f"Bearer {aisha_token}"})
         assert forbidden_res.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_aura_inventory_and_store_manager():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # 1. Login Store Manager
+        mgr_login = await ac.post("/auth/login", json={"email": "manager@resolvestore.com", "password": "password123"})
+        mgr_token = mgr_login.json()["access_token"]
+        headers = {"Authorization": f"Bearer {mgr_token}"}
+
+        # 2. Get Store Info (Aura Studio)
+        store_res = await ac.get("/merchant/store", headers=headers)
+        assert store_res.status_code == 200
+        store_data = store_res.json()
+        assert "AURA" in store_data["name"].upper()
+        assert store_data["store_url"] == "https://aura-nine-virid.vercel.app/"
+
+        # 3. Get Products (Must contain all 6 Aura products)
+        prod_res = await ac.get("/merchant/products", headers=headers)
+        assert prod_res.status_code == 200
+        products = prod_res.json()
+        
+        prod_names = [p["name"] for p in products]
+        assert "Heavyweight Boxy Hoodie" in prod_names
+        assert "Relaxed Linen Overshirt" in prod_names
+        assert "Tailored Pleated Trousers" in prod_names
+        assert "Sand Vintage Boxy Tee" in prod_names
+        assert "Indigo Worker Denim Jacket" in prod_names
+        assert "Matte Black Crossbody Tote" in prod_names
+
+        # Check Hoodie price & image
+        hoodie = [p for p in products if p["name"] == "Heavyweight Boxy Hoodie"][0]
+        assert float(hoodie["price"]) == 2499.00
+        assert hoodie["category"] == "outerwear"
+        assert hoodie["sku"] == "AURA-HD-001"
+        assert hoodie["image_url"] == "/assets/images/hoodie.jpg"
+
+
+@pytest.mark.asyncio
+async def test_aura_live_checkout_transaction_matching():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # Customer Login
+        rahul_login = await ac.post("/auth/login", json={"email": "rahul@example.com", "password": "password123"})
+        rahul_token = rahul_login.json()["access_token"]
+        headers = {"Authorization": f"Bearer {rahul_token}"}
+
+        # Customer tests with a freshly generated Aura transaction ID
+        aura_txn = "TXN_7829104_INR"
+        case_res = await ac.post(
+            "/cases",
+            headers=headers,
+            json={
+                "customer_request": f"My payment of ₹2499 for Heavyweight Boxy Hoodie with {aura_txn} timed out on Aura checkout.",
+                "payment_reference": aura_txn,
+                "product_id": "prod_hoodie_01",
+                "screenshot_url": "https://aura-nine-virid.vercel.app/screenshot.png"
+            }
+        )
+        assert case_res.status_code == 201
+        case_data = case_res.json()
+        assert case_data["payment_id"] is not None
+        assert case_data["status"] == "WAITING_FOR_CUSTOMER"
+
+        # Customer confirms recovery
+        confirm_res = await ac.post(
+            f"/cases/{case_data['id']}/customer-confirmation",
+            headers=headers,
+            json={"accepted": True, "notes": "Recover order for Heavyweight Boxy Hoodie"}
+        )
+        assert confirm_res.status_code == 200
+        resolved_case = confirm_res.json()
+        assert resolved_case["status"] == "RESOLVED"
+        assert resolved_case["resolution_type"] == "ORDER_RECOVERY"
+

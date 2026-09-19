@@ -30,7 +30,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first()?.json || {};\nconst body = input.body || input;\nreturn {\n  case_id: body.case_id || 'case_test_01',\n  customer_id: body.customer_id || 'cust_test_01',\n  customer_request: body.customer_request || 'Payment deducted but no order placed.',\n  payment_reference: body.payment_reference || 'pay_test_01',\n  product_id: body.product_id || 'prod_headset',\n  timestamp: new Date().toISOString()\n};"
+        "jsCode": "const input = $input.first()?.json || {};\nconst body = input.body || input;\nreturn {\n  case_id: body.case_id || 'case_aura_101_hoodie',\n  customer_id: body.customer_id || 'usr_rahul',\n  customer_request: body.customer_request || 'Payment deducted for Heavyweight Boxy Hoodie, but no order placed.',\n  payment_reference: body.payment_reference || 'TXN_4829103_INR',\n  product_id: body.product_id || 'prod_hoodie_01',\n  timestamp: new Date().toISOString()\n};"
       },
       "id": "01-ingest",
       "name": "1. Ingest Case & Validate Payload",

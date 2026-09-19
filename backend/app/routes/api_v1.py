@@ -407,7 +407,7 @@ async def recover_order(
             product_id = chk.product_id
 
     if not product_id:
-        product_id = "prod_headset"
+        product_id = "prod_hoodie_01"
 
     product = await MerchantSimulator.get_product(db, product_id)
     if not product or product.stock <= 0:
@@ -1070,33 +1070,36 @@ async def setup_demo_scenario(
     scenario_name: str,
     db: AsyncSession = Depends(get_db),
 ):
-    payment_ref = f"TXN-{uuid.uuid4().hex[:6].upper()}"
+    payment_ref = f"TXN_{uuid.uuid4().hex[:7].upper()}_INR"
 
-    prod = await MerchantSimulator.get_product(db, "prod_headset")
-    if not prod:
-        prod = Product(
-            id="prod_headset",
+    prod_hoodie = await MerchantSimulator.get_product(db, "prod_hoodie_01")
+    if not prod_hoodie:
+        prod_hoodie = Product(
+            id="prod_hoodie_01",
             merchant_id="mer_resolve_store",
-            name="Wireless Headset",
-            description="High-fidelity Bluetooth wireless headset",
-            price=Decimal("799.00"),
+            name="Heavyweight Boxy Hoodie",
+            category="outerwear",
+            sku="AURA-HD-001",
+            description="500 GSM French Terry luxury heavyweight drop-shoulder boxy hoodie.",
+            image_url="/assets/images/hoodie.jpg",
+            price=Decimal("2499.00"),
             currency="INR",
             stock=10,
             is_active=True,
             created_at=utcnow(),
             updated_at=utcnow(),
         )
-        db.add(prod)
+        db.add(prod_hoodie)
         await db.commit()
 
     if scenario_name == "payment-success-order-missing":
-        prod.stock = 12
+        prod_hoodie.stock = 12
         payment = Payment(
             id=f"pay_{uuid.uuid4().hex[:12]}",
             payment_reference=payment_ref,
             customer_id="usr_rahul",
             merchant_id="mer_resolve_store",
-            amount=Decimal("799.00"),
+            amount=Decimal("2499.00"),
             currency="INR",
             status="SUCCESS",
             provider_name="Razorpay Simulator",
@@ -1111,27 +1114,48 @@ async def setup_demo_scenario(
             db=db,
             customer_id="usr_rahul",
             merchant_id="mer_resolve_store",
-            customer_request="I paid ₹799 but my order is not showing",
+            customer_request="I paid ₹2,499.00 for Heavyweight Boxy Hoodie on Aura Studio but my order is not showing",
             payment_reference=payment_ref,
+            product_id="prod_hoodie_01",
         )
         return {
             "scenario": "payment-success-order-missing",
             "case_id": case.id,
             "case_number": case.case_number,
             "payment_reference": payment_ref,
-            "product_id": prod.id,
-            "amount": 799.00,
+            "product_id": prod_hoodie.id,
+            "amount": 2499.00,
             "expected_flow": "Order Recovery -> Stock Verified -> Order Created -> Case Resolved",
         }
 
     elif scenario_name == "product-unavailable":
-        prod.stock = 0
+        prod_pants = await MerchantSimulator.get_product(db, "prod_pants_03")
+        if not prod_pants:
+            prod_pants = Product(
+                id="prod_pants_03",
+                merchant_id="mer_resolve_store",
+                name="Tailored Pleated Trousers",
+                category="bottoms",
+                sku="AURA-TR-003",
+                description="Double-pleated wool-blend relaxed tailored trousers with extended waistband tab.",
+                image_url="/assets/images/trousers.jpg",
+                price=Decimal("2999.00"),
+                currency="INR",
+                stock=0,
+                is_active=True,
+                created_at=utcnow(),
+                updated_at=utcnow(),
+            )
+            db.add(prod_pants)
+            await db.commit()
+
+        prod_pants.stock = 0
         payment = Payment(
             id=f"pay_{uuid.uuid4().hex[:12]}",
             payment_reference=payment_ref,
-            customer_id="usr_rahul",
+            customer_id="usr_aisha",
             merchant_id="mer_resolve_store",
-            amount=Decimal("799.00"),
+            amount=Decimal("2999.00"),
             currency="INR",
             status="SUCCESS",
             provider_name="Razorpay Simulator",
@@ -1144,19 +1168,20 @@ async def setup_demo_scenario(
 
         case = await CaseEngine.create_case(
             db=db,
-            customer_id="usr_rahul",
+            customer_id="usr_aisha",
             merchant_id="mer_resolve_store",
-            customer_request="I paid ₹799 for Wireless Headset but my order is not found",
+            customer_request="I paid ₹2,999.00 for Tailored Pleated Trousers on Aura Studio but item is out of stock",
             payment_reference=payment_ref,
+            product_id="prod_pants_03",
         )
         return {
             "scenario": "product-unavailable",
             "case_id": case.id,
             "case_number": case.case_number,
             "payment_reference": payment_ref,
-            "product_id": prod.id,
+            "product_id": prod_pants.id,
             "stock": 0,
-            "amount": 799.00,
+            "amount": 2999.00,
             "expected_flow": "Stock Out -> Propose Refund -> Approval Required (Threshold ₹500) -> Manager Approves -> Refund Verified",
         }
 
@@ -1447,3 +1472,11 @@ async def setup_demo_scenario(
             "case_number": case.case_number,
             "payment_reference": payment_ref,
         }
+
+
+@router.post("/api/cases/analyze-screenshot")
+async def api_analyze_screenshot(req: dict):
+    from backend.app.routes.cases import analyze_screenshot
+    from backend.app.schemas import AnalyzeScreenshotRequest
+    return await analyze_screenshot(AnalyzeScreenshotRequest(**req))
+

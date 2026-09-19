@@ -829,22 +829,22 @@ export const CaseDetail = () => {
         const paymentStatus = caseData.payment?.status || (caseData.status === 'WAITING_FOR_PROVIDER' ? 'PENDING' : 'SUCCESS');
         const paymentAmount = caseData.payment?.amount
           ? `₹${Number(caseData.payment.amount).toFixed(2)} ${caseData.payment.currency || 'INR'}`
-          : (caseData.customer_request?.match(/₹([0-9]+)/)?.[0] || '₹799.00 INR');
+          : (caseData.customer_request?.match(/₹([0-9,]+)/)?.[0] || '₹2,499.00 INR');
 
-        const isKeyboard = caseData.customer_id === 'usr_aisha' || caseData.customer_request?.includes('Keyboard');
-        const isMouse = caseData.customer_id === 'usr_arjun' || caseData.customer_request?.includes('Mouse');
+        const isPants = caseData.customer_id === 'usr_aisha' || caseData.customer_request?.includes('Trouser') || caseData.customer_request?.includes('Pant') || caseData.customer_request?.includes('Keyboard');
+        const isShirt = caseData.customer_id === 'usr_arjun' || caseData.customer_request?.includes('Shirt') || caseData.customer_request?.includes('Linen') || caseData.customer_request?.includes('Mouse');
 
-        const itemName = isKeyboard ? 'Mechanical Keyboard' : isMouse ? 'Wireless Mouse' : 'Wireless Headset';
-        const checkoutRef = isKeyboard ? 'CHK-RS-77211' : isMouse ? 'CHK-RS-77212' : 'CHK-RS-77210';
+        const itemName = isPants ? 'Tailored Pleated Trousers' : isShirt ? 'Relaxed Linen Overshirt' : 'Heavyweight Boxy Hoodie';
+        const checkoutRef = isPants ? 'CHK-AURA-802' : isShirt ? 'CHK-AURA-803' : 'CHK-AURA-801';
         const linkedOrder = caseData.order_id
           ? (caseData.order?.order_number || 'ORD-CONFIRMED')
           : caseData.status === 'RESOLVED' && caseData.resolution_type === 'ORDER_RECOVERY'
           ? 'ORD-RECOVERED'
           : 'MISSING (RECOVERY ELIGIBLE)';
 
-        const stockStatus = isKeyboard ? '0 Units (OUT OF STOCK)' : isMouse ? '20 Units in Stock' : '10 Units in Stock';
-        const stockBadgeStatus = isKeyboard ? 'UNAVAILABLE' : 'AVAILABLE';
-        const policyPath = caseData.resolution_type || (isKeyboard || caseData.status === 'WAITING_FOR_APPROVAL' ? 'MANAGER_REFUND_APPROVAL' : caseData.status === 'WAITING_FOR_PROVIDER' ? 'BACKGROUND_POLL_RECHECK' : 'ORDER_RECOVERY');
+        const stockStatus = isPants ? '0 Units (OUT OF STOCK)' : isShirt ? '14 Units in Stock' : '10 Units in Stock';
+        const stockBadgeStatus = isPants ? 'UNAVAILABLE' : 'AVAILABLE';
+        const policyPath = caseData.resolution_type || (isPants || caseData.status === 'WAITING_FOR_APPROVAL' ? 'MANAGER_REFUND_APPROVAL' : caseData.status === 'WAITING_FOR_PROVIDER' ? 'BACKGROUND_POLL_RECHECK' : 'ORDER_RECOVERY');
 
         return (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

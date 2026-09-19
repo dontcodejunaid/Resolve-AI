@@ -13,6 +13,7 @@ from backend.app.models.case import Case
 from backend.app.models.approval import Approval
 from backend.app.models.refund import Refund
 from backend.app.schemas import (
+    MerchantResponse,
     MerchantPolicyResponse,
     MerchantPolicyUpdate,
     ProductResponse,
@@ -68,6 +69,22 @@ async def update_merchant_policy(
     return policy
 
 
+@router.get("/store", response_model=MerchantResponse)
+async def get_store_info(
+    db: AsyncSession = Depends(get_db),
+):
+    res_m = await db.execute(select(Merchant))
+    merchant = res_m.scalars().first()
+    if not merchant:
+        return MerchantResponse(
+            id="mer_resolve_store",
+            name="AURA STUDIO (Luxury Apparel)",
+            email="contact@aurastudio.in",
+            store_url="https://aura-nine-virid.vercel.app/"
+        )
+    return merchant
+
+
 @router.get("/products", response_model=List[ProductResponse])
 async def list_merchant_products(
     current_user: User = Depends(require_role(["merchant", "admin", "employee"])),
@@ -92,6 +109,9 @@ async def create_product(
         merchant_id=m_id,
         name=req.name,
         description=req.description,
+        category=req.category or "apparel",
+        sku=req.sku,
+        image_url=req.image_url,
         price=req.price,
         currency=req.currency,
         stock=req.stock,
@@ -117,6 +137,12 @@ async def update_product(
 
     product.name = req.name
     product.description = req.description
+    if req.category is not None:
+        product.category = req.category
+    if req.sku is not None:
+        product.sku = req.sku
+    if req.image_url is not None:
+        product.image_url = req.image_url
     product.price = req.price
     product.currency = req.currency
     product.stock = req.stock

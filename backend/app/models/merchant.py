@@ -14,6 +14,7 @@ class Merchant(Base):
     id = Column(String(64), primary_key=True)
     name = Column(String(255), nullable=False)
     email = Column(String(255), unique=True, nullable=False)
+    store_url = Column(String(512), default="https://aura-nine-virid.vercel.app/", nullable=True)
     api_key = Column(String(255), nullable=True)
     created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)

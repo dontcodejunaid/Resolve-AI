@@ -50,6 +50,9 @@ class ProductResponse(BaseModel):
     merchant_id: str
     name: str
     description: Optional[str] = None
+    category: Optional[str] = "apparel"
+    sku: Optional[str] = None
+    image_url: Optional[str] = None
     price: Decimal
     currency: str
     stock: int
@@ -60,10 +63,21 @@ class ProductResponse(BaseModel):
 class ProductCreateOrUpdate(BaseModel):
     name: str
     description: Optional[str] = None
+    category: Optional[str] = "apparel"
+    sku: Optional[str] = None
+    image_url: Optional[str] = None
     price: Decimal
     currency: str = "INR"
     stock: int
     is_active: bool = True
+
+
+class MerchantResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    store_url: Optional[str] = "https://aura-nine-virid.vercel.app/"
+    model_config = ConfigDict(from_attributes=True)
 
 
 class MerchantPolicyResponse(BaseModel):
@@ -257,6 +271,28 @@ class ApprovalDecisionRequest(BaseModel):
 
 class HandoffNoteRequest(BaseModel):
     note: str
+
+
+class AnalyzeScreenshotRequest(BaseModel):
+    screenshot_url: Optional[str] = None
+    screenshot_base64: Optional[str] = None
+    customer_request: Optional[str] = None
+
+
+class AnalyzeScreenshotResponse(BaseModel):
+    status: str
+    payment_reference: str
+    product_id: str
+    product_name: str
+    amount: float
+    currency: str
+    customer_phone: str
+    customer_request: str
+    store_name: str
+    store_url: str
+    issue_type: str
+    confidence: float
+    fields_populated: List[str]
 
 
 class ScenarioRunRequest(BaseModel):

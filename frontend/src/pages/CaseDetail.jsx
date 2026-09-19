@@ -19,11 +19,14 @@ import {
   UserCheck,
   ShieldAlert,
   User,
-  Building2
+  Building2,
+  Phone,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { CaseTimeline } from '../components/CaseTimeline';
 import { InvestigationSteps } from '../components/InvestigationSteps';
 import { EvidenceCard } from '../components/EvidenceCard';
+import { VisionEvidenceCard } from '../components/VisionEvidenceCard';
 import { ResolveAIWorkerFloor } from '../components/ResolveAIWorkerFloor';
 import { formatActualDateTime, formatActualTime } from '../utils/dateUtils';
 
@@ -329,6 +332,12 @@ export const CaseDetail = () => {
             {caseData.resolution_type && (
               <span className="px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-lime-50 text-lime-900 border border-lime-300">
                 {caseData.resolution_type.replace(/_/g, ' ')}
+              </span>
+            )}
+            {caseData.customer_phone && (
+              <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-lime-50 text-lime-900 border border-lime-300">
+                <Phone className="w-3 h-3 text-lime-700" />
+                <span>SMS: {caseData.customer_phone}</span>
               </span>
             )}
           </div>
@@ -846,11 +855,28 @@ export const CaseDetail = () => {
                   Verified Investigation Evidence
                 </h3>
                 <span className="text-[10px] font-mono text-lime-800 bg-lime-100 px-2 py-0.5 rounded border border-lime-300">
-                  {caseData.refund || caseData.refund_id || caseData.status === 'WAITING_FOR_PROVIDER' || caseData.resolution_type === 'REFUND_ISSUED' ? '4 Fact Cards' : '3 Fact Cards'}
+                  {((caseData.screenshot_url || caseData.screenshot_analysis) ? 1 : 0) + ((caseData.refund || caseData.refund_id || caseData.status === 'WAITING_FOR_PROVIDER' || caseData.resolution_type === 'REFUND_ISSUED') ? 4 : 3)} Fact Cards
                 </span>
               </div>
 
               <div className="space-y-3.5">
+                {(caseData.screenshot_url || caseData.screenshot_analysis) && (
+                  <VisionEvidenceCard
+                    screenshotUrl={caseData.screenshot_url}
+                    analysis={
+                      typeof caseData.screenshot_analysis === 'string'
+                        ? (() => {
+                            try {
+                              return JSON.parse(caseData.screenshot_analysis);
+                            } catch (e) {
+                              return null;
+                            }
+                          })()
+                        : caseData.screenshot_analysis
+                    }
+                  />
+                )}
+
                 <EvidenceCard
                   title="Simulated Payment Gateway"
                   status={paymentStatus === 'SUCCESS' ? 'CONFIRMED' : paymentStatus}

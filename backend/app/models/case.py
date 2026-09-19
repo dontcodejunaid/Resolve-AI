@@ -27,6 +27,9 @@ class Case(Base):
     # ORDER_RECOVERY, REFUND_ISSUED, PAYMENT_PENDING_SCHEDULED,
     # EXISTING_ORDER_CONFIRMED, EXISTING_REFUND_TRACKED, MANUAL_ESCALATION, UNRESOLVED
     ai_summary = Column(Text, nullable=True)
+    screenshot_url = Column(Text, nullable=True)
+    customer_phone = Column(String(32), nullable=True)
+    screenshot_analysis = Column(Text, nullable=True)  # JSON-encoded Vision AI analysis
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow, nullable=False)

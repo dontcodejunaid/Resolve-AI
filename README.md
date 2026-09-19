@@ -9,7 +9,7 @@ RESOLVE AI is an accountable, full-stack autonomous customer service teammate th
 ## ⚡ Core Architectural Principle
 ### **AI PROPOSES. CODE DECIDES.**
 The LLM handles natural language understanding, cross-system tool proposal, policy synthesis, and customer-facing explanations.  
-The FastAPI backend and PostgreSQL database remain strictly authoritative for authentication, authorization, customer ownership, financial validation, idempotency, state transitions, and post-action verification.
+The FastAPI backend and MongoDB Atlas database remain strictly authoritative for authentication, authorization, customer ownership, financial validation, idempotency, state transitions, and post-action verification.
 
 ---
 
@@ -28,7 +28,7 @@ The FastAPI backend and PostgreSQL database remain strictly authoritative for au
 
 - **Frontend**: React, Vite, Tailwind CSS, Lucide Icons, React Router, Axios
 - **Backend**: Python 3.12, FastAPI, SQLAlchemy 2.0 Async, Pydantic V2, PyJWT, Passlib/Bcrypt
-- **Database**: PostgreSQL (with SQLite fallback for zero-config local run)
+- **Database**: MongoDB Atlas (with live real-time synchronization across all entities)
 - **AI Orchestration**: n8n Cloud (with native local fallback agent)
 - **Knowledge / Memory Layer**: Cognee Cloud (with local indexed knowledge store)
 - **Simulated Environment**: Built-in banking gateway, merchant, and refund simulators
@@ -118,8 +118,9 @@ resolve-ai/
 │   │   └── main.jsx
 │   └── package.json
 ├── database/
-│   ├── schema.sql         # PostgreSQL DDL
-│   └── seed.sql           # Demo seed data
+│   ├── mongodb_schema.js  # MongoDB Atlas collections & indexes specification
+│   ├── schema.sql         # Relational schema reference DDL
+│   └── seed.sql           # Baseline seed data
 ├── n8n/                   # n8n workflow definitions (case, recon, refund, approval)
 ├── docs/                  # Architecture, Demo guide, n8n, Cognee
 └── tests/                 # Pytest test suite (11 unit & scenario tests)

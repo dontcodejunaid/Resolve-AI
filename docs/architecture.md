@@ -5,7 +5,7 @@
 
 RESOLVE AI operates on a strict separation of intelligence and authority:
 1. **AI / Orchestration Layer (n8n & Cognee)** handles complaint comprehension, missing information detection, tool recommendation, policy synthesis, and customer-facing explanations.
-2. **FastAPI Backend & PostgreSQL** remain strictly authoritative for authentication, RBAC, tenant isolation, amount/currency validation, idempotency guards, financial action execution, and independent verification.
+2. **FastAPI Backend & MongoDB Atlas** remain strictly authoritative for authentication, RBAC, tenant isolation, amount/currency validation, idempotency guards, financial action execution, and independent verification.
 
 ---
 
@@ -33,7 +33,7 @@ RESOLVE AI operates on a strict separation of intelligence and authority:
 └──────┬──────┘      └─────────────┘      └─────────────┘
        │
 ┌──────▼─────────────────────────────────────────────────┐
-│              POSTGRESQL DATA STORE                     │
+│              MONGODB ATLAS DATA STORE                  │
 │ Users, Merchants, Products, Payments, Checkouts,       │
 │ Orders, Refunds, Cases, Case Events, Actions, Approvals│
 └────────────────────────────────────────────────────────┘

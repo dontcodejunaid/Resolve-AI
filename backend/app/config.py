@@ -8,10 +8,10 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     LOG_LEVEL: str = "INFO"
 
-    # Database: Async SQLAlchemy URL (Supports PostgreSQL and SQLite)
+    # Local SQLite Engine / Local Cache
     DATABASE_URL: str = "sqlite+aiosqlite:///./resolve_ai.db"
 
-    # MongoDB Atlas Connection
+    # Authoritative Document Database: MongoDB Atlas
     MONGODB_URI: Optional[str] = None
     MONGODB_DB_NAME: str = "resolve_ai"
 

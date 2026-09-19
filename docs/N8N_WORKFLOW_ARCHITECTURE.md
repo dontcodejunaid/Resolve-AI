@@ -21,7 +21,7 @@ Customer / Employee / Merchant UI
               ↓
      FastAPI Validation & Idempotency Layer
               ↓
-         PostgreSQL (Authoritative Truth)
+         MongoDB Atlas (Authoritative Truth)
               ↓
  Verified Outcome & Live Activity Stream Broadcast
 ```

@@ -82,9 +82,11 @@ async def root():
 
 @app.get("/health", tags=["System"])
 async def health_check():
+    from backend.app.mongodb import is_mongo_connected
     return {
         "status": "HEALTHY",
         "database": "CONNECTED",
+        "mongodb": "CONNECTED" if is_mongo_connected() else "DISCONNECTED",
         "rules_engine": "ACTIVE",
         "ai_orchestrator": "READY",
     }

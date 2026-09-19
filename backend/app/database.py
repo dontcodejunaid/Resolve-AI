@@ -5,11 +5,9 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy.orm import declarative_base
 from backend.app.config import settings
 
-# Normalize database URL for async drivers
+# Normalize database URL for async SQLite engine
 database_url = settings.DATABASE_URL
-if database_url.startswith("postgresql://"):
-    database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
-elif database_url.startswith("sqlite:///") and not database_url.startswith("sqlite+aiosqlite:///"):
+if database_url.startswith("sqlite:///") and not database_url.startswith("sqlite+aiosqlite:///"):
     database_url = database_url.replace("sqlite:///", "sqlite+aiosqlite:///", 1)
 
 # Async engine
@@ -17,7 +15,6 @@ engine = create_async_engine(
     database_url,
     echo=False,
     future=True,
-    pool_pre_ping=True if not database_url.startswith("sqlite") else False,
 )
 
 AsyncSessionLocal = async_sessionmaker(
@@ -50,7 +47,7 @@ async def init_db():
     from sqlalchemy import text
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-        # Safe column additions for existing SQLite/PostgreSQL databases
+        # Safe column additions for existing schema migrations
         for col, col_type in [("screenshot_url", "TEXT"), ("customer_phone", "VARCHAR(32)"), ("screenshot_analysis", "TEXT")]:
             try:
                 await conn.execute(text(f"ALTER TABLE cases ADD COLUMN {col} {col_type}"))

@@ -2,13 +2,19 @@ import os
 from decimal import Decimal
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+
+try:
+    from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+except ImportError:
+    AsyncIOMotorClient = None
+    AsyncIOMotorDatabase = None
+
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.app.config import settings
 
-mongo_client: Optional[AsyncIOMotorClient] = None
-mongo_db: Optional[AsyncIOMotorDatabase] = None
+mongo_client: Optional[Any] = None
+mongo_db: Optional[Any] = None
 
 
 async def init_mongo():
@@ -16,6 +22,10 @@ async def init_mongo():
     global mongo_client, mongo_db
     if not settings.MONGODB_URI:
         print("[MongoDB Atlas] No MONGODB_URI configured. Skipping MongoDB initialization.")
+        return
+
+    if AsyncIOMotorClient is None:
+        print("[MongoDB Atlas] 'motor' package not installed. Skipping MongoDB initialization.")
         return
 
     try:
@@ -39,7 +49,7 @@ async def close_mongo():
         print("[MongoDB Atlas] Connection closed.")
 
 
-def get_mongo_db() -> Optional[AsyncIOMotorDatabase]:
+def get_mongo_db() -> Optional[Any]:
     """Dependency / accessor to get MongoDB database instance."""
     return mongo_db
 

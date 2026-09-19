@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgDev" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#4C1D95"/>
+    </linearGradient>
+    <linearGradient id="suitDev" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E1B4B"/>
+      <stop offset="100%" stop-color="#312E81"/>
+    </linearGradient>
+    <filter id="shadowDev" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Background Circle -->
+  <circle cx="60" cy="60" r="58" fill="url(#bgDev)" stroke="#A78BFA" stroke-width="2"/>
+
+  <!-- Subtle BG Glow -->
+  <circle cx="60" cy="35" r="40" fill="#DDD6FE" opacity="0.25"/>
+
+  <!-- Body / Specialist Uniform -->
+  <path d="M22 116 C22 90 38 80 60 80 C82 80 98 90 98 116 Z" fill="url(#suitDev)"/>
+
+  <!-- Lanyard & ID Badge -->
+  <path d="M48 80 L58 104 L62 104 L72 80" stroke="#8B5CF6" stroke-width="2" fill="none"/>
+  <rect x="53" y="100" width="14" height="16" rx="2" fill="#FFFFFF" stroke="#8B5CF6" stroke-width="1.5"/>
+  <rect x="56" y="103" width="8" height="4" rx="1" fill="#8B5CF6"/>
+  <line x1="56" y1="110" x2="64" y2="110" stroke="#94A3B8" stroke-width="1"/>
+
+  <!-- Neck -->
+  <rect x="52" y="64" width="16" height="20" rx="3" fill="#F59E0B"/>
+
+  <!-- Head Base -->
+  <ellipse cx="60" cy="52" rx="21" ry="24" fill="#FCD34D" filter="url(#shadowDev)"/>
+
+  <!-- Ears -->
+  <ellipse cx="38" cy="52" rx="4" ry="7" fill="#F59E0B"/>
+  <ellipse cx="82" cy="52" rx="4" ry="7" fill="#F59E0B"/>
+
+  <!-- Professional Headset (Band across top) -->
+  <path d="M36 48 C34 26 46 16 60 16 C74 16 86 26 84 48" stroke="#0F172A" stroke-width="4" stroke-linecap="round" fill="none"/>
+  
+  <!-- Headset Ear Cushions -->
+  <rect x="33" y="44" width="7" height="16" rx="3.5" fill="#38BDF8" stroke="#0F172A" stroke-width="2"/>
+  <rect x="80" y="44" width="7" height="16" rx="3.5" fill="#38BDF8" stroke="#0F172A" stroke-width="2"/>
+
+  <!-- Headset Boom Mic -->
+  <path d="M37 54 C37 68 44 72 54 72" stroke="#0F172A" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <circle cx="56" cy="72" r="3" fill="#22C55E"/>
+  <circle cx="56" cy="72" r="1.5" fill="#FFFFFF"/>
+
+  <!-- Hair -->
+  <path d="M40 42 C40 26 48 22 60 22 C72 22 80 26 80 42 C76 32 68 28 60 28 C52 28 44 32 40 42 Z" fill="#1E293B"/>
+
+  <!-- Eyes -->
+  <circle cx="50" cy="50" r="3" fill="#0F172A"/>
+  <circle cx="70" cy="50" r="3" fill="#0F172A"/>
+  <circle cx="51" cy="49" r="1" fill="#FFFFFF"/>
+  <circle cx="71" cy="49" r="1" fill="#FFFFFF"/>
+
+  <!-- Eyebrows -->
+  <path d="M44 43 Q50 40 55 43" stroke="#1E293B" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M65 43 Q70 40 76 43" stroke="#1E293B" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+  <!-- Nose -->
+  <path d="M60 50 L58 56 L62 56" stroke="#D97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Smile -->
+  <path d="M53 62 Q60 67 67 62" stroke="#78350F" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+  <!-- Small Executive Badge Ring -->
+  <circle cx="100" cy="100" r="14" fill="#8B5CF6" stroke="#FFFFFF" stroke-width="2"/>
+  <text x="100" y="104" font-size="10" font-family="system-ui, sans-serif" font-weight="900" fill="#FFFFFF" text-anchor="middle">OPS</text>
+</svg>

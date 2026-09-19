@@ -14,8 +14,10 @@ import {
   Filter
 } from 'lucide-react';
 import { formatActualDateTime, formatActualTime } from '../utils/dateUtils';
+import { UserAvatar } from '../components/UserAvatar';
 
 export const EmployeeDashboard = () => {
+  const { user } = useAuth();
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -70,16 +72,26 @@ export const EmployeeDashboard = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-lime-50/80 via-white to-lime-50/80 p-6 rounded-2xl border border-lime-200 shadow-sm">
-        <div>
-          <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Support Specialist Operations</h1>
-            <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-lime-100 text-lime-800 border border-lime-300 rounded-full">
-              Employee Console
-            </span>
+        <div className="flex items-center space-x-4">
+          <UserAvatar
+            email="agent@resolveai.com"
+            name="Dev Support Specialist"
+            role="employee"
+            size="xl"
+            showBadge={true}
+            badgeContent="OPS"
+          />
+          <div>
+            <div className="flex items-center space-x-2">
+              <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Support Specialist Operations</h1>
+              <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-lime-100 text-lime-800 border border-lime-300 rounded-full">
+                Employee Console
+              </span>
+            </div>
+            <p className="text-sm text-slate-600 mt-1">
+              Review autonomous AI decisions, pending policy approvals, and escalated edge cases.
+            </p>
           </div>
-          <p className="text-sm text-slate-600 mt-1">
-            Review autonomous AI decisions, pending policy approvals, and escalated edge cases.
-          </p>
         </div>
 
         <div className="flex items-center space-x-3">
@@ -201,7 +213,10 @@ export const EmployeeDashboard = () => {
                       #{c.case_number}
                     </td>
                     <td className="p-3.5">
-                      <span className="font-semibold text-slate-900">{c.customer?.full_name || c.customer_id}</span>
+                      <div className="flex items-center space-x-2.5">
+                        <UserAvatar email={c.customer?.email} name={c.customer?.full_name || c.customer_id} size="sm" />
+                        <span className="font-semibold text-slate-900">{c.customer?.full_name || c.customer_id}</span>
+                      </div>
                     </td>
                     <td className="p-3.5 max-w-xs truncate text-slate-600 font-medium" title={c.customer_request}>
                       {c.customer_request}

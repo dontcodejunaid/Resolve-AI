@@ -16,6 +16,7 @@ import {
   Check
 } from 'lucide-react';
 import { formatDateTime } from '../utils/dateUtils';
+import { UserAvatar } from '../components/UserAvatar';
 
 export const BankPortal = () => {
   const { user } = useAuth();
@@ -71,10 +72,15 @@ export const BankPortal = () => {
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-emerald-50/80 via-white to-lime-50/80 p-6 rounded-2xl border border-emerald-200 shadow-sm">
         <div>
-          <div className="flex items-center space-x-2.5">
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-800 shadow-sm">
-              <Building2 className="w-5 h-5" />
-            </div>
+          <div className="flex items-center space-x-3.5">
+            <UserAvatar
+              email="bank@gateway.com"
+              name="Bank Sentinel"
+              role="bank"
+              size="xl"
+              showBadge={true}
+              badgeContent="BNK"
+            />
             <div>
               <div className="flex items-center space-x-2">
                 <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">

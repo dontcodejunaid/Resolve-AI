@@ -18,6 +18,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { formatDateTime } from '../utils/dateUtils';
+import { UserAvatar } from '../components/UserAvatar';
 
 export const MerchantDashboard = () => {
   const [metrics, setMetrics] = useState(null);
@@ -76,27 +77,37 @@ export const MerchantDashboard = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Aura Store Connection Banner */}
+      {/* Store Header Banner */}
       <div className="bg-slate-900 text-white p-6 sm:p-7 rounded-3xl shadow-xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
         <div className="absolute right-0 top-0 w-96 h-96 bg-lime-500/10 rounded-full blur-3xl pointer-events-none" />
         
-        <div className="space-y-2 relative z-10">
-          <div className="flex items-center space-x-2.5">
-            <span className="px-3 py-1 text-xs font-mono font-bold bg-lime-400 text-slate-950 rounded-full flex items-center space-x-1.5 shadow-sm">
-              <Store className="w-3.5 h-3.5" />
-              <span>LIVE STOREFRONT CONNECTED</span>
-            </span>
-            <span className="text-xs font-mono text-slate-400">Merchant: {storeInfo?.name || 'AURA STUDIO'}</span>
+        <div className="flex items-start sm:items-center space-x-4 relative z-10">
+          <UserAvatar
+            email="manager@resolvestore.com"
+            name="Priya Patel"
+            role="merchant"
+            size="2xl"
+            showBadge={true}
+            badgeContent="MGR"
+          />
+          <div className="space-y-1.5">
+            <div className="flex items-center space-x-2.5">
+              <span className="px-3 py-1 text-xs font-mono font-bold bg-lime-400 text-slate-950 rounded-full flex items-center space-x-1.5 shadow-sm">
+                <Store className="w-3.5 h-3.5" />
+                <span>LIVE STOREFRONT CONNECTED</span>
+              </span>
+              <span className="text-xs font-mono text-slate-400">Store Manager: Priya Patel</span>
+            </div>
+
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              Aura Studio <span className="text-lime-400 font-normal text-xl sm:text-2xl">| Store Manager Console</span>
+            </h1>
+
+            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+              Autonomous dispute resolution & inventory synchronization for <strong className="text-white">aura-nine-virid.vercel.app</strong>. 
+              All simulated checkout errors, transaction IDs (<code className="text-lime-300 font-mono">TXN_..._INR</code>), and stock counts are tied to this store console.
+            </p>
           </div>
-
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            Aura Studio <span className="text-lime-400 font-normal text-xl sm:text-2xl">| Store Manager Console</span>
-          </h1>
-
-          <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-            Autonomous dispute resolution & inventory synchronization for <strong className="text-white">aura-nine-virid.vercel.app</strong>. 
-            All simulated checkout errors, transaction IDs (<code className="text-lime-300 font-mono">TXN_..._INR</code>), and stock counts are tied to this store console.
-          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 relative z-10">

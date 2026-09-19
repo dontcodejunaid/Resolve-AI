@@ -17,6 +17,8 @@ import {
   CreditCard
 } from 'lucide-react';
 import { ExpandableTabs } from './ui/expandable-tabs';
+import { UserAvatar } from './UserAvatar';
+import { DEMO_PERSONAS_LIST } from '../utils/avatarUtils';
 
 export const Navbar = () => {
   const { user, logout, switchAccount } = useAuth();
@@ -47,44 +49,7 @@ export const Navbar = () => {
     }
   };
 
-  const demoPersonas = [
-    {
-      name: 'Rahul Sharma',
-      email: 'rahul@example.com',
-      role: 'Customer 1 (Recovery)',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-    },
-    {
-      name: 'Aisha Khan',
-      email: 'aisha@example.com',
-      role: 'Customer 2 (Refund/Stock)',
-      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80',
-    },
-    {
-      name: 'Arjun Verma',
-      email: 'arjun@example.com',
-      role: 'Customer 3 (Pending)',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-    },
-    {
-      name: 'Dev Specialist',
-      email: 'agent@resolveai.com',
-      role: 'Support Specialist',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80',
-    },
-    {
-      name: 'Priya Patel',
-      email: 'manager@resolvestore.com',
-      role: 'Store Manager',
-      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80',
-    },
-    {
-      name: 'Bank Sentinel',
-      email: 'bank@gateway.com',
-      role: 'Bank Gateway Provider',
-      avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&auto=format&fit=crop&q=80',
-    },
-  ];
+  const demoPersonas = DEMO_PERSONAS_LIST;
 
   // Dynamic Navigation Tabs for ExpandableTabs
   const getNavTabs = () => {
@@ -187,54 +152,56 @@ export const Navbar = () => {
                 <div className="relative group">
                   <button
                     disabled={switching}
-                    className="flex items-center space-x-2 bg-slate-50 hover:bg-lime-50 border border-slate-200 hover:border-lime-300 px-3 py-1.5 rounded-xl text-xs transition-all"
+                    className="flex items-center space-x-2 bg-slate-50 hover:bg-lime-50 border border-slate-200 hover:border-lime-300 px-3 py-1.5 rounded-xl text-xs transition-all shadow-sm"
                   >
-                    {currentPersona?.avatar ? (
-                      <img
-                        src={currentPersona.avatar}
-                        alt={user.full_name}
-                        className="w-5 h-5 rounded-full object-cover border border-lime-300"
-                      />
-                    ) : (
-                      <div className="w-2 h-2 rounded-full bg-lime-500 animate-pulse" />
-                    )}
+                    <UserAvatar
+                      user={user}
+                      email={user?.email}
+                      name={user?.full_name}
+                      role={user?.role}
+                      size="sm"
+                    />
                     <span className="font-bold text-slate-800">{user.full_name || user.email}</span>
                     <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-lime-100 text-lime-800 font-bold">
                       {user.role}
                     </span>
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:rotate-180 transition-transform duration-200" />
                   </button>
 
-                  <div className="absolute right-0 mt-1 w-72 bg-white border border-lime-200 rounded-2xl shadow-xl p-2 hidden group-hover:block z-50 animate-in fade-in slide-in-from-top-1 duration-150">
-                    <div className="px-2 py-1.5 text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider">
-                      Switch Demo Persona
+                  <div className="absolute right-0 mt-1 w-80 bg-white border border-lime-200 rounded-2xl shadow-2xl p-2 hidden group-hover:block z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                    <div className="px-2.5 py-1.5 text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider flex items-center justify-between">
+                      <span>Switch Demo Persona</span>
+                      <span className="text-[9px] text-lime-600 bg-lime-50 px-1.5 py-0.5 rounded">6 Profiles</span>
                     </div>
-                    {demoPersonas.map((p) => (
-                      <button
-                        key={p.email}
-                        onClick={() => handleSwitchUser(p.email, p.role)}
-                        className={`w-full flex items-center justify-between p-2 rounded-xl text-left text-xs transition-all ${
-                          user.email === p.email
-                            ? 'bg-lime-100 text-lime-900 font-bold'
-                            : 'hover:bg-slate-50 text-slate-700'
-                        }`}
-                      >
-                        <div className="flex items-center space-x-2.5">
-                          <img
-                            src={p.avatar}
-                            alt={p.name}
-                            className="w-7 h-7 rounded-full object-cover border border-slate-200"
-                          />
-                          <div>
-                            <div className="font-semibold">{p.name}</div>
-                            <div className="text-[10px] text-slate-500 font-mono">{p.role}</div>
+                    <div className="space-y-1 mt-1">
+                      {demoPersonas.map((p) => (
+                        <button
+                          key={p.email}
+                          onClick={() => handleSwitchUser(p.email, p.roleType || p.role)}
+                          className={`w-full flex items-center justify-between p-2 rounded-xl text-left text-xs transition-all ${
+                            user.email === p.email
+                              ? 'bg-lime-100 text-lime-950 font-bold shadow-sm'
+                              : 'hover:bg-slate-50 text-slate-700 hover:text-slate-900'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <UserAvatar
+                              email={p.email}
+                              name={p.name}
+                              role={p.roleType}
+                              size="sm"
+                            />
+                            <div>
+                              <div className="font-semibold text-slate-900 leading-tight">{p.name}</div>
+                              <div className="text-[10px] text-slate-500 font-mono mt-0.5">{p.role}</div>
+                            </div>
                           </div>
-                        </div>
-                        {user.email === p.email && (
-                          <CheckCircle2 className="w-3.5 h-3.5 text-lime-700 shrink-0" />
-                        )}
-                      </button>
-                    ))}
+                          {user.email === p.email && (
+                            <CheckCircle2 className="w-4 h-4 text-lime-700 shrink-0" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 

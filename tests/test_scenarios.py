@@ -71,7 +71,7 @@ async def test_scenario_6_conflict_escalation():
 
 
 @pytest.mark.asyncio
-async def test_scenario_10_background_reconciliation():
+async def test_background_reconciliation():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         recon_res = await ac.post("/demo/reconcile-now")
@@ -119,3 +119,126 @@ async def test_merchant_policies_and_product_management():
         )
         assert update_res.status_code == 200
         assert update_res.json()["stock"] == 15
+
+
+@pytest.mark.asyncio
+async def test_stuck_pending_payment_delayed_recheck_and_callback_resolution():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # 1. Login Arjun
+        login_res = await ac.post("/auth/login", json={"email": "arjun@example.com", "password": "password123"})
+        token = login_res.json()["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+
+        # 2. Arjun creates case for pending payment TXN987656
+        case_res = await ac.post(
+            "/cases",
+            headers=headers,
+            json={
+                "customer_request": "Payment made for mouse (TXN987656) but stuck on pending.",
+                "payment_reference": "TXN987656"
+            }
+        )
+        assert case_res.status_code == 201
+        case_data = case_res.json()
+        case_id = case_data["id"]
+        assert case_data["status"] == "WAITING_FOR_PROVIDER"
+
+        # 3. Simulate acquirer callback landing (transitions payment to SUCCESS and triggers auto recheck)
+        callback_res = await ac.post(
+            "/api/payments/TXN987656/callback",
+            params={"new_status": "SUCCESS"}
+        )
+        assert callback_res.status_code == 200
+        callback_data = callback_res.json()
+        assert callback_data["new_status"] == "SUCCESS"
+        assert callback_data["settlement_landed"] is True
+        assert case_id in callback_data["rechecked_cases"]
+
+        # 4. Check case status advanced to WAITING_FOR_CUSTOMER (Order recovery offered because stock is available)
+        updated_case_res = await ac.get(f"/cases/{case_id}", headers=headers)
+        assert updated_case_res.status_code == 200
+        updated_case = updated_case_res.json()
+        assert updated_case["status"] == "WAITING_FOR_CUSTOMER"
+        assert updated_case["resolution_type"] == "ORDER_RECOVERY"
+
+        # 5. Customer accepts recovery -> case RESOLVED
+        confirm_res = await ac.post(
+            f"/cases/{case_id}/customer-confirmation",
+            headers=headers,
+            json={"accepted": True, "notes": "Yes please recover my order"}
+        )
+        assert confirm_res.status_code == 200
+        assert confirm_res.json()["status"] == "RESOLVED"
+
+
+@pytest.mark.asyncio
+async def test_idempotency_dedupe_data_table_and_double_submit_prevention():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # 1. Login Rahul
+        login_res = await ac.post("/auth/login", json={"email": "rahul@example.com", "password": "password123"})
+        token = login_res.json()["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+
+        # 2. First submission
+        res1 = await ac.post(
+            "/cases",
+            headers=headers,
+            json={
+                "customer_request": "Order missing for TXN987654",
+                "payment_reference": "TXN987654"
+            }
+        )
+        assert res1.status_code == 201
+        case1_id = res1.json()["id"]
+
+        # 3. Second submission with the exact same payment reference (must deduplicate, not mint new case)
+        res2 = await ac.post(
+            "/cases",
+            headers=headers,
+            json={
+                "customer_request": "Submitting again: Order missing for TXN987654",
+                "payment_reference": "TXN987654"
+            }
+        )
+        assert res2.status_code == 201
+        case2_id = res2.json()["id"]
+        assert case1_id == case2_id, "Deduplication failed: Second submission minted a duplicate case!"
+
+        # 4. Verify Idempotency Data Table query endpoint
+        idem_table_res = await ac.get("/api/idempotency/records", params={"payment_reference": "TXN987654"})
+        assert idem_table_res.status_code == 200
+        idem_data = idem_table_res.json()
+        assert idem_data["total_records"] >= 1
+        assert idem_data["records"][0]["case_id"] == case1_id
+        assert idem_data["records"][0]["payment_reference"] == "TXN987654"
+
+
+@pytest.mark.asyncio
+async def test_delayed_retry_loop_endpoint():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        login_res = await ac.post("/auth/login", json={"email": "arjun@example.com", "password": "password123"})
+        token = login_res.json()["access_token"]
+        headers = {"Authorization": f"Bearer {token}"}
+
+        # Create pending case
+        case_res = await ac.post(
+            "/cases",
+            headers=headers,
+            json={"customer_request": "Checking pending TXN987656", "payment_reference": "TXN987656"}
+        )
+        case_id = case_res.json()["id"]
+
+        # Execute retry loop with auto-landing callback
+        retry_res = await ac.post(
+            f"/api/cases/{case_id}/retry-loop",
+            params={"max_retries": 3, "auto_land_callback": True}
+        )
+        assert retry_res.status_code == 200
+        retry_data = retry_res.json()
+        assert retry_data["resolved_automatically"] is True
+        assert len(retry_data["retry_history"]) >= 2
+        assert retry_data["final_status"] == "WAITING_FOR_CUSTOMER"
+

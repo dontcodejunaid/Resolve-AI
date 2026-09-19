@@ -22,6 +22,7 @@ from backend.app.models import (
     Action,
     Approval,
     Notification,
+    IdempotencyRecord,
 )
 from backend.app.schemas import ScenarioRunRequest, CaseResponse
 from backend.app.services.case_engine import CaseEngine
@@ -104,14 +105,6 @@ SCENARIOS = [
         "description": "Customer claims debit but gateway returns NOT_FOUND. AI escalates with transaction logs.",
         "badge": "Escalation",
         "expected_outcome": "Escalation"
-    },
-    {
-        "id": "SCENARIO_10_BACKGROUND_RECON",
-        "name": "Scenario 10: Autonomous Background Reconciliation",
-        "title": "Scenario 10: Autonomous Background Reconciliation",
-        "description": "Customer is offline. Background worker detects unlinked payment, opens case, investigates, and notifies customer.",
-        "badge": "Proactive AI",
-        "expected_outcome": "Proactive AI"
     }
 ]
 
@@ -128,6 +121,7 @@ async def list_demo_scenarios():
 async def reset_demo_database(db: AsyncSession = Depends(get_db)):
     """Wipes and reseeds the database to a fresh demo baseline."""
     # Delete in reverse foreign key order
+    await db.execute(delete(IdempotencyRecord))
     await db.execute(delete(Notification))
     await db.execute(delete(Approval))
     await db.execute(delete(Action))
@@ -148,7 +142,7 @@ async def reset_demo_database(db: AsyncSession = Depends(get_db)):
         from backend.app.mongodb import get_mongo_db
         mongo_db = get_mongo_db()
         if mongo_db is not None:
-            for col in ["cases", "case_events", "actions", "approvals", "notifications", "refunds", "orders", "payments", "checkout_attempts", "merchant_policies", "products", "merchants", "users"]:
+            for col in ["idempotency_records", "cases", "case_events", "actions", "approvals", "notifications", "refunds", "orders", "payments", "checkout_attempts", "merchant_policies", "products", "merchants", "users"]:
                 await mongo_db[col].delete_many({})
     except Exception as e:
         print(f"[MongoDB Wipe Warning] {e}")
@@ -391,17 +385,6 @@ async def run_scenario(req: ScenarioRunRequest, db: AsyncSession = Depends(get_d
             payment_reference="TXN_UNRECOGNIZED_000"
         )
         return {"scenario": sc_id, "case_id": case.id, "case": await CaseEngine.get_case_with_relations(db, case.id)}
-
-    elif sc_id == "SCENARIO_10_BACKGROUND_RECON":
-        # Remove orders to simulate orphan payment and run recon
-        await db.execute(delete(Order).filter(or_(Order.checkout_id == "chk_rahul_01", Order.payment_id == "pay_rahul_01", Order.customer_id == "usr_rahul")))
-        await db.execute(delete(Refund).filter(Refund.payment_id == "pay_rahul_01"))
-        pay = (await db.execute(select(Payment).filter(Payment.id == "pay_rahul_01"))).scalars().first()
-        if pay:
-            pay.status = "SUCCESS"
-        await db.commit()
-        reconciled = await BackgroundWorker.reconcile_orphan_payments()
-        return {"scenario": sc_id, "reconciled_cases": reconciled, "message": "Background worker ran proactive scan and resolved orphan payment."}
 
     else:
         # Generic run

@@ -12,6 +12,7 @@ from backend.app.schemas import (
     ApprovalResponse,
     ApprovalDecisionRequest,
     HandoffNoteRequest,
+    ManualResolveRequest,
 )
 from backend.app.security.dependencies import require_role
 from backend.app.services.case_engine import CaseEngine
@@ -123,6 +124,47 @@ async def add_handoff_note(
         actor_type="EMPLOYEE",
         actor_id=current_user.id,
     )
+    refreshed = await CaseEngine.get_case_with_relations(db, case_id)
+    return refreshed or case
+
+
+@router.post("/cases/{case_id}/resolve", response_model=CaseResponse)
+async def manual_resolve_case(
+    case_id: str,
+    req: Optional[ManualResolveRequest] = None,
+    current_user: User = Depends(require_role(["employee", "merchant", "admin"])),
+    db: AsyncSession = Depends(get_db),
+):
+    """Allows a support specialist / employee to mark an escalated case as resolved after manual reconciliation."""
+    from datetime import datetime, timezone
+    case = await CaseEngine.get_case_with_relations(db, case_id)
+    if not case:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Case not found")
+
+    notes_text = req.notes if req and req.notes else f"Case manually resolved by {current_user.full_name} after customer reconciliation"
+    res_type = req.resolution_type if req and req.resolution_type else "MANUAL_RECONCILIATION_RESOLVED"
+
+    case.status = "RESOLVED"
+    case.resolution_type = res_type
+    case.updated_at = datetime.now(timezone.utc)
+    await db.commit()
+
+    await CaseEngine.log_event(
+        db,
+        case_id=case.id,
+        event_type="CASE_RESOLVED_MANUALLY",
+        description=f"Support Specialist {current_user.full_name} marked case resolved: '{notes_text}'",
+        actor_type="EMPLOYEE",
+        actor_id=current_user.id,
+    )
+
+    # Sync to MongoDB Atlas
+    try:
+        from backend.app.mongodb import sync_entire_db_to_mongo
+        await sync_entire_db_to_mongo(db)
+    except Exception:
+        pass
+
     refreshed = await CaseEngine.get_case_with_relations(db, case_id)
     return refreshed or case
 

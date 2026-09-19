@@ -93,3 +93,30 @@ class BackgroundWorker:
                     resolved_cases.append(case.id)
 
             return resolved_cases
+
+    @staticmethod
+    async def poll_and_retry_pending_payments():
+        """
+        WORKFLOW 4: Delayed Re-check & Polling Retry Loop for Stuck/Pending Cases.
+        Finds cases in WAITING_FOR_PROVIDER with pending payment status,
+        polls gateway for acquirer callback settlement, and completes resolution when funds land.
+        """
+        async with AsyncSessionLocal() as session:
+            res = await session.execute(
+                select(Case)
+                .filter(
+                    Case.status == "WAITING_FOR_PROVIDER",
+                    Case.resolution_type.in_(["PAYMENT_PENDING_SCHEDULED", "PENDING_RECHECK", None])
+                )
+            )
+            pending_cases = res.scalars().all()
+
+            updated_cases = []
+            for case in pending_cases:
+                print(f"[Retry Loop] Re-checking pending gateway status for Case #{case.case_number} ({case.id})")
+                updated = await CaseEngine.recheck_pending_case(session, case.id)
+                if updated:
+                    updated_cases.append(case.id)
+
+            return updated_cases
+

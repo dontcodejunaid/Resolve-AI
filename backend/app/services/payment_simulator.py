@@ -28,6 +28,36 @@ class PaymentSimulator:
         return result.scalars().first()
 
     @staticmethod
+    async def get_payment(db: AsyncSession, payment_id: str) -> Optional[Payment]:
+        """Alias for get_payment_by_id."""
+        return await PaymentSimulator.get_payment_by_id(db, payment_id)
+
+    @staticmethod
+    async def simulate_gateway_callback(
+        db: AsyncSession,
+        payment_reference: str,
+        new_status: str = "SUCCESS",
+    ) -> Optional[Payment]:
+        """Simulates an acquirer callback landing, transitioning a stuck/pending payment."""
+        payment = await PaymentSimulator.get_payment_by_reference(db, payment_reference)
+        if not payment:
+            return None
+        payment.status = new_status
+        payload = {}
+        if payment.provider_payload:
+            try:
+                payload = json.loads(payment.provider_payload)
+            except Exception:
+                pass
+        payload["gateway_status"] = new_status
+        payload["callback_received"] = True
+        payload["settlement_landed"] = True if new_status == "SUCCESS" else False
+        payment.provider_payload = json.dumps(payload)
+        await db.commit()
+        await db.refresh(payment)
+        return payment
+
+    @staticmethod
     async def create_simulated_payment(
         db: AsyncSession,
         customer_id: str,

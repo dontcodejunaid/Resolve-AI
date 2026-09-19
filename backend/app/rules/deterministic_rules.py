@@ -110,3 +110,18 @@ class DeterministicBusinessRules:
         if not policy_approval_required:
             return False
         return Decimal(str(amount)) >= Decimal(str(policy_threshold))
+
+    @staticmethod
+    def validate_idempotency_deduplication(
+        payment_reference: Optional[str],
+        existing_case_id: Optional[str],
+    ) -> Tuple[bool, Optional[str]]:
+        """
+        RULE 14 (Idempotency & Deduplication Guard):
+        Prevents minting duplicate cases or double-recovering purchases when a customer
+        or webhook submits identical transaction references concurrently.
+        """
+        if payment_reference and existing_case_id:
+            return False, f"Duplicate submission detected: Payment reference '{payment_reference}' is already actively tracked in Case #{existing_case_id}."
+        return True, None
+

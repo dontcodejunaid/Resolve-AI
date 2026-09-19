@@ -38,6 +38,22 @@ export const EmployeeCaseDetail = () => {
     fetchCase();
   }, [id]);
 
+  const handleResolveCase = async () => {
+    setNoteLoading(true);
+    try {
+      const res = await client.post(`/employee/cases/${id}/resolve`, {
+        notes: noteText.trim() || 'Support Specialist reconciled discrepancy and marked case resolved',
+        resolution_type: 'MANUAL_RECONCILIATION_RESOLVED'
+      });
+      setCaseData(res.data);
+      setNoteText('');
+    } catch (err) {
+      console.error('Failed to resolve case', err);
+    } finally {
+      setNoteLoading(false);
+    }
+  };
+
   const handleAddNote = async (e) => {
     e.preventDefault();
     if (!noteText.trim()) return;
@@ -83,13 +99,26 @@ export const EmployeeCaseDetail = () => {
           <span>Back to Employee Queue</span>
         </Link>
 
-        <button
-          onClick={fetchCase}
-          className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-white border border-lime-200 text-lime-800 hover:bg-lime-50 rounded-lg text-xs font-mono transition-all shadow-sm"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Sync</span>
-        </button>
+        <div className="flex items-center space-x-3">
+          {caseData.status !== 'RESOLVED' && (
+            <button
+              onClick={handleResolveCase}
+              disabled={noteLoading}
+              className="inline-flex items-center space-x-1.5 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-all shadow-sm"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>{noteLoading ? 'Resolving...' : '✓ Resolve Case'}</span>
+            </button>
+          )}
+
+          <button
+            onClick={fetchCase}
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-white border border-lime-200 text-lime-800 hover:bg-lime-50 rounded-lg text-xs font-mono transition-all shadow-sm"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Sync</span>
+          </button>
+        </div>
       </div>
 
       {/* Case Telemetry Header */}
@@ -182,28 +211,47 @@ export const EmployeeCaseDetail = () => {
             />
           </div>
 
-          {/* Add Human Support Note */}
-          <div className="bg-white border border-lime-200 p-5 rounded-2xl space-y-3 shadow-sm">
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              Add Support Specialist Note
-            </h4>
+          {/* Add Human Support Note & Manual Resolve Card */}
+          <div className="bg-white border border-lime-200 p-5 rounded-2xl space-y-4 shadow-sm">
+            <div>
+              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                Support Specialist Triage & Resolution
+              </h4>
+              <p className="text-[11px] text-slate-500 font-mono mt-0.5">
+                Log investigation notes or resolve escalated discrepancy.
+              </p>
+            </div>
+
             <form onSubmit={handleAddNote} className="space-y-3">
               <textarea
                 rows={3}
-                required
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
                 className="w-full bg-slate-50 border border-lime-200 text-slate-900 text-xs rounded-xl p-2.5 outline-none focus:border-lime-500 focus:bg-white transition-colors"
-                placeholder="Document actions taken or manual phone verification..."
+                placeholder="Document actions taken, e.g. Customer approved price adjustment / manual refund confirmed..."
               />
-              <button
-                type="submit"
-                disabled={noteLoading}
-                className="w-full bg-lime-500 hover:bg-lime-400 text-slate-950 font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1.5 transition-all shadow-md shadow-lime-500/20"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>{noteLoading ? 'Saving...' : 'Post Event to Case Timeline'}</span>
-              </button>
+              <div className="flex flex-col gap-2">
+                <button
+                  type="submit"
+                  disabled={noteLoading || !noteText.trim()}
+                  className="w-full bg-lime-100 hover:bg-lime-200 disabled:opacity-50 text-lime-900 font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center space-x-1.5 transition-all border border-lime-300"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{noteLoading ? 'Saving...' : 'Post Event to Timeline'}</span>
+                </button>
+
+                {caseData.status !== 'RESOLVED' && (
+                  <button
+                    type="button"
+                    onClick={handleResolveCase}
+                    disabled={noteLoading}
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1.5 transition-all shadow-md shadow-emerald-600/20"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>{noteLoading ? 'Resolving...' : '✓ Resolve Case (Reconciled & Closed)'}</span>
+                  </button>
+                )}
+              </div>
             </form>
           </div>
         </div>

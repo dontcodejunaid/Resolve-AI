@@ -25,6 +25,7 @@ from backend.app.models import (
     Action,
     Approval,
     Notification,
+    IdempotencyRecord,
 )
 from backend.app.services.case_engine import CaseEngine
 from backend.app.services.payment_simulator import PaymentSimulator
@@ -1447,3 +1448,169 @@ async def setup_demo_scenario(
             "case_number": case.case_number,
             "payment_reference": payment_ref,
         }
+
+
+# ==============================================================================
+# IDEMPOTENCY & DEDUPLICATION DATA TABLE ENDPOINTS
+# ==============================================================================
+
+@router.get("/api/idempotency/records")
+async def list_idempotency_records(
+    customer_id: Optional[str] = Query(None),
+    payment_reference: Optional[str] = Query(None),
+    status_filter: Optional[str] = Query(None),
+    limit: int = Query(50, ge=1, le=200),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Returns the authoritative Deduplication & Idempotency Data Table.
+    Shows seen payment references, deduplication keys, case IDs, and execution statuses.
+    """
+    stmt = select(IdempotencyRecord)
+    if customer_id:
+        stmt = stmt.filter(IdempotencyRecord.customer_id == customer_id)
+    if payment_reference:
+        stmt = stmt.filter(IdempotencyRecord.payment_reference == payment_reference)
+    if status_filter:
+        stmt = stmt.filter(IdempotencyRecord.status == status_filter)
+    stmt = stmt.order_by(IdempotencyRecord.created_at.desc()).limit(limit)
+
+    res = await db.execute(stmt)
+    records = res.scalars().all()
+
+    return {
+        "total_records": len(records),
+        "records": [
+            {
+                "id": r.id,
+                "idempotency_key": r.idempotency_key,
+                "payment_reference": r.payment_reference,
+                "case_id": r.case_id,
+                "customer_id": r.customer_id,
+                "action_type": r.action_type,
+                "status": r.status,
+                "created_at": r.created_at.isoformat() if r.created_at else None,
+                "updated_at": r.updated_at.isoformat() if r.updated_at else None,
+            }
+            for r in records
+        ]
+    }
+
+
+# ==============================================================================
+# DELAYED RE-CHECK / RETRY LOOP & ACQUIRER CALLBACK ENDPOINTS
+# ==============================================================================
+
+@router.post("/api/cases/{case_id}/recheck-pending")
+async def recheck_pending_payment(
+    case_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Executes a single re-poll of the payment gateway for a stuck/pending payment case.
+    If the acquirer callback landed (status == SUCCESS), automatically advances investigation.
+    """
+    case = await CaseEngine.get_case_with_relations(db, case_id)
+    if not case:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Case not found")
+
+    updated_case = await CaseEngine.recheck_pending_case(db, case_id)
+    return {
+        "case_id": case_id,
+        "case_number": updated_case.case_number if updated_case else case.case_number,
+        "status": updated_case.status if updated_case else case.status,
+        "resolution_type": updated_case.resolution_type if updated_case else case.resolution_type,
+        "payment_status": updated_case.payment.status if updated_case and updated_case.payment else None,
+        "message": "Gateway re-polled successfully."
+    }
+
+
+@router.post("/api/payments/{payment_reference}/callback")
+async def receive_acquirer_callback(
+    payment_reference: str,
+    new_status: str = Query("SUCCESS", pattern="^(SUCCESS|FAILED|CANCELLED)$"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Simulates the acquirer payment callback landing on the payment gateway webhook.
+    Transitions the pending payment to SUCCESS and triggers automated re-check on linked cases.
+    """
+    payment = await PaymentSimulator.simulate_gateway_callback(db, payment_reference, new_status=new_status)
+    if not payment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Payment reference '{payment_reference}' not found")
+
+    # Find any pending cases linked to this payment
+    res_cases = await db.execute(
+        select(Case).filter(
+            Case.payment_id == payment.id,
+            Case.status == "WAITING_FOR_PROVIDER"
+        )
+    )
+    linked_cases = res_cases.scalars().all()
+
+    resolved_case_ids = []
+    for c in linked_cases:
+        updated = await CaseEngine.recheck_pending_case(db, c.id)
+        if updated:
+            resolved_case_ids.append(updated.id)
+
+    return {
+        "status": "CALLBACK_PROCESSED",
+        "payment_reference": payment.payment_reference,
+        "new_status": payment.status,
+        "settlement_landed": True if new_status == "SUCCESS" else False,
+        "rechecked_cases": resolved_case_ids,
+    }
+
+
+@router.post("/api/cases/{case_id}/retry-loop")
+async def execute_delayed_retry_loop_endpoint(
+    case_id: str,
+    max_retries: int = Query(3, ge=1, le=5),
+    auto_land_callback: bool = Query(True, description="Whether the acquirer callback lands during the retry loop"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Executes a delayed re-check / retry loop (simulating n8n Wait Node -> Re-poll Gateway).
+    If auto_land_callback is True, simulates callback arrival on attempt 2 to demonstrate auto-resolution.
+    """
+    import asyncio
+    case = await CaseEngine.get_case_with_relations(db, case_id)
+    if not case:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Case not found")
+
+    attempts_log = []
+
+    for attempt in range(1, max_retries + 1):
+        if attempt == 2 and auto_land_callback and case.payment:
+            # Simulate acquirer webhook callback landing at attempt 2
+            await PaymentSimulator.simulate_gateway_callback(db, case.payment.payment_reference, "SUCCESS")
+
+        updated_case = await CaseEngine.recheck_pending_case(db, case_id)
+        current_status = updated_case.status if updated_case else case.status
+        payment_status = updated_case.payment.status if updated_case and updated_case.payment else "UNKNOWN"
+
+        attempts_log.append({
+            "attempt": attempt,
+            "gateway_payment_status": payment_status,
+            "case_status": current_status,
+            "timestamp": utcnow().isoformat()
+        })
+
+        if current_status != "WAITING_FOR_PROVIDER":
+            # Successfully resolved or moved to next state (e.g. WAITING_FOR_CUSTOMER)
+            break
+
+        # Brief delay between simulated poll loops
+        await asyncio.sleep(0.05)
+
+    final_case = await CaseEngine.get_case_with_relations(db, case_id)
+    return {
+        "case_id": case_id,
+        "final_status": final_case.status if final_case else case.status,
+        "resolution_type": final_case.resolution_type if final_case else case.resolution_type,
+        "total_attempts": len(attempts_log),
+        "retry_history": attempts_log,
+        "resolved_automatically": final_case.status in ["WAITING_FOR_CUSTOMER", "WAITING_FOR_APPROVAL", "RESOLVED"] if final_case else False
+    }
+

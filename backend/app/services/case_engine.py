@@ -20,6 +20,7 @@ from backend.app.models import (
     Product,
     MerchantPolicy,
     User,
+    IdempotencyRecord,
 )
 from backend.app.rules.deterministic_rules import DeterministicBusinessRules
 from backend.app.rules.state_transitions import CaseStateMachine
@@ -146,6 +147,54 @@ class CaseEngine:
         product_id: Optional[str] = None,
     ) -> Case:
         """Initialize a new case and trigger autonomous multi-system investigation."""
+        # Idempotency & Deduplication Guard (Rule 14)
+        if payment_reference:
+            # 1. Check idempotency record table
+            idem_res = await db.execute(
+                select(IdempotencyRecord)
+                .filter(
+                    IdempotencyRecord.customer_id == customer_id,
+                    IdempotencyRecord.payment_reference == payment_reference,
+                    IdempotencyRecord.status.in_(["ACTIVE", "RECOVERED", "RESOLVED"])
+                )
+                .order_by(IdempotencyRecord.created_at.desc())
+            )
+            existing_idem = idem_res.scalars().first()
+
+            existing_case = None
+            if existing_idem and existing_idem.case_id:
+                existing_case = await CaseEngine.get_case_with_relations(db, existing_idem.case_id)
+
+            if not existing_case:
+                pay_res = await db.execute(
+                    select(Payment).filter(Payment.payment_reference == payment_reference)
+                )
+                pay_obj = pay_res.scalars().first()
+                if pay_obj:
+                    case_res = await db.execute(
+                        select(Case)
+                        .filter(
+                            Case.customer_id == customer_id,
+                            Case.payment_id == pay_obj.id,
+                            Case.status != "RESOLVED"
+                        )
+                    )
+                    c_obj = case_res.scalars().first()
+                    if c_obj:
+                        existing_case = await CaseEngine.get_case_with_relations(db, c_obj.id)
+
+            if existing_case:
+                # Deduplication hit: Prevent minting duplicate case and return existing case
+                await CaseEngine.log_event(
+                    db,
+                    case_id=existing_case.id,
+                    event_type="DUPLICATE_SUBMISSION_DEDUPLICATED",
+                    description=f"Duplicate submission prevented for reference '{payment_reference}'. Deduplicated via Idempotency Table (no second case created).",
+                    actor_type="SYSTEM",
+                    actor_id="idempotency_engine",
+                )
+                return existing_case
+
         case_num = f"RS-{uuid.uuid4().hex[:4].upper()}"
         
         # Prepare Vision AI screenshot analysis if screenshot is attached
@@ -182,9 +231,34 @@ class CaseEngine:
         await db.commit()
         await db.refresh(case)
 
-        # Sync Case to MongoDB Atlas
+        # Record into Idempotency Table
+        idem_key = f"IDEM-PAY-{customer_id}-{payment_reference or case.id}"
+        res_existing_idem = await db.execute(
+            select(IdempotencyRecord).filter(IdempotencyRecord.idempotency_key == idem_key)
+        )
+        idem_rec = res_existing_idem.scalars().first()
+        if not idem_rec:
+            idem_rec = IdempotencyRecord(
+                id=f"idem_{uuid.uuid4().hex[:12]}",
+                idempotency_key=idem_key,
+                payment_reference=payment_reference,
+                case_id=case.id,
+                customer_id=customer_id,
+                action_type="CASE_CREATION",
+                status="ACTIVE",
+                created_at=utcnow(),
+            )
+            db.add(idem_rec)
+        else:
+            idem_rec.case_id = case.id
+            idem_rec.status = "ACTIVE"
+            idem_rec.updated_at = utcnow()
+        await db.commit()
+
+        # Sync Case and IdempotencyRecord to MongoDB Atlas
         try:
             await sync_model("cases", "id", case)
+            await sync_model("idempotency_records", "id", idem_rec)
         except Exception:
             pass
 
@@ -944,3 +1018,121 @@ class CaseEngine:
 
         refreshed = await CaseEngine.get_case_with_relations(db, case.id)
         return refreshed or case
+
+    @staticmethod
+    async def recheck_pending_case(db: AsyncSession, case_id: str) -> Optional[Case]:
+        """
+        Delayed Re-check / Retry Loop for Stuck & Pending Payments.
+        Re-polls the payment gateway. If acquirer callback has landed (SUCCESS),
+        automatically resumes investigation, checks inventory, and executes order recovery or refund.
+        """
+        case = await CaseEngine.get_case_with_relations(db, case_id)
+        if not case or case.status != "WAITING_FOR_PROVIDER":
+            return case
+
+        payment = None
+        if case.payment_id:
+            payment = await PaymentSimulator.get_payment(db, case.payment_id)
+        elif case.events:
+            for ev in case.events:
+                if ev.event_type in ["PAYMENT_CHECK_COMPLETED", "PAYMENT_VERIFIED", "SCHEDULE_RECHECK"] and ev.event_metadata:
+                    try:
+                        meta = json.loads(ev.event_metadata)
+                        if "payment_reference" in meta:
+                            payment = await PaymentSimulator.get_payment_by_reference(db, meta["payment_reference"])
+                            break
+                    except Exception:
+                        pass
+
+        if not payment and case.customer_request:
+            import re
+            m = re.search(r'TXN\w+', case.customer_request)
+            if m:
+                payment = await PaymentSimulator.get_payment_by_reference(db, m.group(0))
+
+        if not payment:
+            return case
+
+        if payment.status == "SUCCESS":
+            case.payment_id = payment.id
+            await CaseEngine.log_event(
+                db,
+                case_id=case.id,
+                event_type="GATEWAY_RECHECK_SUCCESS",
+                description=f"Delayed Re-check Loop: Acquirer callback / payment settlement verified: SUCCESS for {payment.payment_reference} (₹{payment.amount}). Resuming autonomous resolution.",
+                actor_type="PROVIDER",
+                actor_id=payment.provider_name or "SIMULATED_GATEWAY",
+            )
+
+            # Check cart and inventory stock
+            checkout = None
+            if payment.checkout_id:
+                checkout = await MerchantSimulator.get_checkout(db, payment.checkout_id)
+            if not checkout:
+                res_chk = await db.execute(
+                    select(CheckoutAttempt)
+                    .filter(CheckoutAttempt.customer_id == case.customer_id)
+                    .order_by(CheckoutAttempt.created_at.desc())
+                )
+                checkout = res_chk.scalars().first()
+
+            product = None
+            if checkout:
+                product = await MerchantSimulator.get_product(db, checkout.product_id)
+
+            stock = product.stock if product else 10
+
+            if stock > 0:
+                # Stock is available -> Offer order recovery / recover order
+                case.status = CaseStateMachine.validate_transition(case.status, "WAITING_FOR_CUSTOMER")
+                case.resolution_type = "ORDER_RECOVERY"
+                await CaseEngine.log_event(
+                    db,
+                    case_id=case.id,
+                    event_type="RECOVERY_OFFERED",
+                    description=f"Payment verified and stock confirmed in warehouse ({stock} units). Order recovery offered to customer.",
+                    actor_type="AI",
+                )
+            else:
+                # Out of stock -> Propose refund and dispatch approval if over threshold
+                case.status = CaseStateMachine.validate_transition(case.status, "WAITING_FOR_APPROVAL")
+                case.resolution_type = "REFUND_ISSUED"
+                approval = Approval(
+                    id=f"appr_{uuid.uuid4().hex[:12]}",
+                    case_id=case.id,
+                    action_type="REQUEST_REFUND",
+                    reason=f"Payment confirmed after delayed re-check, but product out of stock. Refund requires manager sign-off.",
+                    amount=payment.amount,
+                    status="PENDING",
+                    requested_by="resolve_ai_retry_loop",
+                    created_at=utcnow(),
+                )
+                db.add(approval)
+                await CaseEngine.log_event(
+                    db,
+                    case_id=case.id,
+                    event_type="APPROVAL_REQUIRED",
+                    description=f"Out of stock after payment settlement. Dispatched refund approval for ₹{payment.amount}.",
+                    actor_type="SYSTEM",
+                )
+
+            await db.commit()
+            try:
+                await sync_model("cases", "id", case)
+            except Exception:
+                pass
+
+        else:
+            # Payment still pending
+            await CaseEngine.log_event(
+                db,
+                case_id=case.id,
+                event_type="GATEWAY_RECHECK_POLL",
+                description=f"Delayed Re-check Loop: Gateway re-polled for {payment.payment_reference}. Status is still PENDING. Next retry scheduled.",
+                actor_type="SYSTEM",
+                actor_id="retry_worker",
+            )
+
+        refreshed = await CaseEngine.get_case_with_relations(db, case.id)
+        return refreshed or case
+

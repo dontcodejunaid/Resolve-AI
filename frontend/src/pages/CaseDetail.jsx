@@ -144,6 +144,46 @@ export const CaseDetail = () => {
     }
   };
 
+  const [supportNote, setSupportNote] = useState('');
+
+  const handleManualResolve = async () => {
+    setActionLoading(true);
+    try {
+      if (user?.role === 'customer') {
+        await switchAccount('agent@resolveai.com');
+      }
+      await client.post(`/employee/cases/${id}/resolve`, {
+        notes: supportNote.trim() || 'Support Specialist reconciled discrepancy with bank/merchant and confirmed resolution with customer',
+        resolution_type: 'MANUAL_RECONCILIATION_RESOLVED'
+      });
+      setSupportNote('');
+      await fetchCase(true);
+    } catch (e) {
+      console.error('Manual resolution error', e);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleAddSupportNote = async () => {
+    if (!supportNote.trim()) return;
+    setActionLoading(true);
+    try {
+      if (user?.role === 'customer') {
+        await switchAccount('agent@resolveai.com');
+      }
+      await client.post(`/employee/cases/${id}/handoff-note`, {
+        note: supportNote.trim(),
+      });
+      setSupportNote('');
+      await fetchCase(true);
+    } catch (e) {
+      console.error('Add note error', e);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (loading || switchingUser) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 text-center text-lime-700 font-mono text-sm">
@@ -272,33 +312,39 @@ export const CaseDetail = () => {
     }
   };
 
+  const isStaff = user?.role === 'employee' || user?.role === 'merchant' || user?.role === 'admin';
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Top Breadcrumb & Actions */}
+      {/* Back Button */}
       <div className="flex items-center justify-between">
         <Link
-          to="/dashboard"
-          className="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+          to="/"
+          className="inline-flex items-center space-x-2 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Cases</span>
+          <span>Back to Open Cases</span>
         </Link>
 
-        <div className="flex items-center space-x-2">
-          {/* View Mode Switcher */}
-          <div className="bg-slate-100 p-1 rounded-xl flex items-center text-xs">
+        {/* View Toggle */}
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-lime-200">
             <button
               onClick={() => setViewMode('workers')}
-              className={`px-3 py-1 rounded-lg font-bold transition-all ${
-                viewMode === 'workers' ? 'bg-lime-500 text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-900 font-medium'
+              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                viewMode === 'workers'
+                  ? 'bg-lime-500 text-slate-950 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              AI Teammates Floor
+              Floor View
             </button>
             <button
               onClick={() => setViewMode('linear')}
-              className={`px-3 py-1 rounded-lg font-bold transition-all ${
-                viewMode === 'linear' ? 'bg-lime-500 text-slate-950 shadow-sm' : 'text-slate-600 hover:text-slate-900 font-medium'
+              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                viewMode === 'linear'
+                  ? 'bg-lime-500 text-slate-950 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               Linear Steps
@@ -307,7 +353,7 @@ export const CaseDetail = () => {
 
           <button
             onClick={() => fetchCase(false)}
-            className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-white border border-lime-200 hover:border-lime-400 text-lime-800 rounded-lg text-xs font-mono shadow-sm transition-all"
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-white border border-lime-200 text-lime-800 hover:bg-lime-50 rounded-lg text-xs font-mono transition-all shadow-sm"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Sync</span>
@@ -323,30 +369,35 @@ export const CaseDetail = () => {
               #{caseData.case_number}
             </span>
             <span
-              className={`px-2.5 py-1 text-xs font-mono font-bold uppercase rounded-lg border ${getStatusBadgeClass(
-                caseData.status
-              )}`}
+              className={`px-2.5 py-1 text-xs font-mono font-bold uppercase rounded-lg border ${
+                caseData.status === 'RESOLVED'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                  : caseData.status === 'WAITING_FOR_CUSTOMER'
+                  ? 'bg-lime-50 text-lime-700 border-lime-300'
+                  : caseData.status === 'WAITING_FOR_APPROVAL'
+                  ? 'bg-amber-50 text-amber-700 border-amber-300'
+                  : caseData.status === 'WAITING_FOR_PROVIDER'
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                  : caseData.status === 'ESCALATED'
+                  ? 'bg-purple-50 text-purple-700 border-purple-300'
+                  : 'bg-slate-50 text-slate-700 border-slate-200'
+              }`}
             >
-              {caseData.status.replace(/_/g, ' ')}
+              {caseData.status}
             </span>
             {caseData.resolution_type && (
-              <span className="px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-lime-50 text-lime-900 border border-lime-300">
-                {caseData.resolution_type.replace(/_/g, ' ')}
-              </span>
-            )}
-            {caseData.customer_phone && (
-              <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-lime-50 text-lime-900 border border-lime-300">
-                <Phone className="w-3 h-3 text-lime-700" />
-                <span>SMS: {caseData.customer_phone}</span>
+              <span className="px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-lime-100 text-lime-900 border border-lime-300">
+                {caseData.resolution_type}
               </span>
             )}
           </div>
 
           <div className="text-xs font-mono text-slate-500">
-            Reported: {formatActualDateTime(caseData.created_at)}
+            Registered: {formatActualDateTime(caseData.created_at)}
           </div>
         </div>
 
+        {/* Customer Statement */}
         <div>
           <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">
             Customer Statement
@@ -368,68 +419,70 @@ export const CaseDetail = () => {
               <div>
                 <h3 className="text-base font-extrabold text-slate-900">
                   {caseData.refund_id || caseData.resolution_type === 'REFUND_ISSUED'
-                    ? 'Refund Dispatched to Banking Provider — Waiting for Settlement'
-                    : 'Payment Status PENDING with Banking Gateway'}
+                    ? 'Refund Processing with Banking Partner'
+                    : 'Payment Verification in Progress'}
                 </h3>
                 <p className="text-xs text-slate-600 font-mono mt-0.5">
                   {caseData.refund_id
-                    ? `Provider Reference: ${caseData.refund?.provider_reference || 'REF-SETTLING'} · Status: PENDING`
-                    : `Payment Reference: ${caseData.payment?.payment_reference || 'TXN987656'} · Gateway Status: PENDING`}
+                    ? `Provider Reference: ${caseData.refund?.provider_reference || 'REF-SETTLING'} · Awaiting settlement confirmation`
+                    : `Payment Reference: ${caseData.payment?.payment_reference || 'TXN-VERIFYING'} · Confirming status with gateway`}
                 </p>
               </div>
             </div>
 
-            {caseData.refund_id ? (
-              <div className="flex items-center space-x-2 flex-wrap">
-                <button
-                  onClick={handleStepRefundVerification}
-                  disabled={actionLoading}
-                  className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-extrabold px-5 py-2.5 rounded-xl shadow-md text-xs transition-all flex items-center space-x-1.5"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${actionLoading ? 'animate-spin' : ''}`} />
-                  <span>{actionLoading ? 'Confirming Settlement...' : '✓ Accept & Settle Bank Refund'}</span>
-                </button>
+            {isStaff && (
+              caseData.refund_id ? (
+                <div className="flex items-center space-x-2 flex-wrap">
+                  <button
+                    onClick={handleStepRefundVerification}
+                    disabled={actionLoading}
+                    className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-extrabold px-5 py-2.5 rounded-xl shadow-md text-xs transition-all flex items-center space-x-1.5"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${actionLoading ? 'animate-spin' : ''}`} />
+                    <span>{actionLoading ? 'Confirming Settlement...' : '✓ Accept & Settle Bank Refund'}</span>
+                  </button>
 
-                <Link
-                  to="/bank"
-                  className="bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm transition-all flex items-center space-x-1.5"
-                >
-                  <Building2 className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Open Bank Portal →</span>
-                </Link>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-2 flex-wrap">
-                <button
-                  onClick={async () => {
-                    setActionLoading(true);
-                    try {
-                      const payId = caseData.payment?.id || caseData.payment_id;
-                      if (payId) {
-                        await client.post(`/simulator/bank/payments/${payId}/clear`);
-                        await fetchCase(true);
+                  <Link
+                    to="/bank"
+                    className="bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm transition-all flex items-center space-x-1.5"
+                  >
+                    <Building2 className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>Open Bank Portal →</span>
+                  </Link>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2 flex-wrap">
+                  <button
+                    onClick={async () => {
+                      setActionLoading(true);
+                      try {
+                        const payId = caseData.payment?.id || caseData.payment_id;
+                        if (payId) {
+                          await client.post(`/simulator/bank/payments/${payId}/clear`);
+                          await fetchCase(true);
+                        }
+                      } catch (e) {
+                        console.error('Failed to clear payment', e);
+                      } finally {
+                        setActionLoading(false);
                       }
-                    } catch (e) {
-                      console.error('Failed to clear payment', e);
-                    } finally {
-                      setActionLoading(false);
-                    }
-                  }}
-                  disabled={actionLoading}
-                  className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-extrabold px-5 py-2.5 rounded-xl shadow-md text-xs transition-all flex items-center space-x-1.5"
-                >
-                  <CheckCircle2 className={`w-3.5 h-3.5 ${actionLoading ? 'animate-spin' : ''}`} />
-                  <span>{actionLoading ? 'Confirming Bank Receipt...' : '✓ Bank Received Funds (Recover Order & Resolve)'}</span>
-                </button>
+                    }}
+                    disabled={actionLoading}
+                    className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-extrabold px-5 py-2.5 rounded-xl shadow-md text-xs transition-all flex items-center space-x-1.5"
+                  >
+                    <CheckCircle2 className={`w-3.5 h-3.5 ${actionLoading ? 'animate-spin' : ''}`} />
+                    <span>{actionLoading ? 'Confirming Bank Receipt...' : '✓ Bank Received Funds (Recover Order & Resolve)'}</span>
+                  </button>
 
-                <Link
-                  to="/bank"
-                  className="bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm transition-all flex items-center space-x-1.5"
-                >
-                  <Building2 className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Open Bank Gateway →</span>
-                </Link>
-              </div>
+                  <Link
+                    to="/bank"
+                    className="bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold px-4 py-2.5 rounded-xl text-xs shadow-sm transition-all flex items-center space-x-1.5"
+                  >
+                    <Building2 className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>Open Bank Gateway →</span>
+                  </Link>
+                </div>
+              )
             )}
           </div>
         </div>
@@ -477,45 +530,128 @@ export const CaseDetail = () => {
                 <ShieldAlert className="w-5 h-5 text-amber-700" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-900">Human-in-the-Loop: Manager Approval Required</h3>
-                <p className="text-xs text-amber-800 font-mono">Store Policy Threshold: ₹500.00 Limit Exceeded</p>
+                <h3 className="text-base font-bold text-slate-900">
+                  {isStaff ? 'Human-in-the-Loop: Manager Approval Required' : 'Refund Pending Manager Authorization'}
+                </h3>
+                <p className="text-xs text-amber-800 font-mono">
+                  {isStaff ? 'Store Policy Threshold: ₹500.00 Limit Exceeded' : 'Store Policy Sign-Off in Progress'}
+                </p>
               </div>
             </div>
 
             <span className="px-3 py-1 bg-amber-100 border border-amber-300 rounded-xl text-xs font-mono font-bold text-amber-900 self-start sm:self-auto">
-              ACTION: REQUEST REFUND (₹1499.00 INR)
+              ACTION: REQUEST REFUND (₹{caseData.refund?.amount ? caseData.refund.amount.toFixed(2) : '1499.00'} INR)
             </span>
           </div>
 
           <p className="text-sm text-slate-800 leading-relaxed font-medium">
-            The customer paid for an item that is currently out of stock. Resolve AI has synthesized a refund payout of <strong>₹1499.00</strong>, which requires Store Manager sign-off under Deterministic Rule 8.
+            {isStaff
+              ? 'The customer paid for an item that is currently out of stock. Resolve AI has synthesized a refund payout of ₹' + (caseData.refund?.amount ? caseData.refund.amount.toFixed(2) : '1499.00') + ', which requires Store Manager sign-off under Deterministic Rule 8.'
+              : 'The item purchased was out of stock. Resolve AI has scheduled a full refund of ₹' + (caseData.refund?.amount ? caseData.refund.amount.toFixed(2) : '1499.00') + ' which is currently awaiting final sign-off from the store manager.'}
           </p>
 
-          <div className="flex flex-wrap items-center gap-3 pt-2">
-            <button
-              onClick={() => handleManagerApproval(true)}
-              disabled={actionLoading}
-              className="bg-lime-500 hover:bg-lime-400 disabled:opacity-50 text-slate-950 font-extrabold px-6 py-2.5 rounded-xl shadow-md shadow-lime-500/25 flex items-center space-x-2 text-sm transition-all"
-            >
-              <CheckCircle2 className="w-4 h-4 font-bold" />
-              <span>{actionLoading ? 'Executing Decision...' : 'Approve Refund as Manager (1-Click)'}</span>
-            </button>
+          {isStaff && (
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <button
+                onClick={() => handleManagerApproval(true)}
+                disabled={actionLoading}
+                className="bg-lime-500 hover:bg-lime-400 disabled:opacity-50 text-slate-950 font-extrabold px-6 py-2.5 rounded-xl shadow-md shadow-lime-500/25 flex items-center space-x-2 text-sm transition-all"
+              >
+                <CheckCircle2 className="w-4 h-4 font-bold" />
+                <span>{actionLoading ? 'Executing Decision...' : 'Approve Refund as Manager (1-Click)'}</span>
+              </button>
 
-            <button
-              onClick={() => handleManagerApproval(false)}
-              disabled={actionLoading}
-              className="bg-white hover:bg-rose-50 disabled:opacity-50 text-rose-700 border border-rose-300 px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all"
-            >
-              Reject Action
-            </button>
+              <button
+                onClick={() => handleManagerApproval(false)}
+                disabled={actionLoading}
+                className="bg-white hover:bg-rose-50 disabled:opacity-50 text-rose-700 border border-rose-300 px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all"
+              >
+                Reject Action
+              </button>
 
-            <Link
-              to="/employee/approvals"
-              className="text-xs font-mono font-semibold text-slate-600 hover:text-slate-900 underline ml-auto"
-            >
-              Open Full Manager Approval Queue →
-            </Link>
+              <Link
+                to="/employee/approvals"
+                className="text-xs font-mono font-semibold text-slate-600 hover:text-slate-900 underline ml-auto"
+              >
+                Open Full Manager Approval Queue →
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Interactive Human Triage & Resolution Card for Escalated Cases */}
+      {caseData.status === 'ESCALATED' && (
+        <div className="bg-purple-50/95 border-2 border-purple-400 rounded-2xl p-6 shadow-lg space-y-4 animate-in fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-purple-200 pb-3">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-10 h-10 rounded-xl bg-purple-100 border border-purple-300 flex items-center justify-center text-purple-800 shrink-0 shadow-sm">
+                <ShieldAlert className="w-5 h-5 text-purple-700" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900">
+                  {isStaff ? 'Case Escalated to Support Specialist (Human-in-the-Loop)' : 'Under Specialist Review'}
+                </h3>
+                <p className="text-xs text-purple-800 font-mono">
+                  {isStaff
+                    ? 'Autonomous AI paused due to conflicting financial records or customer request.'
+                    : 'Our customer support team is actively investigating the discrepancy.'}
+                </p>
+              </div>
+            </div>
+
+            <span className="px-3 py-1 bg-purple-100 border border-purple-300 rounded-xl text-xs font-mono font-bold text-purple-900 self-start sm:self-auto">
+              STATUS: ESCALATED / IN REVIEW
+            </span>
           </div>
+
+          {!isStaff ? (
+            <p className="text-sm text-slate-700 leading-relaxed font-medium">
+              We detected an amount or record mismatch between your checkout attempt and the payment gateway. A senior support specialist is reviewing your case and reconciling with the banking partner. We will update you here as soon as this is resolved.
+            </p>
+          ) : (
+            <>
+              <div className="bg-white/90 border border-purple-200 p-4 rounded-xl space-y-3">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Add Support Specialist Note / Triage Action
+                </label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="text"
+                    value={supportNote}
+                    onChange={(e) => setSupportNote(e.target.value)}
+                    placeholder="e.g., Reconciled discrepancy with bank, confirmed manual refund processed for $99 USD..."
+                    className="flex-1 px-3.5 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                  />
+                  <button
+                    onClick={handleAddSupportNote}
+                    disabled={actionLoading || !supportNote.trim()}
+                    className="bg-purple-100 hover:bg-purple-200 disabled:opacity-50 text-purple-900 font-bold px-4 py-2 rounded-xl text-xs border border-purple-300 transition-all whitespace-nowrap"
+                  >
+                    Log Note
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 pt-1">
+                <button
+                  onClick={handleManualResolve}
+                  disabled={actionLoading}
+                  className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-extrabold px-6 py-2.5 rounded-xl shadow-md shadow-emerald-600/25 flex items-center space-x-2 text-xs transition-all"
+                >
+                  <CheckCircle2 className="w-4 h-4 font-bold" />
+                  <span>{actionLoading ? 'Resolving Case...' : '✓ Resolve Case (Reconciled & Closed)'}</span>
+                </button>
+
+                <Link
+                  to="/employee/dashboard"
+                  className="text-xs font-mono font-semibold text-purple-800 hover:text-purple-950 underline ml-auto"
+                >
+                  Open Full Case Queue →
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       )}
 

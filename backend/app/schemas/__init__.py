@@ -259,6 +259,11 @@ class HandoffNoteRequest(BaseModel):
     note: str
 
 
+class ManualResolveRequest(BaseModel):
+    notes: Optional[str] = "Manually resolved by support specialist after customer contact and gateway reconciliation"
+    resolution_type: Optional[str] = "MANUAL_RECONCILIATION_RESOLVED"
+
+
 class ScenarioRunRequest(BaseModel):
     scenario_id: str
 

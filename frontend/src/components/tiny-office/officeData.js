@@ -301,28 +301,6 @@ export const SCENARIO_WORKER_CUSTOMIZATIONS = {
       currentTask: 'Generate Bank Dispute Escalation Docket',
       activeTool: 'ESCALATE_TO_HUMAN'
     }
-  },
-  SCENARIO_10_BACKGROUND_RECON: {
-    'worker-1': {
-      thought: 'Background daemon detected orphan payment TXN-ORPHAN-8891 💳',
-      currentTask: 'Identify Orphan Banking Gateway Settlement',
-      activeTool: 'SCAN_ORPHANS'
-    },
-    'worker-2': {
-      thought: 'Matched orphan payment to abandoned cart session CHK-RS-77210 📦',
-      currentTask: 'Match Payment to Customer Cart Attempt',
-      activeTool: 'MATCH_CART'
-    },
-    'worker-3': {
-      thought: 'Proactive policy: Open automated recovery case and notify customer 🧠',
-      currentTask: 'Synthesize Proactive Customer Recovery Action',
-      activeTool: 'QUERY_COGNEE'
-    },
-    'worker-4': {
-      thought: 'Enforcing Rule 10 & 13 -> Proactive case opened, 100% verified 🛡️',
-      currentTask: 'Open Case & Audit Proactive Event Stream',
-      activeTool: 'INDEPENDENT_VERIFICATION'
-    }
   }
 };
 

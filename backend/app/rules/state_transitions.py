@@ -22,6 +22,8 @@ VALID_TRANSITIONS: Dict[str, Set[str]] = {
     },
     "WAITING_FOR_PROVIDER": {
         "INVESTIGATING",
+        "WAITING_FOR_CUSTOMER",
+        "WAITING_FOR_APPROVAL",
         "ACTION_IN_PROGRESS",
         "VERIFYING",
         "RESOLVED",

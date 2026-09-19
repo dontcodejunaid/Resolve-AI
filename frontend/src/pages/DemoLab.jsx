@@ -117,7 +117,6 @@ export const DemoLab = () => {
         'SCENARIO_7_TIMEOUT': 'rahul@example.com',
         'SCENARIO_8_ORDER_EXISTS': 'rahul@example.com',
         'SCENARIO_9_PAYMENT_NOT_FOUND': 'rahul@example.com',
-        'SCENARIO_10_BACKGROUND_RECON': 'rahul@example.com',
       };
 
       const targetEmail = scenarioUserMap[scenarioId];

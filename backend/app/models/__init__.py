@@ -11,6 +11,7 @@ from backend.app.models.action import Action
 from backend.app.models.approval import Approval
 from backend.app.models.policy import MerchantPolicy
 from backend.app.models.notification import Notification
+from backend.app.models.idempotency import IdempotencyRecord
 
 __all__ = [
     "User",
@@ -26,4 +27,5 @@ __all__ = [
     "Approval",
     "MerchantPolicy",
     "Notification",
+    "IdempotencyRecord",
 ]

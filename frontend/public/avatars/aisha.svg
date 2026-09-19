@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgAisha" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EC4899"/>
+      <stop offset="100%" stop-color="#831843"/>
+    </linearGradient>
+    <linearGradient id="jacketAisha" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#064E3B"/>
+    </linearGradient>
+    <filter id="shadowAisha" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Background Circle -->
+  <circle cx="60" cy="60" r="58" fill="url(#bgAisha)" stroke="#F472B6" stroke-width="2"/>
+
+  <!-- Subtle BG Glow -->
+  <circle cx="60" cy="35" r="42" fill="#FBCFE8" opacity="0.3"/>
+
+  <!-- Long Hair Behind -->
+  <path d="M30 48 C26 70 30 96 36 108 C42 90 40 76 42 60 Z" fill="#18181B"/>
+  <path d="M90 48 C94 70 90 96 84 108 C78 90 80 76 78 60 Z" fill="#18181B"/>
+
+  <!-- Body / Outfit -->
+  <path d="M22 116 C22 92 38 82 60 82 C82 82 98 92 98 116 Z" fill="url(#jacketAisha)"/>
+
+  <!-- Inner Top -->
+  <path d="M46 82 L60 96 L74 82 Z" fill="#FDF2F8"/>
+
+  <!-- Neck -->
+  <rect x="53" y="66" width="14" height="20" rx="3" fill="#FBBF24"/>
+
+  <!-- Gold Necklace -->
+  <path d="M51 76 Q60 84 69 76" stroke="#F59E0B" stroke-width="2" fill="none"/>
+  <circle cx="60" cy="81" r="2" fill="#D97706"/>
+
+  <!-- Head Base -->
+  <ellipse cx="60" cy="54" rx="20" ry="23" fill="#FCD34D" filter="url(#shadowAisha)"/>
+
+  <!-- Earrings -->
+  <circle cx="38" cy="56" r="3" fill="#F59E0B" stroke="#D97706" stroke-width="0.75"/>
+  <circle cx="82" cy="56" r="3" fill="#F59E0B" stroke="#D97706" stroke-width="0.75"/>
+
+  <!-- Hair Front -->
+  <path d="M36 46 C36 28 46 22 60 22 C74 22 84 28 84 46 C80 32 72 26 60 26 C48 26 40 32 36 46 Z" fill="#27272A"/>
+  <path d="M36 46 C38 34 50 30 56 34 C58 36 50 44 42 50 C38 48 37 46 36 46 Z" fill="#18181B"/>
+  <path d="M84 46 C82 34 70 30 64 34 C62 36 70 44 78 50 C82 48 83 46 84 46 Z" fill="#18181B"/>
+
+  <!-- Eyes with Eyelashes -->
+  <ellipse cx="50" cy="52" rx="3.5" ry="2.5" fill="#18181B"/>
+  <ellipse cx="70" cy="52" rx="3.5" ry="2.5" fill="#18181B"/>
+  <circle cx="51" cy="51" r="1.2" fill="#FFFFFF"/>
+  <circle cx="71" cy="51" r="1.2" fill="#FFFFFF"/>
+  <path d="M45 49 Q50 47 55 49" stroke="#18181B" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <path d="M65 49 Q70 47 75 49" stroke="#18181B" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+
+  <!-- Eyebrows (Arched) -->
+  <path d="M44 44 Q50 40 55 43" stroke="#27272A" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M65 43 Q70 40 76 44" stroke="#27272A" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+  <!-- Nose -->
+  <path d="M60 52 L59 58 L62 58" stroke="#D97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Rosy Cheeks -->
+  <circle cx="44" cy="59" r="4" fill="#FB7185" opacity="0.4"/>
+  <circle cx="76" cy="59" r="4" fill="#FB7185" opacity="0.4"/>
+
+  <!-- Lips -->
+  <path d="M53 65 Q60 70 67 65" stroke="#E11D48" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+
+  <!-- Small Customer Badge Ring -->
+  <circle cx="100" cy="100" r="14" fill="#EC4899" stroke="#FFFFFF" stroke-width="2"/>
+  <text x="100" y="104" font-size="11" font-family="system-ui, sans-serif" font-weight="900" fill="#FFFFFF" text-anchor="middle">C2</text>
+</svg>

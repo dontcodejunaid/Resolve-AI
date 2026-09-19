@@ -14,6 +14,7 @@ import {
 import { CaseTimeline } from '../components/CaseTimeline';
 import { EvidenceCard } from '../components/EvidenceCard';
 import { VisionEvidenceCard } from '../components/VisionEvidenceCard';
+import { UserAvatar } from '../components/UserAvatar';
 
 export const EmployeeCaseDetail = () => {
   const { id } = useParams();
@@ -28,7 +29,7 @@ export const EmployeeCaseDetail = () => {
       const res = await client.get(`/employee/cases/${id}`);
       setCaseData(res.data);
     } catch (e) {
-      console.error('Failed to load employee case', e);
+      console.error('Failed to load case', e);
     } finally {
       setLoading(false);
     }
@@ -59,11 +60,11 @@ export const EmployeeCaseDetail = () => {
     if (!noteText.trim()) return;
     setNoteLoading(true);
     try {
-      const res = await client.post(`/employee/cases/${id}/handoff-note`, { note: noteText });
-      setCaseData(res.data);
+      await client.post(`/employee/cases/${id}/notes`, { note: noteText });
       setNoteText('');
-    } catch (err) {
-      console.error('Failed to post note', err);
+      fetchCase();
+    } catch (e) {
+      console.error('Failed to post note', e);
     } finally {
       setNoteLoading(false);
     }
@@ -71,32 +72,30 @@ export const EmployeeCaseDetail = () => {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center text-lime-700 font-mono text-sm">
-        Loading case telemetry...
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center text-slate-500 font-mono text-sm">
+        Loading case #{id}...
       </div>
     );
   }
 
   if (!caseData) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center space-y-4">
-        <h2 className="text-xl font-bold text-slate-900">Case Not Found</h2>
-        <Link to="/employee/dashboard" className="text-lime-700 hover:text-lime-800 text-sm font-semibold">
-          Return to Queue
-        </Link>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center text-rose-500 font-mono text-sm">
+        Case not found.
       </div>
     );
   }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* Back Button & Header Actions */}
       <div className="flex items-center justify-between">
         <Link
           to="/employee/dashboard"
-          className="inline-flex items-center space-x-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+          className="inline-flex items-center space-x-2 text-xs font-mono font-bold text-lime-800 hover:text-lime-950 bg-lime-50 hover:bg-lime-100 border border-lime-300 px-3 py-1.5 rounded-xl transition-all shadow-sm"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Employee Queue</span>
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Support Queue</span>
         </Link>
 
         <div className="flex items-center space-x-3">
@@ -121,25 +120,36 @@ export const EmployeeCaseDetail = () => {
         </div>
       </div>
 
-      {/* Case Telemetry Header */}
-      <div className="bg-white border border-lime-200 p-6 rounded-2xl shadow-sm space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* Case Header Card */}
+      <div className="bg-white border border-lime-200 rounded-2xl p-6 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <span className="text-xl font-mono font-extrabold text-lime-700">
-              #{caseData.case_number}
-            </span>
-            <span className="px-2.5 py-1 text-xs font-mono font-bold uppercase rounded-lg border bg-lime-100 text-lime-800 border-lime-300">
-              {caseData.status}
-            </span>
-            {caseData.resolution_type && (
-              <span className="px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-lime-100 text-lime-900 border border-lime-300">
-                {caseData.resolution_type}
-              </span>
-            )}
-          </div>
+            <UserAvatar
+              email={caseData.customer?.email}
+              name={caseData.customer?.full_name}
+              role="customer"
+              size="lg"
+              showBadge={true}
+            />
+            <div>
+              <div className="flex items-center space-x-2.5">
+                <span className="text-xl font-bold font-mono text-lime-700">
+                  #{caseData.case_number}
+                </span>
+                <span className="px-2.5 py-1 text-xs font-mono font-bold uppercase rounded-lg border bg-lime-100 text-lime-800 border-lime-300">
+                  {caseData.status}
+                </span>
+                {caseData.resolution_type && (
+                  <span className="px-2.5 py-1 text-xs font-mono font-bold rounded-lg bg-lime-100 text-lime-900 border border-lime-300">
+                    {caseData.resolution_type}
+                  </span>
+                )}
+              </div>
 
-          <div className="text-xs font-mono text-slate-500">
-            Customer: <span className="text-slate-900 font-bold">{caseData.customer?.full_name}</span> ({caseData.customer?.email})
+              <div className="text-xs font-mono text-slate-500 mt-1">
+                Customer: <span className="text-slate-900 font-bold">{caseData.customer?.full_name}</span> ({caseData.customer?.email})
+              </div>
+            </div>
           </div>
         </div>
 

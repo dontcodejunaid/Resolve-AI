@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgRahul" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#1E3A8A"/>
+    </linearGradient>
+    <linearGradient id="skinRahul" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FCD34D"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <linearGradient id="jacketRahul" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Background Circle -->
+  <circle cx="60" cy="60" r="58" fill="url(#bgRahul)" stroke="#60A5FA" stroke-width="2"/>
+
+  <!-- Subtle BG Light -->
+  <circle cx="60" cy="35" r="40" fill="#93C5FD" opacity="0.25"/>
+
+  <!-- Body / Jacket -->
+  <path d="M22 116 C22 92 38 82 60 82 C82 82 98 92 98 116 Z" fill="url(#jacketRahul)"/>
+  
+  <!-- Shirt Collar Inner -->
+  <path d="M48 82 L60 98 L72 82 Z" fill="#E2E8F0"/>
+  <path d="M54 82 L60 92 L66 82 Z" fill="#94A3B8"/>
+
+  <!-- Neck -->
+  <rect x="52" y="66" width="16" height="20" rx="4" fill="#EAB308"/>
+
+  <!-- Head Base -->
+  <ellipse cx="60" cy="54" rx="22" ry="25" fill="#FBBF24" filter="url(#shadow)"/>
+
+  <!-- Ears -->
+  <ellipse cx="37" cy="54" rx="4" ry="7" fill="#F59E0B"/>
+  <ellipse cx="83" cy="54" rx="4" ry="7" fill="#F59E0B"/>
+
+  <!-- Hair -->
+  <path d="M37 46 C37 28 46 22 60 22 C74 22 83 28 83 46 C80 34 70 30 60 30 C50 30 40 34 37 46 Z" fill="#1E293B"/>
+  <path d="M37 44 C35 36 40 25 56 22 C64 21 78 24 83 34 C80 28 72 24 60 24 C46 24 40 32 37 44 Z" fill="#0F172A"/>
+  
+  <!-- Eyes -->
+  <circle cx="50" cy="52" r="3" fill="#0F172A"/>
+  <circle cx="70" cy="52" r="3" fill="#0F172A"/>
+  <circle cx="51" cy="51" r="1" fill="#FFFFFF"/>
+  <circle cx="71" cy="51" r="1" fill="#FFFFFF"/>
+
+  <!-- Eyebrows -->
+  <path d="M45 45 Q50 43 55 46" stroke="#1E293B" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M65 46 Q70 43 75 45" stroke="#1E293B" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+  <!-- Glasses -->
+  <rect x="43" y="46" width="14" height="11" rx="3" fill="none" stroke="#0284C7" stroke-width="2"/>
+  <rect x="63" y="46" width="14" height="11" rx="3" fill="none" stroke="#0284C7" stroke-width="2"/>
+  <line x1="57" y1="51" x2="63" y2="51" stroke="#0284C7" stroke-width="2"/>
+  <line x1="39" y1="50" x2="43" y2="50" stroke="#0284C7" stroke-width="1.5"/>
+  <line x1="77" y1="50" x2="81" y2="50" stroke="#0284C7" stroke-width="1.5"/>
+
+  <!-- Nose -->
+  <path d="M60 54 L58 59 L62 59" stroke="#D97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Smile -->
+  <path d="M52 64 Q60 70 68 64" stroke="#78350F" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+  <!-- Small Customer Badge Ring -->
+  <circle cx="100" cy="100" r="14" fill="#3B82F6" stroke="#FFFFFF" stroke-width="2"/>
+  <text x="100" y="104" font-size="11" font-family="system-ui, sans-serif" font-weight="900" fill="#FFFFFF" text-anchor="middle">C1</text>
+</svg>

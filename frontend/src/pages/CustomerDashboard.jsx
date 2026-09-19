@@ -17,6 +17,7 @@ import {
   ChevronUp
 } from 'lucide-react';
 import { ResolveAIWorkerFloor } from '../components/ResolveAIWorkerFloor';
+import { UserAvatar } from '../components/UserAvatar';
 import { formatActualDateTime } from '../utils/dateUtils';
 
 export const CustomerDashboard = () => {
@@ -40,28 +41,45 @@ export const CustomerDashboard = () => {
 
   useEffect(() => {
     fetchCases(true);
+    const interval = setInterval(() => fetchCases(false), 5000);
+    return () => clearInterval(interval);
   }, []);
 
-  const openCases = cases.filter(c => c.status !== 'RESOLVED');
-  const resolvedCases = cases.filter(c => c.status === 'RESOLVED');
+  const openCases = cases.filter((c) => c.status !== 'CLOSED' && c.status !== 'RESOLVED');
+  const resolvedCases = cases.filter((c) => c.status === 'RESOLVED' || c.status === 'CLOSED');
+
+  const filteredCases = cases.filter((c) => {
+    if (filter === 'ACTIVE') return c.status !== 'CLOSED' && c.status !== 'RESOLVED';
+    if (filter === 'RESOLVED') return c.status === 'RESOLVED' || c.status === 'CLOSED';
+    return true;
+  });
 
   const getStatusBadge = (status) => {
     switch (status) {
+      case 'AUTO_RECOVERED':
+      case 'AUTO_REFUNDED':
       case 'RESOLVED':
-        return 'bg-lime-100 text-lime-800 border-lime-300';
-      case 'WAITING_FOR_CUSTOMER':
-        return 'bg-lime-100 text-lime-900 border-lime-400 animate-pulse';
-      case 'WAITING_FOR_APPROVAL':
-      case 'WAITING_FOR_PROVIDER':
-        return 'bg-amber-100 text-amber-800 border-amber-300';
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300">
+            <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
+            {status.replace('_', ' ')}
+          </span>
+        );
       case 'ESCALATED':
-        return 'bg-purple-100 text-purple-800 border-purple-300';
-      case 'INVESTIGATING':
-      case 'ACTION_IN_PROGRESS':
-      case 'VERIFYING':
-        return 'bg-lime-100 text-lime-800 border-lime-300 animate-pulse';
+      case 'ACTION_REQUIRED':
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-300">
+            <AlertTriangle className="w-3.5 h-3.5 mr-1" />
+            {status.replace('_', ' ')}
+          </span>
+        );
       default:
-        return 'bg-slate-100 text-slate-700 border-slate-300';
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-300">
+            <Clock className="w-3.5 h-3.5 mr-1" />
+            {status.replace('_', ' ')}
+          </span>
+        );
     }
   };
 
@@ -69,18 +87,21 @@ export const CustomerDashboard = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-gradient-to-r from-lime-50/80 via-white to-lime-50/80 p-6 rounded-2xl border border-lime-200 shadow-sm">
-        <div>
-          <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-              Welcome back, {user?.full_name}
-            </h1>
-            <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-lime-100 text-lime-800 border border-lime-300 rounded-lg">
-              Customer Portal
-            </span>
+        <div className="flex items-center space-x-4">
+          <UserAvatar user={user} size="xl" showBadge={true} />
+          <div>
+            <div className="flex items-center space-x-2">
+              <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                Welcome back, {user?.full_name}
+              </h1>
+              <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-lime-100 text-lime-800 border border-lime-300 rounded-lg">
+                Customer Portal
+              </span>
+            </div>
+            <p className="text-sm text-slate-600 mt-1">
+              RESOLVE<sub className="text-xs font-mono font-bold text-lime-600 lowercase ml-0.5">.ai</sub> is actively monitoring your transactions and resolving payment mismatches.
+            </p>
           </div>
-          <p className="text-sm text-slate-600 mt-1">
-            RESOLVE<sub className="text-xs font-mono font-bold text-lime-600 lowercase ml-0.5">.ai</sub> is actively monitoring your transactions and resolving payment mismatches.
-          </p>
         </div>
 
         <div className="flex items-center space-x-3">

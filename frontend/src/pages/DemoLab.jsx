@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { TelemetryLog } from '../components/TelemetryLog';
 import { ResolveAIWorkerFloor } from '../components/ResolveAIWorkerFloor';
+import { UserAvatar } from '../components/UserAvatar';
+import { DEMO_PERSONAS_LIST } from '../utils/avatarUtils';
 
 export const DemoLab = () => {
   const [scenarios, setScenarios] = useState([]);
@@ -378,6 +380,77 @@ export const DemoLab = () => {
                   </button>
                 </div>
               </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Interactive Demo Character Personas Grid */}
+      <div className="bg-white border border-lime-200 rounded-3xl p-6 sm:p-7 shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
+              <Sparkles className="w-5 h-5 text-lime-700" />
+              <span>Demo Character Personas (Merchant, Users & Executives)</span>
+            </h2>
+            <p className="text-xs text-slate-600 mt-1">
+              Switch directly into any role to experience the portal from their exact vantage point.
+            </p>
+          </div>
+          <span className="text-[11px] font-mono text-lime-800 bg-lime-100 px-2.5 py-1 rounded-full font-bold">
+            6 Ready Profiles
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-2">
+          {DEMO_PERSONAS_LIST.map((p) => {
+            const isCurrent = user?.email === p.email;
+            return (
+              <button
+                key={p.email}
+                onClick={async () => {
+                  try {
+                    const newUser = await switchAccount(p.email);
+                    if (newUser.role === 'employee') navigate('/employee/dashboard');
+                    else if (newUser.role === 'merchant') navigate('/merchant/dashboard');
+                    else navigate('/dashboard');
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }}
+                className={`p-4 rounded-2xl border text-left transition-all flex items-center justify-between group ${
+                  isCurrent
+                    ? 'border-lime-500 bg-lime-50/70 ring-2 ring-lime-400/40 shadow-sm'
+                    : 'border-slate-200 hover:border-lime-300 hover:bg-slate-50/80 shadow-sm'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <UserAvatar
+                    email={p.email}
+                    name={p.name}
+                    role={p.roleType}
+                    size="lg"
+                    showBadge={true}
+                    badgeContent={p.badge}
+                  />
+                  <div>
+                    <div className="font-bold text-slate-900 text-sm flex items-center space-x-1.5">
+                      <span>{p.name}</span>
+                      {isCurrent && (
+                        <span className="text-[9px] bg-lime-500 text-slate-950 font-bold px-1.5 py-0.5 rounded-full">
+                          ACTIVE
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-slate-500 font-mono mt-0.5">{p.role}</div>
+                    <div className="text-[10px] text-slate-400 font-mono">{p.email}</div>
+                  </div>
+                </div>
+
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <ArrowRight className="w-4 h-4 text-lime-700" />
+                </div>
+              </button>
             );
           })}
         </div>

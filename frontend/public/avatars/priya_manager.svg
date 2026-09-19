@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgPriya" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#84CC16"/>
+      <stop offset="100%" stop-color="#3F6212"/>
+    </linearGradient>
+    <linearGradient id="blazerPriya" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+    <filter id="shadowPriya" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Background Circle -->
+  <circle cx="60" cy="60" r="58" fill="url(#bgPriya)" stroke="#A3E635" stroke-width="2"/>
+
+  <!-- Subtle BG Glow -->
+  <circle cx="60" cy="35" r="40" fill="#ECFCCB" opacity="0.3"/>
+
+  <!-- High Ponytail Hair Behind -->
+  <path d="M74 24 C86 24 94 36 94 48 C94 60 86 68 80 72 C80 56 82 42 76 34 Z" fill="#1C1917"/>
+  <!-- Hair Tie -->
+  <ellipse cx="76" cy="28" rx="4" ry="6" fill="#F59E0B"/>
+
+  <!-- Body / Executive Blazer -->
+  <path d="M22 116 C22 90 38 80 60 80 C82 80 98 90 98 116 Z" fill="url(#blazerPriya)"/>
+
+  <!-- Blazer Lapels & Silk Blouse -->
+  <path d="M46 80 L60 102 L74 80 Z" fill="#F8FAFC"/>
+  <path d="M40 80 L52 106 L60 94 L68 106 L80 80" stroke="#0F172A" stroke-width="3" fill="none"/>
+  
+  <!-- Gold Merchant Store Badge -->
+  <circle cx="74" cy="92" r="3.5" fill="#EAB308" stroke="#CA8A04" stroke-width="0.75"/>
+
+  <!-- Neck -->
+  <rect x="53" y="64" width="14" height="20" rx="3" fill="#FCD34D"/>
+
+  <!-- Head Base -->
+  <ellipse cx="60" cy="52" rx="20" ry="23" fill="#FDE047" filter="url(#shadowPriya)"/>
+
+  <!-- Pearl Earrings -->
+  <circle cx="38" cy="54" r="3" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1"/>
+  <circle cx="82" cy="54" r="3" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1"/>
+
+  <!-- Hair Front / Bangs -->
+  <path d="M37 46 C37 24 48 18 60 18 C72 18 83 24 83 46 C80 32 72 26 60 26 C48 26 40 32 37 46 Z" fill="#292524"/>
+  <path d="M37 44 C42 32 54 28 62 34 C64 36 56 42 44 48 Z" fill="#1C1917"/>
+
+  <!-- Eyes -->
+  <ellipse cx="50" cy="50" rx="3.5" ry="2.5" fill="#1C1917"/>
+  <ellipse cx="70" cy="50" rx="3.5" ry="2.5" fill="#1C1917"/>
+  <circle cx="51" cy="49" r="1.2" fill="#FFFFFF"/>
+  <circle cx="71" cy="49" r="1.2" fill="#FFFFFF"/>
+  
+  <!-- Eyeliner -->
+  <path d="M44 48 Q50 45 56 48" stroke="#1C1917" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <path d="M64 48 Q70 45 76 48" stroke="#1C1917" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+
+  <!-- Eyebrows -->
+  <path d="M44 42 Q50 39 55 42" stroke="#292524" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M65 42 Q70 39 76 42" stroke="#292524" stroke-width="2" stroke-linecap="round" fill="none"/>
+
+  <!-- Nose -->
+  <path d="M60 50 L59 56 L62 56" stroke="#D97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- Rosy Cheeks -->
+  <circle cx="44" cy="57" r="4" fill="#F43F5E" opacity="0.3"/>
+  <circle cx="76" cy="57" r="4" fill="#F43F5E" opacity="0.3"/>
+
+  <!-- Smile / Rose Lips -->
+  <path d="M53 63 Q60 68 67 63" stroke="#BE123C" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+
+  <!-- Small Merchant Badge Ring -->
+  <circle cx="100" cy="100" r="14" fill="#84CC16" stroke="#FFFFFF" stroke-width="2"/>
+  <text x="100" y="104" font-size="9" font-family="system-ui, sans-serif" font-weight="900" fill="#0F172A" text-anchor="middle">MGR</text>
+</svg>

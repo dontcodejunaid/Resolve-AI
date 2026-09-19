@@ -28,6 +28,7 @@ import { InvestigationSteps } from '../components/InvestigationSteps';
 import { EvidenceCard } from '../components/EvidenceCard';
 import { VisionEvidenceCard } from '../components/VisionEvidenceCard';
 import { ResolveAIWorkerFloor } from '../components/ResolveAIWorkerFloor';
+import { UserAvatar } from '../components/UserAvatar';
 import { formatActualDateTime, formatActualTime } from '../utils/dateUtils';
 
 export const CaseDetail = () => {
@@ -203,9 +204,12 @@ export const CaseDetail = () => {
           <p className="text-sm text-slate-600 leading-relaxed">
             This case belongs to another customer account. Under deterministic rule 1, customers cannot inspect records owned by other users.
           </p>
-          <p className="text-xs font-mono text-lime-800 bg-lime-50 py-1.5 px-3 rounded-lg border border-lime-200 inline-block">
-            Logged in as: <span className="font-bold">{user?.full_name || user?.email}</span> ({user?.role})
-          </p>
+          <div className="flex items-center justify-center space-x-2 bg-lime-50 py-1.5 px-3 rounded-lg border border-lime-200 inline-flex">
+            <UserAvatar user={user} size="xs" />
+            <span className="text-xs font-mono text-lime-900">
+              Logged in as: <span className="font-bold">{user?.full_name || user?.email}</span> ({user?.role})
+            </span>
+          </div>
         </div>
 
         <div className="bg-white border border-lime-200 rounded-2xl p-5 shadow-sm space-y-3">
@@ -217,55 +221,56 @@ export const CaseDetail = () => {
               onClick={() => handleQuickSwitch('aisha@example.com')}
               className="flex items-center justify-between p-3 rounded-xl border border-lime-300 bg-lime-50 hover:bg-lime-100 text-left transition-all group"
             >
-              <div>
-                <div className="text-xs font-bold text-slate-900 group-hover:text-lime-800">Aisha Khan (Customer 2)</div>
-                <div className="text-[11px] text-slate-500 font-mono">aisha@example.com · Scenario 2 Owner</div>
+              <div className="flex items-center space-x-2.5">
+                <UserAvatar email="aisha@example.com" name="Aisha Khan" size="sm" />
+                <div>
+                  <div className="text-xs font-bold text-slate-900 group-hover:text-lime-800">Aisha Khan (Customer 2)</div>
+                  <div className="text-[11px] text-slate-500 font-mono">Scenario 2 Owner</div>
+                </div>
               </div>
-              <User className="w-4 h-4 text-lime-700 shrink-0" />
+              <ArrowRight className="w-3.5 h-3.5 text-lime-700 shrink-0" />
             </button>
 
             <button
               onClick={() => handleQuickSwitch('rahul@example.com')}
               className="flex items-center justify-between p-3 rounded-xl border border-lime-200 bg-white hover:bg-lime-50 text-left transition-all group"
             >
-              <div>
-                <div className="text-xs font-bold text-slate-900 group-hover:text-lime-800">Rahul Sharma (Customer 1)</div>
-                <div className="text-[11px] text-slate-500 font-mono">rahul@example.com · Scenario 1 Owner</div>
+              <div className="flex items-center space-x-2.5">
+                <UserAvatar email="rahul@example.com" name="Rahul Sharma" size="sm" />
+                <div>
+                  <div className="text-xs font-bold text-slate-900 group-hover:text-lime-800">Rahul Sharma (Customer 1)</div>
+                  <div className="text-[11px] text-slate-500 font-mono">Scenario 1 Owner</div>
+                </div>
               </div>
-              <User className="w-4 h-4 text-slate-400 group-hover:text-lime-700 shrink-0" />
+              <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-lime-700 shrink-0" />
             </button>
 
             <button
               onClick={() => handleQuickSwitch('arjun@example.com')}
               className="flex items-center justify-between p-3 rounded-xl border border-lime-200 bg-white hover:bg-lime-50 text-left transition-all group"
             >
-              <div>
-                <div className="text-xs font-bold text-slate-900 group-hover:text-lime-800">Arjun Verma (Customer 3)</div>
-                <div className="text-[11px] text-slate-500 font-mono">arjun@example.com · Scenario 3 Owner</div>
+              <div className="flex items-center space-x-2.5">
+                <UserAvatar email="arjun@example.com" name="Arjun Verma" size="sm" />
+                <div>
+                  <div className="text-xs font-bold text-slate-900 group-hover:text-lime-800">Arjun Verma (Customer 3)</div>
+                  <div className="text-[11px] text-slate-500 font-mono">Scenario 3 Owner</div>
+                </div>
               </div>
-              <User className="w-4 h-4 text-slate-400 group-hover:text-lime-700 shrink-0" />
+              <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-lime-700 shrink-0" />
             </button>
 
             <button
               onClick={() => handleQuickSwitch('agent@resolveai.com')}
               className="flex items-center justify-between p-3 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-left transition-all group"
             >
-              <div>
-                <div className="text-xs font-bold text-slate-900 group-hover:text-amber-900">Dev Specialist (Agent)</div>
-                <div className="text-[11px] text-amber-700 font-mono">agent@resolveai.com · Support Access</div>
+              <div className="flex items-center space-x-2.5">
+                <UserAvatar email="agent@resolveai.com" name="Dev Specialist" size="sm" />
+                <div>
+                  <div className="text-xs font-bold text-slate-900 group-hover:text-amber-900">Dev Specialist (Agent)</div>
+                  <div className="text-[11px] text-amber-700 font-mono">Support Specialist</div>
+                </div>
               </div>
-              <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0" />
-            </button>
-
-            <button
-              onClick={() => handleQuickSwitch('bank@gateway.com')}
-              className="flex items-center justify-between p-3 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-left transition-all group"
-            >
-              <div>
-                <div className="text-xs font-bold text-slate-900 group-hover:text-emerald-900">Bank Provider Sentinel</div>
-                <div className="text-[11px] text-emerald-700 font-mono">bank@gateway.com · Gateway Provider</div>
-              </div>
-              <CreditCard className="w-4 h-4 text-emerald-700 shrink-0" />
+              <ArrowRight className="w-3.5 h-3.5 text-amber-700 shrink-0" />
             </button>
           </div>
         </div>

@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import client from '../api/client';
 import { Bot, Sparkles, ArrowRight, ShieldCheck, Search, CheckCircle2, Clock, Image as ImageIcon, Phone, Upload, X, ExternalLink, Store, Wand2, RefreshCw } from 'lucide-react';
 
+import { ResolveAIWorkerFloor } from '../components/ResolveAIWorkerFloor';
+
 export const NewCase = () => {
   const location = useLocation();
   const [requestText, setRequestText] = useState(
@@ -15,6 +17,7 @@ export const NewCase = () => {
   const [productId, setProductId] = useState(location.state?.prefillProduct || 'prod_hoodie_01');
   const [loading, setLoading] = useState(false);
   const [investigating, setInvestigating] = useState(false);
+  const [createdCaseId, setCreatedCaseId] = useState(null);
   const [investigationStep, setInvestigationStep] = useState(0);
   
   // Vision AI Real-time Autofill States
@@ -129,6 +132,7 @@ export const NewCase = () => {
       });
 
       const caseId = res.data.id;
+      setCreatedCaseId(caseId);
       setTimeout(() => setInvestigationStep(1), 300);
       setTimeout(() => setInvestigationStep(2), 700);
       setTimeout(() => setInvestigationStep(3), 1100);
@@ -136,13 +140,20 @@ export const NewCase = () => {
       setTimeout(() => setInvestigationStep(5), 1900);
       setTimeout(() => {
         navigate(`/case/${caseId}`);
-      }, 2300);
+      }, 3500);
     } catch (err) {
       console.error('Error opening case', err);
       setLoading(false);
       setInvestigating(false);
     }
   };
+
+  const derivedScenarioId =
+    productId === 'prod_pants_03' || requestText.includes('stock') || requestText.includes('5910283')
+      ? 'SCENARIO_2_REFUND'
+      : productId === 'prod_shirt_02' || requestText.includes('pending') || requestText.includes('3819204')
+      ? 'SCENARIO_3_PENDING'
+      : 'SCENARIO_1_RECOVERY';
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 space-y-8">
@@ -173,38 +184,29 @@ export const NewCase = () => {
       </div>
 
       {investigating ? (
-        /* Real-Time Investigation Progress Animation */
-        <div className="bg-white border border-lime-300 rounded-2xl p-8 shadow-xl shadow-lime-900/5 space-y-6 text-center">
-          <div className="w-14 h-14 bg-lime-100 border border-lime-300 rounded-2xl mx-auto flex items-center justify-center animate-pulse">
-            <Search className="w-7 h-7 text-lime-700 animate-spin" />
-          </div>
+        /* Real-Time Live Autonomous Floor & Investigation */
+        <div className="space-y-6">
+          <div className="bg-white border border-lime-300 rounded-2xl p-6 shadow-xl space-y-4 text-center">
+            <div className="flex items-center justify-between border-b border-lime-100 pb-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 rounded-full bg-lime-500 animate-ping" />
+                <h3 className="text-sm font-bold text-slate-900">
+                  Autonomous Multi-Agent Investigation Live
+                </h3>
+              </div>
+              <span className="text-xs font-mono text-lime-800 font-bold bg-lime-100 px-2.5 py-1 rounded-full">
+                Cross-Checking Aura Studio & Banking Gateway
+              </span>
+            </div>
 
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">Autonomous Investigation in Progress</h3>
-            <p className="text-xs text-slate-500 mt-1 font-mono">Querying Aura Studio inventory, simulated banking gateway, and merchant policy...</p>
-          </div>
-
-          <div className="max-w-md mx-auto space-y-2.5 text-left text-xs font-mono">
-            <div className={`p-2.5 rounded-xl border flex items-center justify-between ${investigationStep >= 1 ? 'bg-lime-50 border-lime-300 text-lime-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-              <span>1. Ingesting Telemetry & Vision AI Triage...</span>
-              {investigationStep >= 1 ? <CheckCircle2 className="w-4 h-4 text-lime-600" /> : <Clock className="w-4 h-4 animate-spin text-lime-600" />}
-            </div>
-            <div className={`p-2.5 rounded-xl border flex items-center justify-between ${investigationStep >= 2 ? 'bg-lime-50 border-lime-300 text-lime-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-              <span>2. Validating Simulated Banking Gateway...</span>
-              {investigationStep >= 2 ? <CheckCircle2 className="w-4 h-4 text-lime-600" /> : <div className="w-2 h-2 rounded-full bg-slate-200" />}
-            </div>
-            <div className={`p-2.5 rounded-xl border flex items-center justify-between ${investigationStep >= 3 ? 'bg-lime-50 border-lime-300 text-lime-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-              <span>3. Inspecting Saved Checkout Cart & Orders...</span>
-              {investigationStep >= 3 ? <CheckCircle2 className="w-4 h-4 text-lime-600" /> : <div className="w-2 h-2 rounded-full bg-slate-200" />}
-            </div>
-            <div className={`p-2.5 rounded-xl border flex items-center justify-between ${investigationStep >= 4 ? 'bg-lime-50 border-lime-300 text-lime-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-              <span>4. Checking Store Inventory & Stock Availability...</span>
-              {investigationStep >= 4 ? <CheckCircle2 className="w-4 h-4 text-lime-600" /> : <div className="w-2 h-2 rounded-full bg-slate-200" />}
-            </div>
-            <div className={`p-2.5 rounded-xl border flex items-center justify-between ${investigationStep >= 5 ? 'bg-lime-50 border-lime-300 text-lime-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-              <span>5. Synthesizing Cognee Policy & Decision Rules...</span>
-              {investigationStep >= 5 ? <CheckCircle2 className="w-4 h-4 text-lime-600" /> : <div className="w-2 h-2 rounded-full bg-slate-200" />}
-            </div>
+            <ResolveAIWorkerFloor
+              isSimulating={true}
+              autoStart={true}
+              scenarioId={derivedScenarioId}
+              onComplete={() => {
+                if (createdCaseId) navigate(`/case/${createdCaseId}`);
+              }}
+            />
           </div>
         </div>
       ) : (

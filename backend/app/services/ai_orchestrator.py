@@ -55,14 +55,26 @@ class AIOrchestrator:
                     headers["X-N8N-API-KEY"] = settings.N8N_API_KEY
 
                 async with httpx.AsyncClient(timeout=8.0) as client:
+                    pay_info = investigation_evidence.get("payment") or {}
+                    prod_info = investigation_evidence.get("product") or {}
                     n8n_res = await client.post(
                         webhook_url,
                         headers=headers,
                         json={
                             "case_id": case_id,
+                            "customer_id": investigation_evidence.get("customer_id") or "cust_901",
                             "customer_request": customer_request,
+                            "screenshot_url": investigation_evidence.get("screenshot_url"),
+                            "screenshot_base64": investigation_evidence.get("screenshot_base64"),
+                            "screenshot_analysis": investigation_evidence.get("screenshot_analysis"),
+                            "payment_reference": pay_info.get("payment_reference") or investigation_evidence.get("payment_reference"),
+                            "product_id": prod_info.get("id") or investigation_evidence.get("product_id") or "prod_headset",
+                            "amount": pay_info.get("amount") or 799.00,
+                            "currency": pay_info.get("currency") or "INR",
+                            "customer_phone": investigation_evidence.get("customer_phone") or "917892724453",
+                            "backend_url": "http://127.0.0.1:8000",
                             "evidence": investigation_evidence,
-                            "knowledge": knowledge_results
+                            "knowledge": knowledge_results,
                         }
                     )
                     if n8n_res.status_code == 200:

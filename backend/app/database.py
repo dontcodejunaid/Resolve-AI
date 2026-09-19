@@ -44,8 +44,15 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def init_db():
-    """Create all database tables on startup if they don't exist."""
+    """Create all database tables on startup if they don't exist and ensure new columns exist."""
     # Import all models to register with Base.metadata
     from backend.app import models  # noqa
+    from sqlalchemy import text
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Safe column additions for existing SQLite/PostgreSQL databases
+        for col, col_type in [("screenshot_url", "TEXT"), ("customer_phone", "VARCHAR(32)"), ("screenshot_analysis", "TEXT")]:
+            try:
+                await conn.execute(text(f"ALTER TABLE cases ADD COLUMN {col} {col_type}"))
+            except Exception:
+                pass

@@ -218,6 +218,9 @@ class CaseResponse(BaseModel):
     status: str
     resolution_type: Optional[str] = None
     ai_summary: Optional[str] = None
+    screenshot_url: Optional[str] = None
+    customer_phone: Optional[str] = None
+    screenshot_analysis: Optional[str] = None
     is_active: bool
     created_at: datetime
     updated_at: datetime
@@ -236,6 +239,10 @@ class CreateCaseRequest(BaseModel):
     customer_request: str
     payment_reference: Optional[str] = None
     order_number: Optional[str] = None
+    screenshot_url: Optional[str] = None
+    screenshot_base64: Optional[str] = None
+    customer_phone: Optional[str] = None
+    product_id: Optional[str] = None
 
 
 class CustomerConfirmationRequest(BaseModel):

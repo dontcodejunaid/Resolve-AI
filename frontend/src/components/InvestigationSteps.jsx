@@ -6,22 +6,22 @@ export const InvestigationSteps = ({ currentStatus, events = [] }) => {
 
   const steps = [
     {
-      id: 'PAYMENT',
-      label: 'Payment Check',
-      done: eventTypes.includes('PAYMENT_VERIFIED') || eventTypes.includes('PAYMENT_CHECK_COMPLETED') || eventTypes.includes('COMPLAINT_RECEIVED'),
+      id: 'VISION',
+      label: 'Vision AI Triage',
+      done: eventTypes.includes('SCREENSHOT_ANALYZED') || eventTypes.includes('COMPLAINT_RECEIVED'),
       active: currentStatus === 'INVESTIGATING' && !eventTypes.includes('PAYMENT_VERIFIED'),
     },
     {
-      id: 'CHECKOUT',
-      label: 'Checkout Check',
-      done: eventTypes.includes('CHECKOUT_FOUND') || eventTypes.includes('PAYMENT_VERIFIED'),
-      active: eventTypes.includes('PAYMENT_CHECK_STARTED') && !eventTypes.includes('CHECKOUT_FOUND'),
+      id: 'PAYMENT',
+      label: 'Payment Check',
+      done: eventTypes.includes('PAYMENT_VERIFIED') || eventTypes.includes('PAYMENT_CHECK_COMPLETED'),
+      active: eventTypes.includes('SCREENSHOT_ANALYZED') && !eventTypes.includes('PAYMENT_VERIFIED'),
     },
     {
       id: 'ORDER',
       label: 'Order Check',
       done: eventTypes.includes('ORDER_SEARCHED') || eventTypes.includes('ORDER_FOUND') || eventTypes.includes('ORDER_NOT_FOUND'),
-      active: eventTypes.includes('CHECKOUT_FOUND') && !eventTypes.includes('ORDER_NOT_FOUND') && !eventTypes.includes('ORDER_FOUND'),
+      active: eventTypes.includes('PAYMENT_VERIFIED') && !eventTypes.includes('ORDER_NOT_FOUND') && !eventTypes.includes('ORDER_FOUND'),
     },
     {
       id: 'STOCK',
@@ -30,14 +30,14 @@ export const InvestigationSteps = ({ currentStatus, events = [] }) => {
       active: eventTypes.includes('ORDER_NOT_FOUND') && !eventTypes.includes('STOCK_CHECKED'),
     },
     {
-      id: 'REFUND',
-      label: 'Refund Check',
-      done: eventTypes.includes('REFUND_FOUND') || eventTypes.includes('REFUND_CHECKED') || eventTypes.includes('STOCK_CHECKED'),
-      active: false,
+      id: 'POLICY',
+      label: 'Cognee Policy',
+      done: eventTypes.includes('POLICY_SYNTHESIZED') || eventTypes.includes('STOCK_CHECKED') || eventTypes.includes('PAYMENT_VERIFIED'),
+      active: eventTypes.includes('STOCK_CHECKED') && !eventTypes.includes('AI_PROPOSAL_GENERATED'),
     },
     {
       id: 'DECISION',
-      label: 'AI Decision',
+      label: 'Authority Action',
       done: ['WAITING_FOR_CUSTOMER', 'WAITING_FOR_APPROVAL', 'WAITING_FOR_PROVIDER', 'ACTION_IN_PROGRESS', 'VERIFYING', 'RESOLVED', 'ESCALATED'].includes(currentStatus),
       active: currentStatus === 'INVESTIGATING',
     }

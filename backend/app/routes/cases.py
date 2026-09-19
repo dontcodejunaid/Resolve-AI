@@ -64,6 +64,10 @@ async def create_case(
         customer_request=req.customer_request,
         payment_reference=req.payment_reference,
         order_number=req.order_number,
+        screenshot_url=req.screenshot_url,
+        screenshot_base64=req.screenshot_base64,
+        customer_phone=req.customer_phone,
+        product_id=req.product_id,
     )
     return case
 

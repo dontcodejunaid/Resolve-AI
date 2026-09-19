@@ -181,7 +181,10 @@ async def run_scenario(req: ScenarioRunRequest, db: AsyncSession = Depends(get_d
             customer_id="usr_rahul",
             merchant_id="mer_resolve_store",
             customer_request="I paid ₹799 for the Wireless Headset via UPI (TXN987654) but my order confirmation is missing.",
-            payment_reference="TXN987654"
+            payment_reference="TXN987654",
+            screenshot_url="https://placehold.co/900x500/059669/ffffff.png?text=UPI+SUCCESS+-+Rs+799+TXN987654",
+            customer_phone="917892724453",
+            product_id="prod_headset",
         )
         return {"scenario": sc_id, "case_id": case.id, "case_number": case.case_number, "status": case.status, "case": await CaseEngine.get_case_with_relations(db, case.id)}
 
@@ -204,7 +207,10 @@ async def run_scenario(req: ScenarioRunRequest, db: AsyncSession = Depends(get_d
             customer_id="usr_aisha",
             merchant_id="mer_resolve_store",
             customer_request="I completed payment for the Mechanical Keyboard (TXN987655) but didn't get my order.",
-            payment_reference="TXN987655"
+            payment_reference="TXN987655",
+            screenshot_url="https://placehold.co/900x500/d97706/ffffff.png?text=PAYMENT+SUCCESS+-+Rs+1499+TXN987655",
+            customer_phone="919876543210",
+            product_id="prod_keyboard",
         )
         return {"scenario": sc_id, "case_id": case.id, "case_number": case.case_number, "status": case.status, "case": await CaseEngine.get_case_with_relations(db, case.id)}
 
@@ -222,8 +228,11 @@ async def run_scenario(req: ScenarioRunRequest, db: AsyncSession = Depends(get_d
             db=db,
             customer_id="usr_arjun",
             merchant_id="mer_resolve_store",
-            customer_request="I made a payment for the Wireless Mouse (TXN987656), has it gone through?",
-            payment_reference="TXN987656"
+            customer_request="I made a payment for Wireless Mouse (TXN987656), has it completed?",
+            payment_reference="TXN987656",
+            screenshot_url="https://placehold.co/900x500/e11d48/ffffff.png?text=PAYMENT+PENDING+-+Bank+Processing+TXN987656",
+            customer_phone="918765432109",
+            product_id="prod_mouse",
         )
         return {"scenario": sc_id, "case_id": case.id, "case_number": case.case_number, "status": case.status, "case": await CaseEngine.get_case_with_relations(db, case.id)}
 

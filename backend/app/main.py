@@ -4,9 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from backend.app.config import settings
-from backend.app.database import init_db
+from backend.app.database import init_db, AsyncSessionLocal
 from backend.app.database_seeder import seed_database
-from backend.app.mongodb import init_mongo, close_mongo
+from backend.app.mongodb import init_mongo, close_mongo, sync_entire_db_to_mongo
 from backend.app.routes import (
     api_v1,
     auth,

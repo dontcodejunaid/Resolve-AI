@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { CaseTimeline } from '../components/CaseTimeline';
 import { EvidenceCard } from '../components/EvidenceCard';
+import { VisionEvidenceCard } from '../components/VisionEvidenceCard';
 
 export const EmployeeCaseDetail = () => {
   const { id } = useParams();
@@ -143,6 +144,23 @@ export const EmployeeCaseDetail = () => {
             <h3 className="text-xs font-mono font-bold text-slate-600 uppercase tracking-wider">
               System Verification State
             </h3>
+
+            {(caseData.screenshot_url || caseData.screenshot_analysis) && (
+              <VisionEvidenceCard
+                screenshotUrl={caseData.screenshot_url}
+                analysis={
+                  typeof caseData.screenshot_analysis === 'string'
+                    ? (() => {
+                        try {
+                          return JSON.parse(caseData.screenshot_analysis);
+                        } catch (e) {
+                          return null;
+                        }
+                      })()
+                    : caseData.screenshot_analysis
+                }
+              />
+            )}
 
             <EvidenceCard
               title="Payment Status"

@@ -25,7 +25,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Ingest approval request or generate standard approval context for test\nconst item = $input.first()?.json || {};\nconst body = item.body || item;\n\nconst caseId = body.case_id || 'cse_approval_demo_02';\nconst actionType = body.action_type || 'REQUEST_REFUND';\nconst amount = body.amount || 1499.00;\nconst reason = body.reason || 'Mechanical RGB Gaming Keyboard is OUT OF STOCK. Refund ₹1499 exceeds ₹500 store policy threshold.';\n\nreturn {\n  case_id: caseId,\n  action_type: actionType,\n  amount: amount,\n  reason: reason,\n  policy_rule: 'RULE_4_HIGH_VALUE_REFUND_APPROVAL',\n  requires_manager_signature: true,\n  timestamp: new Date().toISOString()\n};"
+        "jsCode": "// Ingest approval request or generate standard approval context for test\nconst item = $input.first()?.json || {};\nconst body = item.body || item;\n\nconst caseId = body.case_id || 'case_approval_aura_02';\nconst actionType = body.action_type || 'REQUEST_REFUND';\nconst amount = body.amount || 2999.00;\nconst reason = body.reason || 'Tailored Pleated Trousers is OUT OF STOCK on AURA STUDIO. Refund ₹2999 exceeds ₹500 store policy threshold.';\n\nreturn {\n  case_id: caseId,\n  action_type: actionType,\n  amount: amount,\n  reason: reason,\n  policy_rule: 'RULE_4_HIGH_VALUE_REFUND_APPROVAL',\n  requires_manager_signature: true,\n  timestamp: new Date().toISOString()\n};"
       },
       "id": "node_extract_approval",
       "name": "Extract Approval Payload",

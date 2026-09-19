@@ -369,8 +369,8 @@ async function recoverOrderSafely(payment, checkout) {
 ];
 
 export const GIT_MESSAGES = [
-  { message: 'gateway: validated payment reference TXN987654 (₹799 SUCCESS)', branch: 'gateway/payment-verification', author: 'Maya Lin', hash: 'a8f10b2', time: 'Just now' },
-  { message: 'inventory: checked warehouse stock (10 units Wireless Headset)', branch: 'inventory/stock-lock-engine', author: 'Alex Chen', hash: 'c9d21e4', time: '1m ago' },
-  { message: 'cognee: synthesized store policy for missing order recovery', branch: 'cognee/policy-synthesis', author: 'Samira Khan', hash: 'f1e40a8', time: '2m ago' },
-  { message: 'rules: enforced idempotency key RECOVERY-RS4471', branch: 'rules/deterministic-verifier', author: 'Marcus Vance', hash: 'b4a819c', time: '3m ago' },
+  { message: 'gateway: validated payment reference TXN_4829103_INR (₹2,499 SUCCESS)', branch: 'gateway/payment-verification', author: 'Maya Lin', hash: 'a8f10b2', time: 'Just now' },
+  { message: 'inventory: checked Aura Studio stock (10 units Heavyweight Boxy Hoodie)', branch: 'inventory/stock-lock-engine', author: 'Alex Chen', hash: 'c9d21e4', time: '1m ago' },
+  { message: 'cognee: synthesized Aura Studio store policy for missing order recovery', branch: 'cognee/policy-synthesis', author: 'Samira Khan', hash: 'f1e40a8', time: '2m ago' },
+  { message: 'rules: enforced idempotency key RECOVERY-AURA-801', branch: 'rules/deterministic-verifier', author: 'Marcus Vance', hash: 'b4a819c', time: '3m ago' },
 ];

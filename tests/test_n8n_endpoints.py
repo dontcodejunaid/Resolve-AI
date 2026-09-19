@@ -20,8 +20,8 @@ async def test_webhook_resolve_case():
         res = await client.post("/webhook/resolve-case", json={
             "case_id": "RS-TEST-001",
             "customer_id": "usr_rahul",
-            "message": "I paid ₹799 but my order is not showing",
-            "payment_reference": "TXN-TEST-999",
+            "message": "I paid ₹2499 for Heavyweight Boxy Hoodie on Aura Studio but my order is not showing",
+            "payment_reference": "TXN_4829103_INR",
             "merchant_id": "mer_resolve_store"
         })
         assert res.status_code == 200
@@ -44,7 +44,7 @@ async def test_payment_and_settlement_lookup():
         pay_res = await client.get(f"/api/payments/{payment_ref}")
         assert pay_res.status_code == 200
         pay_data = pay_res.json()
-        assert pay_data["amount"] == 799.00
+        assert pay_data["amount"] == 2499.00
         assert pay_data["status"] == "SUCCESS"
         assert pay_data["merchant_received"] is True
 
@@ -58,10 +58,10 @@ async def test_payment_and_settlement_lookup():
 async def test_product_availability():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        res = await client.get("/api/products/prod_headset/availability")
+        res = await client.get("/api/products/prod_hoodie_01/availability")
         assert res.status_code == 200
         data = res.json()
-        assert data["product_id"] == "prod_headset"
+        assert data["product_id"] == "prod_hoodie_01"
         assert data["available"] is True
         assert data["quantity"] >= 0
 
@@ -92,7 +92,7 @@ async def test_order_recovery_and_idempotency():
         # 2. Verify order lookup
         ord_res = await client.get(f"/api/orders/{order_id}")
         assert ord_res.status_code == 200
-        assert ord_res.json()["amount"] == 799.00
+        assert ord_res.json()["amount"] == 2499.00
 
         # 3. Second execution with same idempotency key (must NOT duplicate)
         rec_res_2 = await client.post("/api/orders/recover", json={
@@ -108,7 +108,7 @@ async def test_order_recovery_and_idempotency():
 async def test_refund_creation_and_approval_threshold():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        # Setup out-of-stock scenario (₹799 >= ₹500 threshold)
+        # Setup out-of-stock scenario (₹2999 >= ₹500 threshold)
         demo_res = await client.post("/api/demo/scenario/product-unavailable")
         demo_data = demo_res.json()
         case_id = demo_data["case_id"]
@@ -119,7 +119,7 @@ async def test_refund_creation_and_approval_threshold():
         ref_res = await client.post("/api/refunds", json={
             "case_id": case_id,
             "payment_reference": payment_ref,
-            "amount": 799.00,
+            "amount": 2999.00,
             "reason": "Out of stock test",
             "idempotency_key": idempotency_key
         })
@@ -138,7 +138,7 @@ async def test_activity_stream_and_escalation():
         case_res = await client.post("/webhook/resolve-case", json={
             "customer_id": "usr_rahul",
             "message": "Payment conflict test",
-            "payment_reference": "TXN-CONFLICT-999"
+            "payment_reference": "TXN_CONFLICT_999_INR"
         })
         case_id = case_res.json()["case_id"]
 
@@ -157,11 +157,29 @@ async def test_activity_stream_and_escalation():
         esc_res = await client.post(f"/api/cases/{case_id}/escalate", json={
             "case_id": case_id,
             "customer_request": "Payment conflict test",
-            "verified_facts": ["Payment SUCCESS ₹799"],
+            "verified_facts": ["Payment SUCCESS ₹2499"],
             "uncertainties": ["Order missing in ERP"],
-            "actions_attempted": ["GET /api/payments/TXN-CONFLICT-999"],
+            "actions_attempted": ["GET /api/payments/TXN_CONFLICT_999_INR"],
             "decision_required": "Confirm manual refund vs replacement",
             "reason_for_escalation": "Complex discrepancy"
         })
         assert esc_res.status_code == 200
         assert esc_res.json()["case_status"] == "HUMAN_REVIEW"
+
+
+@pytest.mark.asyncio
+async def test_vision_screenshot_analysis_endpoint():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        res = await client.post("/cases/analyze-screenshot", json={
+            "screenshot_url": "https://aura-nine-virid.vercel.app/receipt_hoodie_TXN_4829103_INR.png",
+            "customer_request": "Paid for Boxy Hoodie"
+        })
+        assert res.status_code == 200
+        data = res.json()
+        assert data["status"] == "SUCCESS"
+        assert data["product_id"] == "prod_hoodie_01"
+        assert data["amount"] == 2499.00
+        assert data["payment_reference"] == "TXN_4829103_INR"
+        assert data["store_name"] == "AURA STUDIO"
+        assert "Heavyweight Boxy Hoodie" in data["customer_request"]

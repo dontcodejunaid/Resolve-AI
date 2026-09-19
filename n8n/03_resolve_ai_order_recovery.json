@@ -15,7 +15,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "=http://localhost:8000/api/products/{{ $json.product_id || 'prod_headset' }}/availability"
+        "url": "=http://localhost:8000/api/products/{{ $json.product_id || 'prod_hoodie_01' }}/availability"
       },
       "id": "03-stock",
       "name": "1. Check Product Stock",
@@ -35,15 +35,15 @@
           "parameters": [
             {
               "name": "case_id",
-              "value": "={{ $json.case_id || 'case_test_01' }}"
+              "value": "={{ $json.case_id || 'case_aura_101_hoodie' }}"
             },
             {
               "name": "payment_reference",
-              "value": "={{ $json.payment_reference || 'pay_test_01' }}"
+              "value": "={{ $json.payment_reference || 'TXN_4829103_INR' }}"
             },
             {
               "name": "product_id",
-              "value": "={{ $json.product_id || 'prod_headset' }}"
+              "value": "={{ $json.product_id || 'prod_hoodie_01' }}"
             },
             {
               "name": "idempotency_key",

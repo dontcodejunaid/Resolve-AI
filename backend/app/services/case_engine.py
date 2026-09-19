@@ -134,6 +134,121 @@ class CaseEngine:
         return action
 
     @staticmethod
+    async def match_or_ingest_aura_payment(
+        db: AsyncSession,
+        customer_id: str,
+        merchant_id: str,
+        payment_reference: str,
+        customer_request: str,
+        product_id: Optional[str] = None,
+        screenshot_analysis: Optional[Dict[str, Any]] = None,
+    ) -> Optional[Payment]:
+        """
+        Dynamically matches or provisions a live transaction generated from the Aura demo store
+        (https://aura-nine-virid.vercel.app/) when tested by the user.
+        """
+        import re
+        # Check if already in DB
+        payment = await PaymentSimulator.get_payment_by_reference(db, payment_reference)
+        if payment:
+            return payment
+
+        req_lower = customer_request.lower()
+
+        # Determine matched product
+        matched_prod: Optional[Product] = None
+        if product_id:
+            matched_prod = await MerchantSimulator.get_product(db, product_id)
+
+        if not matched_prod:
+            if "hoodie" in req_lower:
+                matched_prod = await MerchantSimulator.get_product(db, "prod_hoodie_01")
+            elif "shirt" in req_lower or "overshirt" in req_lower or "linen" in req_lower:
+                matched_prod = await MerchantSimulator.get_product(db, "prod_shirt_02")
+            elif "pants" in req_lower or "trouser" in req_lower:
+                matched_prod = await MerchantSimulator.get_product(db, "prod_pants_03")
+            elif "tee" in req_lower or "t-shirt" in req_lower:
+                matched_prod = await MerchantSimulator.get_product(db, "prod_tee_04")
+            elif "denim" in req_lower or "jacket" in req_lower:
+                matched_prod = await MerchantSimulator.get_product(db, "prod_denim_05")
+            elif "tote" in req_lower or "bag" in req_lower:
+                matched_prod = await MerchantSimulator.get_product(db, "prod_tote_06")
+            elif "keyboard" in req_lower:
+                matched_prod = await MerchantSimulator.get_product(db, "prod_keyboard")
+            elif "mouse" in req_lower:
+                matched_prod = await MerchantSimulator.get_product(db, "prod_mouse")
+            else:
+                matched_prod = await MerchantSimulator.get_product(db, "prod_hoodie_01")
+
+        target_prod_id = matched_prod.id if matched_prod else "prod_hoodie_01"
+        target_prod_price = matched_prod.price if matched_prod else Decimal("2499.00")
+        target_prod_name = matched_prod.name if matched_prod else "Heavyweight Boxy Hoodie"
+
+        # Determine initial payment status matching the Aura error scenario
+        init_status = "SUCCESS"  # default: money debited from user
+        err_code = "ERR_GATEWAY_TIMEOUT"
+        if "declined" in req_lower or "402" in req_lower or "insufficient" in req_lower:
+            init_status = "FAILED"
+            err_code = "ERR_CARD_DECLINED"
+        elif "stuck" in req_lower or "pending" in req_lower or "no_callback" in req_lower:
+            init_status = "PENDING"
+            err_code = "ERR_GATEWAY_NO_CALLBACK"
+        elif "3ds" in req_lower or "otp" in req_lower or "auth_fail" in req_lower:
+            init_status = "FAILED"
+            err_code = "ERR_3DS_AUTH_FAILED"
+
+        # Extract or generate bank RRN
+        rrn_match = re.search(r"RRN[-_]?\d+", customer_request, re.IGNORECASE)
+        rrn = rrn_match.group(0) if rrn_match else f"RRN-{uuid.uuid4().hex[:12]}"
+
+        # Provision Checkout Attempt
+        chk = CheckoutAttempt(
+            id=f"chk_{uuid.uuid4().hex[:12]}",
+            checkout_reference=f"CHK-AURA-{uuid.uuid4().hex[:6].upper()}",
+            customer_id=customer_id,
+            merchant_id=merchant_id,
+            product_id=target_prod_id,
+            quantity=1,
+            amount=target_prod_price,
+            currency="INR",
+            status="COMPLETED" if init_status == "SUCCESS" else "INITIATED",
+            metadata_json=json.dumps({
+                "source": "https://aura-nine-virid.vercel.app/",
+                "product_name": target_prod_name,
+                "error_code": err_code,
+                "rrn": rrn,
+            })
+        )
+        db.add(chk)
+        await db.commit()
+        await db.refresh(chk)
+
+        # Provision Payment
+        payment = Payment(
+            id=f"pay_{uuid.uuid4().hex[:12]}",
+            payment_reference=payment_reference,
+            checkout_id=chk.id,
+            customer_id=customer_id,
+            merchant_id=merchant_id,
+            amount=target_prod_price,
+            currency="INR",
+            status=init_status,
+            provider_name="SIMULATED_GATEWAY",
+            provider_payload=json.dumps({
+                "source": "https://aura-nine-virid.vercel.app/",
+                "gateway_txn": payment_reference,
+                "rrn": rrn,
+                "error_code": err_code,
+                "auth_code": f"AUTH_{uuid.uuid4().hex[:6].upper()}",
+                "product_name": target_prod_name,
+            })
+        )
+        db.add(payment)
+        await db.commit()
+        await db.refresh(payment)
+        return payment
+
+    @staticmethod
     async def create_case(
         db: AsyncSession,
         customer_id: str,
@@ -200,16 +315,34 @@ class CaseEngine:
         # Prepare Vision AI screenshot analysis if screenshot is attached
         analysis_data = None
         if screenshot_url or screenshot_base64:
-            clean_ref = payment_reference or "TXN_DETECTED"
+            import re
+            extracted_ref = payment_reference
+            if not extracted_ref:
+                ref_match = re.search(r"(TXN[_\w\d]+)", customer_request, re.IGNORECASE)
+                extracted_ref = ref_match.group(1) if ref_match else "TXN_DETECTED"
+
+            # Parse error and product from request or screenshot context
+            detected_error = "Order confirmation receipt absent in merchant portal"
+            if "declined" in customer_request.lower() or "402" in customer_request:
+                detected_error = "ERR_CARD_DECLINED (402) - Card issuer declined charge"
+            elif "timeout" in customer_request.lower() or "504" in customer_request:
+                detected_error = "ERR_GATEWAY_TIMEOUT (504) - Gateway timed out after customer debit"
+            elif "stuck" in customer_request.lower() or "pending" in customer_request:
+                detected_error = "PENDING_STUCK - Bank gateway callback delayed"
+            elif "3ds" in customer_request.lower() or "otp" in customer_request:
+                detected_error = "ERR_3DS_AUTH_FAILED - Authentication challenge timed out"
+
             analysis_data = {
-                "issue_summary": f"Vision AI extracted payment debit voucher for {clean_ref}",
-                "issue_type": "PAYMENT_SUCCESS",
-                "error_text": "Order confirmation receipt absent in merchant portal",
-                "payment_reference": clean_ref,
+                "issue_summary": f"Vision AI extracted payment debit voucher for {extracted_ref} on AURA STUDIO",
+                "store_name": "AURA STUDIO",
+                "store_url": "https://aura-nine-virid.vercel.app/",
+                "issue_type": "PAYMENT_SUCCESS" if "declined" not in customer_request.lower() else "PAYMENT_FAILED",
+                "error_text": detected_error,
+                "payment_reference": extracted_ref,
                 "amount": None,
                 "contradicts_gateway": False,
-                "recommended_next_step": "Cross-reference banking gateway settlement and inventory stock",
-                "confidence": 0.97,
+                "recommended_next_step": "Cross-reference banking gateway settlement and live store inventory stock",
+                "confidence": 0.98,
             }
 
         case = Case(
@@ -267,7 +400,7 @@ class CaseEngine:
             db,
             case_id=case.id,
             event_type="COMPLAINT_RECEIVED",
-            description=f"Customer reported issue: '{customer_request}'",
+            description=f"Customer reported issue on Aura Studio: '{customer_request}'",
             actor_type="CUSTOMER",
             actor_id=customer_id,
         )
@@ -315,6 +448,7 @@ class CaseEngine:
         screenshot_analysis: Optional[Dict[str, Any]] = None,
     ):
         """Autonomous investigation sequence across connected systems."""
+        import re
         case = await CaseEngine.get_case_with_relations(db, case_id)
         if not case:
             return
@@ -327,15 +461,32 @@ class CaseEngine:
             db,
             case_id=case.id,
             event_type="INVESTIGATION_STARTED",
-            description="AI Teammate initiated cross-system investigation",
+            description="AI Teammate initiated cross-system investigation across Aura Studio store & banking gateways",
             actor_type="AI",
             actor_id="resolve_ai_agent",
         )
 
-        # 1. Look up payment (either by provided reference or customer's latest payment)
+        # Auto-extract reference from text if missing
+        if not payment_reference and case.customer_request:
+            ref_match = re.search(r"(TXN[_\w\d]+)", case.customer_request, re.IGNORECASE)
+            if ref_match:
+                payment_reference = ref_match.group(1)
+
+        # 1. Look up payment (by reference or customer's latest payment)
         payment: Optional[Payment] = None
         if payment_reference:
             payment = await PaymentSimulator.get_payment_by_reference(db, payment_reference)
+            # Dynamic Aura Bridge: If transaction was generated live on Aura checkout, match or ingest it
+            if not payment and (payment_reference.startswith("TXN_") or payment_reference.startswith("TXN")):
+                payment = await CaseEngine.match_or_ingest_aura_payment(
+                    db=db,
+                    customer_id=case.customer_id,
+                    merchant_id=case.merchant_id,
+                    payment_reference=payment_reference,
+                    customer_request=case.customer_request,
+                    product_id=product_id,
+                    screenshot_analysis=screenshot_analysis,
+                )
         else:
             # Look up customer's latest payment only if no reference was given
             res = await db.execute(

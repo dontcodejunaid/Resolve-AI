@@ -47,9 +47,17 @@ async def init_db():
     from sqlalchemy import text
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-        # Safe column additions for existing schema migrations
-        for col, col_type in [("screenshot_url", "TEXT"), ("customer_phone", "VARCHAR(32)"), ("screenshot_analysis", "TEXT")]:
+        # Safe column additions for existing SQLite/PostgreSQL databases
+        for table, col, col_type in [
+            ("cases", "screenshot_url", "TEXT"),
+            ("cases", "customer_phone", "VARCHAR(32)"),
+            ("cases", "screenshot_analysis", "TEXT"),
+            ("products", "category", "VARCHAR(64)"),
+            ("products", "sku", "VARCHAR(64)"),
+            ("products", "image_url", "VARCHAR(512)"),
+            ("merchants", "store_url", "VARCHAR(512)"),
+        ]:
             try:
-                await conn.execute(text(f"ALTER TABLE cases ADD COLUMN {col} {col_type}"))
+                await conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col} {col_type}"))
             except Exception:
                 pass

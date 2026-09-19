@@ -38,7 +38,7 @@ SCENARIOS = [
         "id": "SCENARIO_1_RECOVERY",
         "name": "Scenario 1: Main Demo (Order Recovery)",
         "title": "Scenario 1: Main Demo (Order Recovery)",
-        "description": "Customer buys Wireless Headset (₹799). Payment SUCCESS, Order MISSING, Stock AVAILABLE. AI offers recovery, customer confirms, order recovered & verified.",
+        "description": "Customer buys Heavyweight Boxy Hoodie (₹2,499) on Aura Studio. Payment SUCCESS, Order MISSING, Stock AVAILABLE. AI offers recovery, customer confirms, order recovered & verified.",
         "badge": "Happy Path",
         "expected_outcome": "Happy Path"
     },
@@ -46,7 +46,7 @@ SCENARIOS = [
         "id": "SCENARIO_2_REFUND",
         "name": "Scenario 2: Out of Stock Refund (Human Approval)",
         "title": "Scenario 2: Out of Stock Refund (Human Approval)",
-        "description": "Customer buys Keyboard (₹1499). Payment SUCCESS, Order MISSING, Stock UNAVAILABLE. AI selects refund, requires manager approval under ₹500 policy threshold, manager approves, refund verified.",
+        "description": "Customer buys Tailored Pleated Trousers (₹2,999) on Aura Studio. Payment SUCCESS, Order MISSING, Stock UNAVAILABLE. AI selects refund, requires manager approval under ₹500 policy threshold, manager approves, refund verified.",
         "badge": "Approval Required",
         "expected_outcome": "Approval Required"
     },
@@ -157,15 +157,15 @@ async def run_scenario(req: ScenarioRunRequest, db: AsyncSession = Depends(get_d
     sc_id = req.scenario_id.upper()
 
     if sc_id == "SCENARIO_1_RECOVERY":
-        # Rahul with Wireless Headset ₹799 (Order missing, stock available)
-        await db.execute(delete(Order).filter(or_(Order.checkout_id == "chk_rahul_01", Order.payment_id == "pay_rahul_01", Order.customer_id == "usr_rahul")))
-        await db.execute(delete(Refund).filter(Refund.payment_id == "pay_rahul_01"))
+        # Rahul with Heavyweight Boxy Hoodie ₹2,499 (Order missing, stock available)
+        await db.execute(delete(Order).filter(or_(Order.checkout_id == "chk_rahul_01", Order.checkout_id == "chk_aura_hoodie_01", Order.payment_id == "pay_rahul_01", Order.payment_id == "pay_aura_hoodie", Order.customer_id == "usr_rahul")))
+        await db.execute(delete(Refund).filter(or_(Refund.payment_id == "pay_rahul_01", Refund.payment_id == "pay_aura_hoodie")))
         
-        prod = (await db.execute(select(Product).filter(Product.id == "prod_headset"))).scalars().first()
+        prod = (await db.execute(select(Product).filter(Product.id == "prod_hoodie_01"))).scalars().first()
         if prod:
             prod.stock = 10
         
-        pay = (await db.execute(select(Payment).filter(Payment.id == "pay_rahul_01"))).scalars().first()
+        pay = (await db.execute(select(Payment).filter(or_(Payment.id == "pay_aura_hoodie", Payment.payment_reference == "TXN_4829103_INR")))).scalars().first()
         if pay:
             pay.status = "SUCCESS"
         await db.commit()
@@ -174,24 +174,24 @@ async def run_scenario(req: ScenarioRunRequest, db: AsyncSession = Depends(get_d
             db=db,
             customer_id="usr_rahul",
             merchant_id="mer_resolve_store",
-            customer_request="I paid ₹799 for the Wireless Headset via UPI (TXN987654) but my order confirmation is missing.",
-            payment_reference="TXN987654",
-            screenshot_url="https://placehold.co/900x500/059669/ffffff.png?text=UPI+SUCCESS+-+Rs+799+TXN987654",
+            customer_request="I paid ₹2499 for the Heavyweight Boxy Hoodie on Aura Studio via UPI (TXN_4829103_INR) but checkout timed out and my order is missing.",
+            payment_reference="TXN_4829103_INR",
+            screenshot_url="https://placehold.co/900x500/059669/ffffff.png?text=AURA+STUDIO+-+UPI+SUCCESS+Rs+2499+TXN_4829103_INR",
             customer_phone="917892724453",
-            product_id="prod_headset",
+            product_id="prod_hoodie_01",
         )
         return {"scenario": sc_id, "case_id": case.id, "case_number": case.case_number, "status": case.status, "case": await CaseEngine.get_case_with_relations(db, case.id)}
 
     elif sc_id == "SCENARIO_2_REFUND":
-        # Aisha with Mechanical Keyboard ₹1499 (Order missing, stock 0 -> Manager approval)
-        await db.execute(delete(Order).filter(or_(Order.checkout_id == "chk_aisha_01", Order.payment_id == "pay_aisha_01", Order.customer_id == "usr_aisha")))
-        await db.execute(delete(Refund).filter(Refund.payment_id == "pay_aisha_01"))
+        # Aisha with Tailored Pleated Trousers ₹2,999 (Order missing, stock 0 -> Manager approval)
+        await db.execute(delete(Order).filter(or_(Order.checkout_id == "chk_aisha_01", Order.checkout_id == "chk_aura_pants_02", Order.payment_id == "pay_aisha_01", Order.payment_id == "pay_aura_pants", Order.customer_id == "usr_aisha")))
+        await db.execute(delete(Refund).filter(or_(Refund.payment_id == "pay_aisha_01", Refund.payment_id == "pay_aura_pants")))
         
-        prod = (await db.execute(select(Product).filter(Product.id == "prod_keyboard"))).scalars().first()
+        prod = (await db.execute(select(Product).filter(Product.id == "prod_pants_03"))).scalars().first()
         if prod:
             prod.stock = 0
         
-        pay = (await db.execute(select(Payment).filter(Payment.id == "pay_aisha_01"))).scalars().first()
+        pay = (await db.execute(select(Payment).filter(or_(Payment.id == "pay_aura_pants", Payment.payment_reference == "TXN_5910283_INR")))).scalars().first()
         if pay:
             pay.status = "SUCCESS"
         await db.commit()
@@ -200,20 +200,20 @@ async def run_scenario(req: ScenarioRunRequest, db: AsyncSession = Depends(get_d
             db=db,
             customer_id="usr_aisha",
             merchant_id="mer_resolve_store",
-            customer_request="I completed payment for the Mechanical Keyboard (TXN987655) but didn't get my order.",
-            payment_reference="TXN987655",
-            screenshot_url="https://placehold.co/900x500/d97706/ffffff.png?text=PAYMENT+SUCCESS+-+Rs+1499+TXN987655",
+            customer_request="I completed payment of ₹2999 for Tailored Pleated Trousers on Aura Studio (TXN_5910283_INR) but the item was out of stock.",
+            payment_reference="TXN_5910283_INR",
+            screenshot_url="https://placehold.co/900x500/d97706/ffffff.png?text=AURA+STUDIO+-+Rs+2999+CHARGED+OUT_OF_STOCK+TXN_5910283_INR",
             customer_phone="919876543210",
-            product_id="prod_keyboard",
+            product_id="prod_pants_03",
         )
         return {"scenario": sc_id, "case_id": case.id, "case_number": case.case_number, "status": case.status, "case": await CaseEngine.get_case_with_relations(db, case.id)}
 
     elif sc_id == "SCENARIO_3_PENDING":
-        # Arjun with Wireless Mouse ₹499 (Pending payment -> Background recheck)
-        await db.execute(delete(Order).filter(or_(Order.checkout_id == "chk_arjun_01", Order.payment_id == "pay_arjun_01", Order.customer_id == "usr_arjun")))
-        await db.execute(delete(Refund).filter(Refund.payment_id == "pay_arjun_01"))
+        # Arjun with Relaxed Linen Overshirt ₹1,899 (Pending payment -> Background recheck)
+        await db.execute(delete(Order).filter(or_(Order.checkout_id == "chk_arjun_01", Order.checkout_id == "chk_aura_shirt_03", Order.payment_id == "pay_arjun_01", Order.payment_id == "pay_aura_shirt", Order.customer_id == "usr_arjun")))
+        await db.execute(delete(Refund).filter(or_(Refund.payment_id == "pay_arjun_01", Refund.payment_id == "pay_aura_shirt")))
         
-        pay = (await db.execute(select(Payment).filter(Payment.id == "pay_arjun_01"))).scalars().first()
+        pay = (await db.execute(select(Payment).filter(or_(Payment.id == "pay_aura_shirt", Payment.payment_reference == "TXN_3819204_INR")))).scalars().first()
         if pay:
             pay.status = "PENDING"
         await db.commit()
@@ -222,22 +222,22 @@ async def run_scenario(req: ScenarioRunRequest, db: AsyncSession = Depends(get_d
             db=db,
             customer_id="usr_arjun",
             merchant_id="mer_resolve_store",
-            customer_request="I made a payment for Wireless Mouse (TXN987656), has it completed?",
-            payment_reference="TXN987656",
-            screenshot_url="https://placehold.co/900x500/e11d48/ffffff.png?text=PAYMENT+PENDING+-+Bank+Processing+TXN987656",
+            customer_request="Payment of ₹1899 for Relaxed Linen Overshirt on Aura Studio (TXN_3819204_INR) is pending bank confirmation.",
+            payment_reference="TXN_3819204_INR",
+            screenshot_url="https://placehold.co/900x500/e11d48/ffffff.png?text=AURA+STUDIO+-+PENDING_STUCK+TXN_3819204_INR",
             customer_phone="918765432109",
-            product_id="prod_mouse",
+            product_id="prod_shirt_02",
         )
         return {"scenario": sc_id, "case_id": case.id, "case_number": case.case_number, "status": case.status, "case": await CaseEngine.get_case_with_relations(db, case.id)}
 
     elif sc_id == "SCENARIO_4_DUPLICATE":
         # Clean setup and simulate duplicate notification
-        await db.execute(delete(Order).filter(or_(Order.checkout_id == "chk_rahul_01", Order.payment_id == "pay_rahul_01", Order.customer_id == "usr_rahul")))
-        await db.execute(delete(Refund).filter(Refund.payment_id == "pay_rahul_01"))
-        prod = (await db.execute(select(Product).filter(Product.id == "prod_headset"))).scalars().first()
+        await db.execute(delete(Order).filter(or_(Order.checkout_id == "chk_rahul_01", Order.checkout_id == "chk_aura_hoodie_01", Order.payment_id == "pay_rahul_01", Order.payment_id == "pay_aura_hoodie", Order.customer_id == "usr_rahul")))
+        await db.execute(delete(Refund).filter(or_(Refund.payment_id == "pay_rahul_01", Refund.payment_id == "pay_aura_hoodie")))
+        prod = (await db.execute(select(Product).filter(Product.id == "prod_hoodie_01"))).scalars().first()
         if prod:
             prod.stock = 10
-        pay = (await db.execute(select(Payment).filter(Payment.id == "pay_rahul_01"))).scalars().first()
+        pay = (await db.execute(select(Payment).filter(or_(Payment.id == "pay_aura_hoodie", Payment.payment_reference == "TXN_4829103_INR")))).scalars().first()
         if pay:
             pay.status = "SUCCESS"
         await db.commit()
@@ -351,9 +351,9 @@ async def run_scenario(req: ScenarioRunRequest, db: AsyncSession = Depends(get_d
             payment_id="pay_rahul_01",
             customer_id="usr_rahul",
             merchant_id="mer_resolve_store",
-            product_id="prod_headset",
+            product_id="prod_hoodie_01",
             quantity=1,
-            amount=Decimal("799.00"),
+            amount=Decimal("2499.00"),
             currency="INR",
             status="CONFIRMED"
         )

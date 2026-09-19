@@ -79,6 +79,20 @@ export const VisionEvidenceCard = ({ screenshotUrl, analysis }) => {
           )}
         </div>
 
+        {analysis?.store_name && (
+          <div className="flex justify-between items-center">
+            <span className="text-slate-500 font-medium">Store Source</span>
+            <span className="font-mono text-lime-800 font-bold">{analysis.store_name}</span>
+          </div>
+        )}
+
+        {analysis?.error_text && (
+          <div className="flex justify-between items-center">
+            <span className="text-slate-500 font-medium">OCR Error Flag</span>
+            <span className="font-mono text-amber-700 font-bold text-[10px]">{analysis.error_text}</span>
+          </div>
+        )}
+
         <div className="pt-2 border-t border-lime-100 space-y-1">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 font-mono block">
             Vision AI Synthesis

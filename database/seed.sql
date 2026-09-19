@@ -1,5 +1,5 @@
 -- ==============================================================================
--- RESOLVE AI - Seed Data
+-- RESOLVE AI - Seed Data (AURA STUDIO Luxury Apparel)
 -- Realistic sample data for demo scenarios, accounts, products, and policies.
 -- Password hashes use bcrypt for standard 'password123'.
 -- ==============================================================================
@@ -15,29 +15,32 @@ INSERT INTO users (id, email, password_hash, full_name, role, created_at, update
 
 -- 2. SEED MERCHANTS
 INSERT INTO merchants (id, name, email, api_key, created_at, updated_at) VALUES
-('mer_resolve_store', 'Resolve Store', 'contact@resolvestore.com', 'mkey_live_resolve_store_99812', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+('mer_resolve_store', 'AURA STUDIO', 'contact@aurastudio.com', 'mkey_live_resolve_store_99812', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
--- 3. SEED PRODUCTS
+-- 3. SEED PRODUCTS (AURA STUDIO Luxury Apparel)
 INSERT INTO products (id, merchant_id, name, description, price, currency, stock, is_active, created_at, updated_at) VALUES
-('prod_headset', 'mer_resolve_store', 'Wireless Headset', 'High-fidelity Bluetooth wireless headset with active noise cancellation', 799.00, 'INR', 10, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-('prod_keyboard', 'mer_resolve_store', 'Mechanical Keyboard', 'RGB Tenkeyless mechanical gaming keyboard with tactile brown switches', 1499.00, 'INR', 0, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-('prod_mouse', 'mer_resolve_store', 'Wireless Mouse', 'Ergonomic dual-mode optical wireless mouse with silent clicks', 499.00, 'INR', 20, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+('prod_hoodie_01', 'mer_resolve_store', 'Heavyweight Boxy Hoodie', '500 GSM French Terry luxury heavyweight drop-shoulder boxy hoodie.', 2499.00, 'INR', 10, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('prod_shirt_02', 'mer_resolve_store', 'Relaxed Linen Overshirt', '100% European flax tailored relaxed fit overshirt with horn buttons.', 1899.00, 'INR', 14, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('prod_pants_03', 'mer_resolve_store', 'Tailored Pleated Trousers', 'Double-pleated wool-blend relaxed tailored trousers with extended waistband tab.', 2999.00, 'INR', 0, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('prod_tee_04', 'mer_resolve_store', 'Sand Vintage Boxy Tee', '280 GSM combed cotton vintage washed relaxed boxy silhouette tee.', 1299.00, 'INR', 25, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('prod_denim_05', 'mer_resolve_store', 'Indigo Worker Denim Jacket', '14oz Japanese selvedge denim utility worker jacket with copper hardware.', 3499.00, 'INR', 6, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('prod_tote_06', 'mer_resolve_store', 'Matte Black Crossbody Tote', 'Heavy duty duck canvas with matte black metal hardware and modular utility strap.', 1599.00, 'INR', 20, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- 4. SEED MERCHANT POLICIES
 INSERT INTO merchant_policies (id, merchant_id, order_recovery_enabled, refund_enabled, refund_approval_required, refund_approval_threshold, auto_retry_limit, recon_delay_seconds, policy_text, created_at, updated_at) VALUES
-('pol_resolve_store', 'mer_resolve_store', TRUE, TRUE, TRUE, 500.00, 3, 30, 'Standard Resolve Store policy: Orders can be recovered immediately if stock is available and payment is confirmed. Refunds over ₹500 require manager approval. Recoveries must maintain idempotency and link the original payment.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+('pol_resolve_store', 'mer_resolve_store', TRUE, TRUE, TRUE, 500.00, 3, 30, 'Standard Aura Studio policy: Orders can be recovered immediately if stock is available and payment is confirmed. Refunds over ₹500 require Store Manager approval. Recoveries must maintain idempotency and link the original payment.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- 5. SEED CHECKOUT ATTEMPTS
 INSERT INTO checkout_attempts (id, checkout_reference, customer_id, merchant_id, product_id, quantity, amount, currency, status, metadata, created_at, updated_at) VALUES
-('chk_rahul_01', 'CHK-RS-77210', 'usr_rahul', 'mer_resolve_store', 'prod_headset', 1, 799.00, 'INR', 'COMPLETED', '{"item": "Wireless Headset", "color": "Midnight Black"}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-('chk_aisha_01', 'CHK-RS-77211', 'usr_aisha', 'mer_resolve_store', 'prod_keyboard', 1, 1499.00, 'INR', 'COMPLETED', '{"item": "Mechanical Keyboard", "layout": "US ANSI"}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-('chk_arjun_01', 'CHK-RS-77212', 'usr_arjun', 'mer_resolve_store', 'prod_mouse', 1, 499.00, 'INR', 'INITIATED', '{"item": "Wireless Mouse", "color": "Slate Grey"}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+('chk_rahul_01', 'CHK-AURA-801', 'usr_rahul', 'mer_resolve_store', 'prod_hoodie_01', 1, 2499.00, 'INR', 'COMPLETED', '{"item": "Heavyweight Boxy Hoodie", "size": "M", "source": "https://aura-nine-virid.vercel.app/"}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('chk_aisha_01', 'CHK-AURA-802', 'usr_aisha', 'mer_resolve_store', 'prod_pants_03', 1, 2999.00, 'INR', 'COMPLETED', '{"item": "Tailored Pleated Trousers", "size": "32", "source": "https://aura-nine-virid.vercel.app/"}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('chk_arjun_01', 'CHK-AURA-803', 'usr_arjun', 'mer_resolve_store', 'prod_shirt_02', 1, 1899.00, 'INR', 'INITIATED', '{"item": "Relaxed Linen Overshirt", "size": "L", "source": "https://aura-nine-virid.vercel.app/"}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- 6. SEED PAYMENTS (Realistic demo states)
 -- Rahul's payment: SUCCESS, but order is missing (Ready for Scenario 1 demo)
 INSERT INTO payments (id, payment_reference, checkout_id, customer_id, merchant_id, amount, currency, status, provider_name, provider_payload, created_at, updated_at) VALUES
-('pay_rahul_01', 'TXN987654', 'chk_rahul_01', 'usr_rahul', 'mer_resolve_store', 799.00, 'INR', 'SUCCESS', 'SIMULATED_GATEWAY', '{"gateway_txn": "SIM-TXN-987654", "auth_code": "AUTH_9921", "method": "UPI", "vpa": "rahul@oksbi"}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('pay_rahul_01', 'TXN_4829103_INR', 'chk_rahul_01', 'usr_rahul', 'mer_resolve_store', 2499.00, 'INR', 'SUCCESS', 'SIMULATED_GATEWAY', '{"gateway_txn": "TXN_4829103_INR", "rrn": "RRN-482019482019", "auth_code": "AUTH_AURA_881", "method": "UPI", "vpa": "rahul@oksbi"}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 -- Aisha's payment: SUCCESS, stock 0, missing order (Ready for Scenario 2 refund demo)
-('pay_aisha_01', 'TXN987655', 'chk_aisha_01', 'usr_aisha', 'mer_resolve_store', 1499.00, 'INR', 'SUCCESS', 'SIMULATED_GATEWAY', '{"gateway_txn": "SIM-TXN-987655", "auth_code": "AUTH_9922", "method": "CARD", "last4": "4242"}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('pay_aisha_01', 'TXN_5910283_INR', 'chk_aisha_01', 'usr_aisha', 'mer_resolve_store', 2999.00, 'INR', 'SUCCESS', 'SIMULATED_GATEWAY', '{"gateway_txn": "TXN_5910283_INR", "rrn": "RRN-591028391028", "auth_code": "AUTH_AURA_882", "method": "CARD", "last4": "4242"}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 -- Arjun's payment: PENDING (Ready for Scenario 3 pending demo)
-('pay_arjun_01', 'TXN987656', 'chk_arjun_01', 'usr_arjun', 'mer_resolve_store', 499.00, 'INR', 'PENDING', 'SIMULATED_GATEWAY', '{"gateway_txn": "SIM-TXN-987656", "auth_code": "AUTH_9923", "method": "NETBANKING", "bank": "HDFC"}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+('pay_arjun_01', 'TXN_3819204_INR', 'chk_arjun_01', 'usr_arjun', 'mer_resolve_store', 1899.00, 'INR', 'PENDING', 'SIMULATED_GATEWAY', '{"gateway_txn": "TXN_3819204_INR", "rrn": "RRN-381920471920", "auth_code": "AUTH_AURA_883", "method": "NETBANKING", "bank": "HDFC"}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

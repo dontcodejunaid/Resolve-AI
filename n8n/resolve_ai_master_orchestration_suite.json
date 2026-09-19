@@ -4,7 +4,7 @@
     {
       "parameters": {},
       "id": "node-test-trigger",
-      "name": "\u26a1 1-Click Master Test Trigger",
+      "name": "⚡ 1-Click Master Test Trigger",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
@@ -30,7 +30,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Step 1: Ingest Case Context & Configure Endpoint\nconst input = $input.first()?.json || {};\nconst body = input.body || input;\n\nreturn {\n  case_id: body.case_id || 'case_101_headset',\n  customer_id: body.customer_id || 'cust_901',\n  customer_request: body.customer_request || 'Payment deducted for Wireless Headset, but no order placed.',\n  payment_reference: body.payment_reference || 'pay_test_headset_01',\n  product_id: body.product_id || 'prod_headset',\n  amount: body.amount || 799.00,\n  currency: body.currency || 'INR',\n  backend_url: body.backend_url || 'https://favorite-panama-pester.ngrok-free.dev'\n};"
+        "jsCode": "// Step 1: Ingest Case Context & Configure Endpoint (Aura Studio Store)\nconst input = $input.first()?.json || {};\nconst body = input.body || input;\n\nreturn {\n  case_id: body.case_id || 'case_aura_101_hoodie',\n  customer_id: body.customer_id || 'usr_rahul',\n  customer_phone: body.customer_phone || '917892724453',\n  customer_request: body.customer_request || 'Payment deducted for Heavyweight Boxy Hoodie on AURA STUDIO, but checkout timed out and no order was confirmed.',\n  payment_reference: body.payment_reference || 'TXN_4829103_INR',\n  product_id: body.product_id || 'prod_hoodie_01',\n  amount: body.amount || 2499.00,\n  currency: body.currency || 'INR',\n  backend_url: body.backend_url || 'https://favorite-panama-pester.ngrok-free.dev'\n};"
       },
       "id": "node-ingest",
       "name": "1. Ingest Case & Telemetry",
@@ -71,7 +71,7 @@
             },
             {
               "name": "message",
-              "value": "=Verifying transaction {{ $('1. Ingest Case & Telemetry').first().json.payment_reference }} with payment gateway simulator..."
+              "value": "=Verifying transaction {{ $('1. Ingest Case & Telemetry').first().json.payment_reference }} with payment gateway simulator for AURA STUDIO..."
             },
             {
               "name": "status",
@@ -160,7 +160,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Step 5: Cognee Policy Knowledge Retrieval\nconst caseData = $('1. Ingest Case & Telemetry').first().json;\nconst paymentData = $('2. Payment Simulator Check').first().json;\nconst orderData = $('3. Merchant Order Check').first().json;\nconst productData = $('4. Inventory Stock Check').first().json;\n\nconst policyTopics = [\n  { topic: 'Order Recovery Policy', rule: 'When payment succeeds and stock is available (>0), AI proposes order recovery without double-charge.', confidence: 0.98 },\n  { topic: 'High-Value Refund Threshold', rule: 'Refunds equal to or exceeding \u20b9500 require manager approval before disbursement.', threshold: 500.00, confidence: 0.95 }\n];\n\nreturn {\n  case_id: caseData.case_id,\n  customer_id: caseData.customer_id,\n  customer_request: caseData.customer_request,\n  backend_url: caseData.backend_url,\n  payment: paymentData,\n  order: orderData,\n  product: productData,\n  knowledge_results: policyTopics,\n  cognee_status: 'SYNCHRONIZED',\n  policy_verified: true\n};\n"
+        "jsCode": "// Step 5: Cognee Policy Knowledge Retrieval (Aura Studio Policies)\nconst caseData = $('1. Ingest Case & Telemetry').first().json;\nconst paymentData = $('2. Payment Simulator Check').first().json;\nconst orderData = $('3. Merchant Order Check').first().json;\nconst productData = $('4. Inventory Stock Check').first().json;\n\nconst policyTopics = [\n  { topic: 'Aura Studio Order Recovery Policy', rule: 'When payment succeeds and apparel stock is available (>0), AI proposes instant order recovery without extra charge.', confidence: 0.99 },\n  { topic: 'Aura High-Value Refund Threshold', rule: 'Refunds exceeding ₹500 require store manager sign-off before disbursement.', threshold: 500.00, confidence: 0.96 }\n];\n\nreturn {\n  case_id: caseData.case_id,\n  customer_id: caseData.customer_id,\n  customer_phone: caseData.customer_phone || '917892724453',\n  customer_request: caseData.customer_request,\n  backend_url: caseData.backend_url,\n  payment: paymentData,\n  order: orderData,\n  product: productData,\n  knowledge_results: policyTopics,\n  cognee_status: 'SYNCHRONIZED',\n  policy_verified: true\n};\n"
       },
       "id": "node-cognee",
       "name": "5. Cognee Policy Knowledge Search",
@@ -173,7 +173,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Step 6: AI Decision Synthesis (AI PROPOSES. CODE DECIDES.)\nconst data = $input.first().json;\nconst payment = data.payment || {};\nconst order = data.order || {};\nconst product = data.product || {};\n\nlet decision = 'OFFER_ORDER_RECOVERY';\nlet proposedAction = 'ORDER_RECOVERY';\nlet requiresApproval = false;\nlet reason = '';\n\nif (payment.status === 'SUCCESS' && !order.found && product.available) {\n  decision = 'OFFER_ORDER_RECOVERY';\n  proposedAction = 'ORDER_RECOVERY';\n  reason = `Verified payment of \u20b9${payment.amount} for ${product.name}. Order missing in ERP. Stock available (${product.quantity} units). Proposing order recovery.`;\n} else if (payment.status === 'SUCCESS' && !order.found && !product.available) {\n  decision = 'OFFER_REFUND';\n  proposedAction = 'REFUND';\n  requiresApproval = payment.amount >= 500.00;\n  reason = `Payment verified \u20b9${payment.amount}, but ${product.name} is out of stock. Refund proposed (Approval required: ${requiresApproval}).`;\n} else if (payment.status === 'SUCCESS' && order.found) {\n  decision = 'SHOW_EXISTING_ORDER';\n  proposedAction = 'CONFIRM_EXISTING_ORDER';\n  reason = `Order ${order.order_number} already exists and payment is linked.`;\n} else {\n  decision = 'CONFLICT_ESCALATE';\n  proposedAction = 'ESCALATE';\n  reason = 'Evidence discrepancy. Assigned to human support specialist.';\n}\n\nreturn {\n  ...data,\n  step: '6_AI_DECISION_SYNTHESIS',\n  decision: decision,\n  proposed_action: proposedAction,\n  requires_approval: requiresApproval,\n  reason: reason,\n  ai_decision_status: 'SUCCESS'\n};"
+        "jsCode": "// Step 6: AI Decision Synthesis (AI PROPOSES. CODE DECIDES.)\nconst data = $input.first().json;\nconst payment = data.payment || {};\nconst order = data.order || {};\nconst product = data.product || {};\n\nlet decision = 'OFFER_ORDER_RECOVERY';\nlet proposedAction = 'ORDER_RECOVERY';\nlet requiresApproval = false;\nlet reason = '';\n\nif (payment.status === 'SUCCESS' && !order.found && product.available) {\n  decision = 'OFFER_ORDER_RECOVERY';\n  proposedAction = 'ORDER_RECOVERY';\n  reason = `Verified payment of ₹${payment.amount} for ${product.name} on AURA STUDIO. Order missing in ERP. Stock available (${product.quantity} units). Proposing order recovery.`;\n} else if (payment.status === 'SUCCESS' && !order.found && !product.available) {\n  decision = 'OFFER_REFUND';\n  proposedAction = 'REFUND';\n  requiresApproval = payment.amount >= 500.00;\n  reason = `Payment verified ₹${payment.amount}, but ${product.name} is out of stock on AURA STUDIO. Refund proposed (Approval required: ${requiresApproval}).`;\n} else if (payment.status === 'SUCCESS' && order.found) {\n  decision = 'SHOW_EXISTING_ORDER';\n  proposedAction = 'CONFIRM_EXISTING_ORDER';\n  reason = `Order ${order.order_number} already exists on AURA STUDIO and payment is linked.`;\n} else {\n  decision = 'CONFLICT_ESCALATE';\n  proposedAction = 'ESCALATE';\n  reason = 'Evidence discrepancy on AURA STUDIO transaction. Assigned to human support specialist.';\n}\n\nreturn {\n  ...data,\n  step: '6_AI_DECISION_SYNTHESIS',\n  decision: decision,\n  proposed_action: proposedAction,\n  requires_approval: requiresApproval,\n  reason: reason,\n  ai_decision_status: 'SUCCESS'\n};"
       },
       "id": "node-ai-decision",
       "name": "6. AI Teammate Decision Synthesis",
@@ -330,7 +330,7 @@
             },
             {
               "name": "amount",
-              "value": "={{ $json.payment.amount || 799.00 }}"
+              "value": "={{ $json.payment.amount || $('1. Ingest Case & Telemetry').first().json.amount || 2999.00 }}"
             },
             {
               "name": "reason",
@@ -382,7 +382,7 @@
             },
             {
               "name": "decision_required",
-              "value": "Manual review of contradictory records"
+              "value": "Manual review of contradictory records for Aura Studio order"
             }
           ]
         }
@@ -395,10 +395,75 @@
         2400,
         580
       ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Step 9: Compose Recovery Reply\nconst recovery = $('8. Execute Order Recovery (FastAPI Authority)').first()?.json || {};\nconst ingest = $('1. Ingest Case & Telemetry').first()?.json || {};\nconst orderNumber = recovery.order_number || 'ORD-RECOVERED';\nconst amount = (recovery.amount != null && recovery.amount !== '') ? recovery.amount : (ingest.amount != null ? ingest.amount : 2499.00);\nconst caseId = ingest.case_id || recovery.case_id || 'case_aura_101_hoodie';\nconst to = ingest.customer_phone || ingest.customer_id || '917892724453';\n\nreturn {\n  to: to,\n  case_id: caseId,\n  outcome: 'ORDER_RECOVERY',\n  order_number: orderNumber,\n  amount: amount,\n  message: `Hi! Update on your payment issue (Case ${caseId}).\\n\\nGood news - we located your payment and recovered your order.\\nOrder number: ${orderNumber}\\nAmount: Rs ${amount}\\n\\nYour order is now confirmed and linked to your payment. Thanks for choosing AURA STUDIO!`\n};"
+      },
+      "id": "node-compose-recovery",
+      "name": "9. Compose Recovery Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2680,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Step 9: Compose Refund Reply\nconst refund = $('8. Execute Refund / Approval Route').first()?.json || {};\nconst ingest = $('1. Ingest Case & Telemetry').first()?.json || {};\nconst amount = (refund.amount != null && refund.amount !== '') ? refund.amount : (ingest.amount != null ? ingest.amount : 2999.00);\nconst caseId = ingest.case_id || refund.case_id || 'case_aura_102_pants';\nconst to = ingest.customer_phone || ingest.customer_id || '917892724453';\n\nreturn {\n  to: to,\n  case_id: caseId,\n  outcome: 'REFUND',\n  amount: amount,\n  message: `Hi! Update on your payment issue (Case ${caseId}).\\n\\nYour payment of Rs ${amount} was verified. Because the requested item is currently out of stock on AURA STUDIO, a refund has been initiated to your original payment method.\\n\\nThanks for choosing AURA STUDIO!`\n};"
+      },
+      "id": "node-compose-refund",
+      "name": "9. Compose Refund Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2680,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Step 9: Compose Escalation Reply\nconst ingest = $('1. Ingest Case & Telemetry').first()?.json || {};\nconst caseId = ingest.case_id || 'case_aura_103_conflict';\nconst to = ingest.customer_phone || ingest.customer_id || '917892724453';\n\nreturn {\n  to: to,\n  case_id: caseId,\n  outcome: 'ESCALATION',\n  message: `Hi! Update on your payment issue (Case ${caseId}).\\n\\nOur system detected a transaction discrepancy on AURA STUDIO. A support specialist has been assigned with full investigation telemetry to resolve this directly.`\n};"
+      },
+      "id": "node-compose-esc",
+      "name": "9. Compose Escalation Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2680,
+        580
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge Reply Paths into a single output\nconst item = $input.first()?.json || {};\nreturn item;"
+      },
+      "id": "node-merge-replies",
+      "name": "Merge Reply Paths",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2920,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Step 10: Email Customer Reply & Multi-Channel Dispatch\nconst item = $input.first()?.json || {};\nreturn {\n  status: 'SENT',\n  channel: 'EMAIL_AND_SMS',\n  to: item.to || '917892724453',\n  case_id: item.case_id || 'case_aura_101_hoodie',\n  outcome: item.outcome || 'ORDER_RECOVERY',\n  message: item.message || 'Update on your Aura Studio order.',\n  channel_result: {\n    email_delivered: true,\n    sms_delivered: true,\n    dispatched_to: item.to || '917892724453',\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "node-email-customer",
+      "name": "10. Email Customer Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3160,
+        400
+      ]
     }
   ],
   "connections": {
-    "\u26a1 1-Click Master Test Trigger": {
+    "⚡ 1-Click Master Test Trigger": {
       "main": [
         [
           {
@@ -516,6 +581,83 @@
         [
           {
             "node": "8. Dispatch Human Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "8. Execute Order Recovery (FastAPI Authority)": {
+      "main": [
+        [
+          {
+            "node": "9. Compose Recovery Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "8. Execute Refund / Approval Route": {
+      "main": [
+        [
+          {
+            "node": "9. Compose Refund Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "8. Dispatch Human Escalation": {
+      "main": [
+        [
+          {
+            "node": "9. Compose Escalation Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "9. Compose Recovery Reply": {
+      "main": [
+        [
+          {
+            "node": "Merge Reply Paths",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "9. Compose Refund Reply": {
+      "main": [
+        [
+          {
+            "node": "Merge Reply Paths",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "9. Compose Escalation Reply": {
+      "main": [
+        [
+          {
+            "node": "Merge Reply Paths",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Reply Paths": {
+      "main": [
+        [
+          {
+            "node": "10. Email Customer Reply",
             "type": "main",
             "index": 0
           }

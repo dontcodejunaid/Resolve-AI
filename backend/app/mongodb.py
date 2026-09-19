@@ -12,7 +12,7 @@ mongo_db: Optional[AsyncIOMotorDatabase] = None
 
 
 async def init_mongo():
-    """Initialize MongoDB Atlas async connection."""
+    """Initialize MongoDB Atlas async connection and ensure collection indexes."""
     global mongo_client, mongo_db
     if not settings.MONGODB_URI:
         print("[MongoDB Atlas] No MONGODB_URI configured. Skipping MongoDB initialization.")
@@ -27,6 +27,27 @@ async def init_mongo():
         await mongo_client.admin.command('ping')
         mongo_db = mongo_client[settings.MONGODB_DB_NAME]
         print(f"[MongoDB Atlas] Successfully connected to database: '{settings.MONGODB_DB_NAME}'")
+
+        # Create recommended indexes asynchronously
+        try:
+            await mongo_db.users.create_index("email", unique=True)
+            await mongo_db.cases.create_index("customer_id")
+            await mongo_db.cases.create_index("case_number", unique=True)
+            await mongo_db.cases.create_index("status")
+            await mongo_db.payments.create_index("payment_reference", unique=True)
+            await mongo_db.payments.create_index("customer_id")
+            await mongo_db.orders.create_index("order_number", unique=True)
+            await mongo_db.orders.create_index("payment_id")
+            await mongo_db.refunds.create_index("refund_reference", unique=True)
+            await mongo_db.refunds.create_index("payment_id")
+            await mongo_db.case_events.create_index("case_id")
+            await mongo_db.actions.create_index("case_id")
+            await mongo_db.approvals.create_index("case_id")
+            await mongo_db.notifications.create_index("case_id")
+            print("[MongoDB Atlas] Indexes verified across all collections.")
+        except Exception as idx_err:
+            print(f"[MongoDB Atlas] Index notice: {idx_err}")
+
     except Exception as e:
         print(f"[MongoDB Atlas] Warning: Could not connect to MongoDB Atlas: {e}")
 
@@ -42,6 +63,11 @@ async def close_mongo():
 def get_mongo_db() -> Optional[AsyncIOMotorDatabase]:
     """Dependency / accessor to get MongoDB database instance."""
     return mongo_db
+
+
+def is_mongo_connected() -> bool:
+    """Check whether MongoDB is currently initialized and connected."""
+    return mongo_db is not None
 
 
 def model_to_dict(obj) -> Dict[str, Any]:

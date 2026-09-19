@@ -1,7 +1,7 @@
 -- ==============================================================================
--- RESOLVE AI - PostgreSQL Database Schema
--- Standard PostgreSQL DDL with strict integrity constraints, foreign keys,
--- indexes, and status validations.
+-- RESOLVE AI - Database Schema Specification
+-- Reference DDL structure with strict integrity constraints, relations,
+-- indexes, and status validations mirrored across MongoDB Atlas collections.
 -- ==============================================================================
 
 -- Drop tables if they exist (in reverse dependency order)

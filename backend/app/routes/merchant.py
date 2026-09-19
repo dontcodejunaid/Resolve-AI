@@ -65,6 +65,14 @@ async def update_merchant_policy(
 
     await db.commit()
     await db.refresh(policy)
+
+    # Sync to MongoDB Atlas
+    try:
+        from backend.app.mongodb import sync_model_to_mongo
+        await sync_model_to_mongo("merchant_policies", policy)
+    except Exception as e:
+        print(f"[MongoDB Policy Sync Warning] {e}")
+
     return policy
 
 
@@ -100,6 +108,14 @@ async def create_product(
     db.add(product)
     await db.commit()
     await db.refresh(product)
+
+    # Sync to MongoDB Atlas
+    try:
+        from backend.app.mongodb import sync_model_to_mongo
+        await sync_model_to_mongo("products", product)
+    except Exception as e:
+        print(f"[MongoDB Product Sync Warning] {e}")
+
     return product
 
 
@@ -124,6 +140,14 @@ async def update_product(
 
     await db.commit()
     await db.refresh(product)
+
+    # Sync to MongoDB Atlas
+    try:
+        from backend.app.mongodb import sync_model_to_mongo
+        await sync_model_to_mongo("products", product)
+    except Exception as e:
+        print(f"[MongoDB Product Sync Warning] {e}")
+
     return product
 
 

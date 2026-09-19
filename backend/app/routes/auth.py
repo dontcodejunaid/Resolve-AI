@@ -37,6 +37,13 @@ async def signup(req: SignupRequest, db: AsyncSession = Depends(get_db)):
     await db.commit()
     await db.refresh(user)
 
+    # Sync user to MongoDB Atlas
+    try:
+        from backend.app.mongodb import sync_model_to_mongo
+        await sync_model_to_mongo("users", user)
+    except Exception as e:
+        print(f"[MongoDB User Sync Warning] {e}")
+
     token = create_access_token(data={"sub": user.id, "role": user.role, "email": user.email})
     return TokenResponse(
         access_token=token,
